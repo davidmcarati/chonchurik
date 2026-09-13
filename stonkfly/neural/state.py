@@ -7,19 +7,22 @@ class Brain:
     def __init__(self, path, dt=0.1):
         if dt != 0.1:
             raise ValueError("This audited kernel supports only dt=0.1 ms.")
-        a = np.load(path)
-        for k in [
-            "ptr",
-            "post",
-            "weight",
-            "ids",
-            "retina",
-            "uv",
-            "lamina",
-            "sugar",
-            "superclass",
-        ]:
-            setattr(self, k, a[k])
+        # Read every array out of the archive before closing it: a retained
+        # handle keeps graph.npz open for the life of the process, which blocks
+        # replacing it on Windows.
+        with np.load(path, allow_pickle=False) as a:
+            for k in [
+                "ptr",
+                "post",
+                "weight",
+                "ids",
+                "retina",
+                "uv",
+                "lamina",
+                "sugar",
+                "superclass",
+            ]:
+                setattr(self, k, a[k])
         n = len(self.ids)
         for k, dtype in [
             ("ptr", np.int64),
