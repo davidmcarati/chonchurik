@@ -4,7 +4,7 @@ Use a dedicated account portfolio. Stonkfly is an experiment capable of losing i
 
 ## Installation and data
 
-Use Python 3.11 and a C++17 compiler (`clang++`/`c++` on macOS, GCC or Clang on Linux). `python -m stonkfly prepare` downloads about 1.1 GB of upstream data, verifies it, and builds the full graph. Allow several additional GB for dependencies, derived data and two checkpoints. `python -m stonkfly verify` independently checks prepared inputs. Set `STONKFLY_DATA` to use another data location.
+Use Python 3.11 or newer and a C++17 compiler (`clang++`/`c++` on macOS, GCC or Clang on Linux, MSVC from the Visual Studio Build Tools C++ workload on Windows; `STONKFLY_CXX` overrides the compiler where a POSIX driver is available). `python -m stonkfly prepare` downloads about 1.1 GB of upstream data, verifies it, and builds the full graph. Allow several additional GB for dependencies, derived data and two checkpoints. `python -m stonkfly verify` independently checks prepared inputs. Set `STONKFLY_DATA` to use another data location.
 
 Existing DOOMFLY researchers can reuse verified local files with `python -m stonkfly prepare --reuse-doomfly /path/to/working-copy`. Stonkfly copies only the three required data artifacts, then checks the same locks. It does not import a Doom environment, run its website, or depend on that checkout afterward.
 
@@ -27,7 +27,7 @@ python -m stonkfly run --fixture --fast --frozen --steps 10 --out runs/frozen
 
 1. Create a separate Coinbase Advanced portfolio and put up to 100 USDC in it. Start without other assets or open orders. Do not mix other bots, manual trades or deposits into that portfolio while Stonkfly runs.
 2. Create a [Coinbase App API key](https://docs.cdp.coinbase.com/coinbase-app/authentication-authorization/api-key-authentication) with ECDSA, **View and Trade**, **Transfer disabled**, scoped only to that portfolio. The program checks permissions and portfolio scope; an account-wide key is rejected.
-3. Save the downloaded key JSON locally as `coinbase-key.json` and restrict its file permissions (`chmod 600 coinbase-key.json`). It typically contains `name` and `privateKey`. Never paste the key into a commit or README.
+3. Save the downloaded key JSON locally as `coinbase-key.json` and restrict its file permissions (`chmod 600 coinbase-key.json`; on Windows remove inherited access with `icacls`). It typically contains `name` and `privateKey`. Never paste the key into a commit or README.
 4. Copy `.env.example` to `.env`, set the key path and `COINBASE_PORTFOLIO_ID`, then set `STONKFLY_LIVE=I_ACCEPT_REAL_TRADES`. The CLI also requires `--live`; paper mode never submits an order even if the environment variable is present.
 5. Run `python -m stonkfly run --live --preflight-only`. This reads permissions, account balances and order state, and initializes the local ledger. **It does not submit orders.** Once you have reviewed the configuration, run `python -m stonkfly run --live` yourself.
 
@@ -48,7 +48,7 @@ The worker must stay running on your computer/server. It is not a hosted service
 
 `runs/<name>/` holds a SQLite ledger, two alternating checkpoints, `events.jsonl`, `latest.json`, `latest-input.png`, and provenance with exact code, graph, stimulus and parameter hashes. Each intent binds to the preceding neural observation and checkpoint. The ledger is authoritative if a crash occurs before the human-readable log is written.
 
-To stop: Ctrl-C, or `touch runs/live/STOP` (`runs/paper/STOP` for paper). This stops future decisions/submissions; an already submitted FOK order may still finish. Inspect any uncertain order in Coinbase before taking another action.
+To stop: Ctrl-C, or create `runs/live/STOP` (`runs/paper/STOP` for paper). This stops future decisions/submissions; an already submitted FOK order may still finish. Inspect any uncertain order in Coinbase before taking another action.
 
 For an ordinary clean restart, use the same command and run directory. After reviewing a transient failure and reconciling account state, remove the STOP file if appropriate and pass `--resume-reviewed`. This cannot clear a drawdown or fee-overrun stop, bypass unresolved exchange outcomes, or accept changed source/configuration. A missing unknown order requires manual exchange investigation; do not assume it failed. Source changes require an explicitly reviewed state migration; use a fresh **paper** directory for development.
 

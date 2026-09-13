@@ -4,6 +4,8 @@ import ctypes as C
 import hashlib
 import json
 import math
+import os
+import shutil
 import subprocess
 import sys
 import time
@@ -16,9 +18,8 @@ from .common import DATA, GRAPH, OUT, digest, save_json
 from .state import NativeBrain
 
 SOURCE = Path(__file__).with_name("kernel.cpp")
-LIBRARY = (OUT / "physiology-v6") / (
-    "libmemory.dylib" if sys.platform == "darwin" else "libmemory.so"
-)
+SUFFIX = {"darwin": ".dylib", "win32": ".dll"}.get(sys.platform, ".so")
+LIBRARY = (OUT / "physiology-v6") / ("libmemory" + SUFFIX)
 MODEL = "stonkfly-dual-compartment-v1"
 from .rule import PARAMETERS as RULE_PARAMETERS
 
@@ -31,6 +32,81 @@ PARAMETERS = {
     "kc_adaptation_tau_ms": 200.0,
     "interpretation": "Candidate KC adaptation/rest plus a baseline-centered anti-Hebbian rate-rule extension to two compartments. No fitted DAN/MBON background current; lamina bias is a display proxy. Gain, trace constants and transfer to this graph remain unvalidated assumptions.",
 }
+
+
+def msvc_environment():
+    """Capture the MSVC environment; vcvars only exists as a batch file."""
+    if shutil.which("cl"):
+        return None
+    program_files = os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")
+    vswhere = Path(program_files) / "Microsoft Visual Studio/Installer/vswhere.exe"
+    roots = (
+        subprocess.run(
+            [
+                str(vswhere),
+                "-latest",
+                "-products",
+                "*",
+                "-requires",
+                "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                "-property",
+                "installationPath",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
+        if vswhere.exists()
+        else []
+    )
+    for root in roots:
+        script = Path(root.strip()) / "VC/Auxiliary/Build/vcvars64.bat"
+        if script.exists():
+            marker = "__STONKFLY_ENV__"
+            out = subprocess.run(
+                f'"{script}" >nul && echo {marker} && set',
+                shell=True,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout
+            env = dict(os.environ)
+            for line in out.split(marker, 1)[-1].splitlines():
+                key, sep, value = line.partition("=")
+                if sep:
+                    env[key] = value
+            return env
+    raise RuntimeError(
+        "No C++ compiler found. Install Visual Studio Build Tools with the "
+        "'Desktop development with C++' workload, or set STONKFLY_CXX."
+    )
+
+
+def compile_command(target):
+    """Build one shared kernel. MSVC exports the entry point at link time, so
+    kernel.cpp stays byte-identical to the POSIX build."""
+    cxx = os.environ.get("STONKFLY_CXX")
+    if sys.platform != "win32" or cxx:
+        flags = ["-O3", "-std=c++17", "-shared", "-fPIC"]
+        return [cxx or "c++", *flags, str(SOURCE), "-o", str(target)], flags, None
+    flags = ["/O2", "/std:c++17", "/EHsc", "/LD"]
+    env = msvc_environment()
+    # CreateProcess resolves the executable against this process' PATH, not the
+    # captured compiler environment, so name cl.exe by absolute path.
+    cl = shutil.which("cl", path=env["PATH"] if env else None)
+    if not cl:
+        raise RuntimeError("MSVC environment does not provide cl.exe")
+    argv = [
+        cl,
+        "/nologo",
+        *flags,
+        str(SOURCE),
+        f"/Fe:{target}",
+        "/link",
+        "/EXPORT:memory_advance",
+        "/INCREMENTAL:NO",
+    ]
+    return argv, flags, env
 
 
 def build():
@@ -46,16 +122,14 @@ def build():
             return record
     LIBRARY.parent.mkdir(parents=True, exist_ok=True)
     temp = LIBRARY.with_suffix(LIBRARY.suffix + ".partial")
-    subprocess.run(
-        ["c++", "-O3", "-std=c++17", "-shared", "-fPIC", str(SOURCE), "-o", str(temp)],
-        check=True,
-    )
+    argv, flags, env = compile_command(temp)
+    subprocess.run(argv, check=True, cwd=LIBRARY.parent, env=env)
     temp.replace(LIBRARY)
     record = {
         "model": MODEL,
         "source_sha256": sha,
         "binary_sha256": hashlib.sha256(LIBRARY.read_bytes()).hexdigest(),
-        "flags": ["-O3", "-std=c++17", "-shared", "-fPIC"],
+        "flags": flags,
     }
     save_json(metadata, record)
     return record

@@ -2,7 +2,6 @@
 
 import argparse
 import dataclasses
-import fcntl
 import hashlib
 import json
 import os
@@ -12,6 +11,20 @@ import traceback
 from pathlib import Path
 
 from .config import D, Settings
+
+
+def claim(handle):
+    """Exclusive, non-blocking lock on the run directory. POSIX advisory locks
+    and the Windows equivalent both release when the process exits."""
+    try:
+        import fcntl
+
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except ImportError:
+        import msvcrt
+
+        handle.seek(0)
+        msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
 
 
 def main():
@@ -106,10 +119,10 @@ def main():
     )
     out = a.out or Path("runs/live" if a.live else "runs/paper")
     out.mkdir(parents=True, exist_ok=True)
-    lock = (out / "worker.lock").open("a")
+    lock = (out / "worker.lock").open("a+")
     try:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
+        claim(lock)
+    except OSError:
         raise SystemExit("A worker already owns this run directory")
     from .broker import CoinbaseBroker, PaperBroker
     from .ledger import Ledger

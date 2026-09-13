@@ -10,7 +10,7 @@ Positive portfolio P&L stimulates 15 identified PAM11 dopamine cells; negative P
 
 ## Run it
 
-Python 3.11, a C++17 compiler, macOS/Linux. Allow several GB for the dataset and dependencies; 16 GB RAM recommended.
+Python 3.11 or newer, a C++17 compiler, macOS/Linux/Windows. Allow several GB for the dataset and dependencies; 16 GB RAM recommended.
 
 ```sh
 python3.11 -m venv .venv
@@ -19,6 +19,8 @@ pip install -e '.[test]'
 python -m stonkfly prepare
 python -m stonkfly run
 ```
+
+On Windows, install the Visual Studio Build Tools **Desktop development with C++** workload; the kernel is then built with MSVC automatically. Activate with `.venv\Scripts\Activate.ps1` instead of `source`, and the remaining commands are identical.
 
 Default: **paper trades, real public BTC-USDC data, $100 simulated balance**. No key needed. Local logs, sensory images and resumable brain state go in `runs/paper/`. Ctrl-C stops it; the same command resumes.
 
