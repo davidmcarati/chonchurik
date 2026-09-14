@@ -26,7 +26,7 @@ BLOCK = 256
 # Double-dashed: NVRTC silently ignores an option it does not recognise, so a
 # single dash here would leave contraction and denormal flushing on while
 # looking as though they were off.
-OPTIONS = ("--fmad=false", "--ftz=false", "--prec-div=true",
+OPTIONS = ("--fmad=false", "--prec-div=true",
            "--prec-sqrt=true")
 SOURCE = Path(__file__).resolve().parent.parent / "stonkfly" / "neural" / "kernel.cu"
 

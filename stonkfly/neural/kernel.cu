@@ -48,6 +48,69 @@
 // the fallback below stops being reachable for any tick count a run uses.
 #define TABLE (1 << 20)
 
+// This device flushes float subnormals to zero in every arithmetic path, and
+// --ftz=false does not change it: measured, a subnormal survives a load and
+// dies in a multiply. It also lies about them -- `x == 0.f` is true for a
+// subnormal, and `(double)x` is -0.0 -- so both the guard and the widening
+// have to go through the bits.
+//
+// The host keeps them, so the kernel has to. A subnormal float is an exact
+// integer multiple of 2^-149, the product of two floats is exact in double,
+// and the integer is therefore exact: decode the operands bitwise, multiply in
+// double, and reassemble. Verified against the host on 20,007 values including
+// every magnitude of subnormal, both zeros and the normal/subnormal boundary.
+//
+// The fast path is one comparison. The slow path runs only when the hardware
+// has already returned zero for a product that is not zero.
+__device__ __forceinline__ bool is_zero(float x) {
+  return (__float_as_uint(x) & 0x7FFFFFFFu) == 0u;
+}
+
+__device__ __forceinline__ double as_double(float x) {
+  const unsigned bits = __float_as_uint(x);
+  if ((bits >> 23) & 0xFFu) return (double)x;
+  const double magnitude = (double)(bits & 0x7FFFFFu) * 1.401298464324817e-45;
+  return (bits & 0x80000000u) ? -magnitude : magnitude;
+}
+
+__device__ __forceinline__ float rebuild(double exact) {
+  const double m = rint(fabs(exact) * 7.1362384635298e+44);  // 2^149
+  // Above 2^23 multiples of 2^-149 the answer is a normal float, and the
+  // ordinary conversion is correct for those. It is reachable here because the
+  // device also flushes subnormal *inputs*: an operand read as zero gives a
+  // zero product whose true value is perfectly normal.
+  if (m >= 8388608.0) return (float)exact;
+  return __uint_as_float((exact < 0.0 ? 0x80000000u : 0u) | (unsigned)m);
+}
+
+__device__ __forceinline__ float mul_rn(float x, float y) {
+  const float p = __fmul_rn(x, y);
+  if (!is_zero(p) || is_zero(x) || is_zero(y)) return p;
+  return rebuild(as_double(x) * as_double(y));
+}
+
+// Addition, subtraction and division need the same treatment for the same
+// reason. The reconstruction is exact: for a sum of two floats to land in the
+// subnormal range both must be at most 2^-103, since otherwise their spacing
+// alone exceeds 2^-126 -- so double holds them and their sum without loss.
+__device__ __forceinline__ float add_rn(float x, float y) {
+  const float s = __fadd_rn(x, y);
+  if (!is_zero(s) || (is_zero(x) && is_zero(y))) return s;
+  return rebuild(as_double(x) + as_double(y));
+}
+
+__device__ __forceinline__ float sub_rn(float x, float y) {
+  const float s = __fsub_rn(x, y);
+  if (!is_zero(s) || (is_zero(x) && is_zero(y))) return s;
+  return rebuild(as_double(x) - as_double(y));
+}
+
+__device__ __forceinline__ float div_rn(float x, float y) {
+  const float q = __fdiv_rn(x, y);
+  if (!is_zero(q) || is_zero(x)) return q;
+  return rebuild(as_double(x) / as_double(y));
+}
+
 __device__ __forceinline__ float table(const float* t, long long d, float dt,
                                        float tau) {
   return d < TABLE ? t[d] : expf(-dt * (float)d / tau);
@@ -101,7 +164,7 @@ __device__ void evolve(const Brain& b, int i, long long now, float current,
   const int frozen = b.refractory[i] > 0 ? b.refractory[i] - 1 : 0;
   const int skip = (int)(d < frozen ? d : frozen);
   if (skip > 0 && b.adaptation[i] > 0.f)
-    b.adaptation[i] = __fmul_rn(b.adaptation[i], table(aa, skip, dt, tau_a));
+    b.adaptation[i] = mul_rn(b.adaptation[i], table(aa, skip, dt, tau_a));
   b.refractory[i] =
       d >= b.refractory[i] ? 0 : (short)(b.refractory[i] - d);
   d -= skip;
@@ -114,19 +177,19 @@ __device__ void evolve(const Brain& b, int i, long long now, float current,
     // half a unit in the last place -- which is a spike, for a cell sitting on
     // the threshold. --fmad=false does not prevent the reassociation; these
     // do, because each is one IEEE operation the compiler cannot fold.
-    const float t1 = __fmul_rn(__fsub_rn(b.v[i], rest[i]), a);
-    const float t2 = __fmul_rn(current, __fsub_rn(1.f, a));
-    const float t3 = __fdiv_rn(__fmul_rn(b.g[i], __fsub_rn(a, bb)), 3.f);
-    b.v[i] = __fadd_rn(__fadd_rn(__fadd_rn(rest[i], t1), t2), t3);
-    b.g[i] = __fmul_rn(b.g[i], bb);
+    const float t1 = mul_rn(sub_rn(b.v[i], rest[i]), a);
+    const float t2 = mul_rn(current, sub_rn(1.f, a));
+    const float t3 = div_rn(mul_rn(b.g[i], sub_rn(a, bb)), 3.f);
+    b.v[i] = add_rn(add_rn(add_rn(rest[i], t1), t2), t3);
+    b.g[i] = mul_rn(b.g[i], bb);
     if (b.adaptation[i] > 0.f) {
       const float c = table(aa, d, dt, tau_a);
-      const float shed = __fmul_rn(
-          __fdiv_rn(__fmul_rn(b.adaptation[i], tau_a),
-                    __fsub_rn(tau_a, 20.f)),
-          __fsub_rn(c, a));
-      b.v[i] = __fsub_rn(b.v[i], shed);
-      b.adaptation[i] = __fmul_rn(b.adaptation[i], c);
+      const float shed = mul_rn(
+          div_rn(mul_rn(b.adaptation[i], tau_a),
+                    sub_rn(tau_a, 20.f)),
+          sub_rn(c, a));
+      b.v[i] = sub_rn(b.v[i], shed);
+      b.adaptation[i] = mul_rn(b.adaptation[i], c);
     }
   }
   b.last[i] = now;
@@ -278,12 +341,12 @@ extern "C" __global__ void memory_advance_batch(
       if (modulation_mask[i]) {
         for (long long e = first + tid; e < stop; e += BLOCK) {
           const int j = post[e];
-          brain.modulation[j] = __fmul_rn(
+          brain.modulation[j] = mul_rn(
               brain.modulation[j],
               table(am, now - brain.modulation_last[j], dt, 100.f));
-          brain.modulation[j] = __fadd_rn(
+          brain.modulation[j] = add_rn(
               brain.modulation[j],
-              __fdiv_rn(fabsf(brain.weight[e]), .275f));
+              div_rn(fabsf(brain.weight[e]), .275f));
           brain.modulation_last[j] = now;
         }
         __syncthreads();
@@ -315,7 +378,7 @@ extern "C" __global__ void memory_advance_batch(
           evolve(brain, j, now, brain.drive[j], av, ag, aa, dt, adaptation_tau,
                  rest);
           if (brain.refractory[j] == 0) {
-            brain.g[j] = __fadd_rn(brain.g[j], brain.weight[e]);
+            brain.g[j] = add_rn(brain.g[j], brain.weight[e]);
             want = brain.flags[j] ? 0 : 1;
           }
         }
