@@ -59,6 +59,26 @@ The decision threshold is 2 Hz. Silencing just 1% of the network already moves `
 
 Counting label flips understates this badly. The honest statement is that the decoder resolves a 2-spike margin out of roughly 35 DNp20 spikes, on a quantity whose noise exceeds that margin. Widening the readout to more cells is therefore not sufficient on its own — it needs to **integrate over the observation window** rather than threshold a mean-rate difference.
 
+### Can the fly tell one market state from another?
+
+Eight canonical market shapes, one observation each from an identical reset state, scored on how far apart they are at the retina and in the mushroom body.
+
+| Rendering | Receptors differing | Input correlation | Identical Kenyon codes | Kenyon activity range |
+| --- | --- | --- | --- | --- |
+| current (3px polyline) | 4.19% | 0.906 | **10 / 28 pairs** | 0.10% – 34.6% |
+| filled area under curve | 14.87% | 0.752 | **0 / 28** | 0.05% – 35.4% |
+| filled + fixed price axis | 17.25% | 0.760 | 6 / 28 | 0.10% – 35.4% |
+
+**A rally and a crash reach the retina as 98.5% the same image** (1.47% of receptors differ, correlation 0.959). A 3-pixel line on a 320×180 chart puts the market on a few percent of the receptors; reversing its direction changes the light at roughly fifty of 3,335 cells.
+
+The consequence is that **10 of 28 state pairs produce a byte-identical Kenyon-cell code** — a crash and a choppy market are literally indistinguishable in memory. No reinforcement rule can bind an outcome to a situation that has no distinct representation. The learning machinery measured above is working, but it is working on nothing.
+
+Filling the area under the curve removes every collision (10 → 0) and separates the input 3.5×. Adding a fixed price axis separates the input further still (4.1×) but reintroduces six collisions, so raw input separation is the wrong thing to rank on.
+
+**Sparseness is not fixed by any of this.** Every rendering leaves Kenyon activity bimodal — either near-silent (~0.1%) or about a third of the population — and never near the ~5% a real mushroom body holds. A sub-2% change in retinal input flips 80× swings in Kenyon spiking. The population has two attractors and the picture only chooses between them, so sparseness is set by network dynamics, not by the display. Fixing the input is necessary and not sufficient.
+
+Both APL cells are present in the graph and correctly wired — 2,259 and 2,374 inhibitory outputs onto Kenyon cells (net −26,274 and −27,681), with 2,270 and 2,423 Kenyon inputs returning to them. The feedback loop that enforces sparseness in a real mushroom body exists here; it is not holding the population in range.
+
 ### Participation and plasticity
 
 Baseline over six frames: **11.2%** of neurons fire at least once; participation ratio (effective contributing population) **8,832** of 166,700, i.e. about 5%; superclass entropy 1.47 bits; 404,336 spikes per observation; 1,083 KC spikes.

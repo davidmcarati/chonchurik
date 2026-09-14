@@ -27,10 +27,13 @@ Tests:
 import argparse
 import dataclasses
 import json
+import sys
 import time
 from pathlib import Path
 
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from stonkfly.config import Settings
 from stonkfly.display import market_frame
@@ -38,6 +41,8 @@ from stonkfly.market import FixtureMarket
 from stonkfly.neural.common import GRAPH, annotations
 from stonkfly.neural.controller import FlyController
 from stonkfly.neural.sensory import retinal_samples
+
+from scenes import RENDERERS, SCENES, scene_history
 
 PRODUCT = "BTC-USDC"
 BACKGROUND = (235, 240, 249)
@@ -339,6 +344,113 @@ def verdict_ablate(rows, null_ok, threshold):
             "bottleneck; look at the sensory side instead")
 
 
+# --- separation ------------------------------------------------------------
+
+
+def separation(controller, superclass):
+    """Can the fly tell one market state from another, at input and in memory?
+
+    Associative learning needs distinguishable codes. If a rally and a crash
+    arrive as the same pattern, no reinforcement rule can bind an outcome to a
+    situation -- the learning machinery would be working on nothing.
+
+    Each candidate chart rendering is scored on input separation (per-receptor
+    luminance) and memory separation (which Kenyon cells fired).
+    """
+    brain = controller.brain
+    a = annotations(brain.ids)
+    kinds = a.type.fillna("").astype(str)
+    kc = np.flatnonzero(kinds.str.startswith("KC").to_numpy())
+    apl = np.flatnonzero(kinds.str.fullmatch("APL").fillna(False).to_numpy())
+    names = list(SCENES)
+    print(f"[separation] {len(names)} market states x {len(RENDERERS)} renderings; "
+          f"{len(kc):,} KCs, {len(apl)} APL cells", flush=True)
+
+    out = {"scenes": names, "kenyon_cells": len(kc), "apl_cells": len(apl)}
+    for render_name, render in RENDERERS.items():
+        lum, code, rows = {}, {}, {}
+        for scene in names:
+            frame = render(scene_history(scene))
+            lum[scene] = retinal_samples(frame, brain.uv)
+            n = observe(controller, frame)
+            counts = controller.brain.counts
+            code[scene] = counts[kc] > 0
+            rows[scene] = {
+                "kc_active_fraction": float((counts[kc] > 0).mean()),
+                "kc_spikes": int(counts[kc].sum()),
+                "apl_spikes": int(counts[apl].sum()),
+                "side": n["side"],
+                "difference_hz": n["difference_hz"],
+            }
+            print(f"  {render_name:19} {scene:11} KC "
+                  f"{rows[scene]['kc_active_fraction']:6.2%}  "
+                  f"spikes {rows[scene]['kc_spikes']:6,}  "
+                  f"APL {rows[scene]['apl_spikes']:4}  "
+                  f"{n['side']:4} R-L {n['difference_hz']:+6.2f}", flush=True)
+
+        pairs = [(x, y) for i, x in enumerate(names) for y in names[i + 1:]]
+        corr = [float(np.corrcoef(lum[x], lum[y])[0, 1]) for x, y in pairs]
+        differ = [float((np.abs(lum[x] - lum[y]) > 0.1).mean()) for x, y in pairs]
+        jac = []
+        for x, y in pairs:
+            union = float((code[x] | code[y]).sum())
+            jac.append(float((code[x] & code[y]).sum()) / union if union else 0.0)
+        active = [rows[s]["kc_active_fraction"] for s in names]
+        sides = [rows[s]["side"] for s in names]
+        out[render_name] = {
+            "per_scene": rows,
+            "input_mean_correlation": float(np.mean(corr)),
+            "input_mean_receptors_differing": float(np.mean(differ)),
+            "kc_mean_jaccard": float(np.mean(jac)),
+            "kc_identical_pairs": int(sum(j > 0.999 for j in jac)),
+            "kc_active_min": float(min(active)),
+            "kc_active_max": float(max(active)),
+            "distinct_sides": len(set(sides)),
+        }
+    out["verdict"] = verdict_separation(out)
+    return out
+
+
+def verdict_separation(out):
+    """Rank on code collisions, not on raw input separation.
+
+    More input separation is worthless if two market states still land on the
+    same Kenyon code -- a collision is exactly what makes an association
+    impossible. So identical pairs decide first, mean overlap second, and raw
+    input separation only breaks ties.
+    """
+    cur = out["current"]
+    best = min(
+        RENDERERS,
+        key=lambda k: (out[k]["kc_identical_pairs"], out[k]["kc_mean_jaccard"],
+                       -out[k]["input_mean_receptors_differing"]),
+    )
+    pairs = len(out["scenes"]) * (len(out["scenes"]) - 1) // 2
+    line = (f"current chart: a market state changes only "
+            f"{cur['input_mean_receptors_differing']:.2%} of receptors "
+            f"(correlation {cur['input_mean_correlation']:.3f}), and "
+            f"{cur['kc_identical_pairs']}/{pairs} state pairs land on an "
+            f"IDENTICAL Kenyon code -- those pairs can never be told apart by "
+            "any reinforcement rule")
+    bimodal = all(
+        out[k]["kc_active_min"] < 0.01 and out[k]["kc_active_max"] > 0.2
+        for k in RENDERERS
+    )
+    tail = ""
+    if bimodal:
+        tail = (". Note: every rendering leaves Kenyon activity bimodal "
+                "(near-silent or ~30% active, never near the ~5% a real "
+                "mushroom body holds), so sparseness is set by network "
+                "dynamics, not by the picture -- fixing the input is necessary "
+                "but not sufficient")
+    if best == "current":
+        return line + ". No candidate rendering removes more collisions" + tail
+    return (line + f". Best candidate '{best}' removes them: "
+            f"{out[best]['kc_identical_pairs']}/{pairs} identical pairs, "
+            f"overlap {out[best]['kc_mean_jaccard']:.2f}, input separation "
+            f"{out[best]['input_mean_receptors_differing']:.2%}" + tail)
+
+
 # --- reinforcement control -------------------------------------------------
 
 
@@ -449,14 +561,16 @@ def main():
     # argparse validates a list default against `choices` as one value, so the
     # default is resolved after parsing instead.
     p.add_argument("tests", nargs="*",
-                   choices=["baseline", "laterality", "ablate", "reinforce"])
+                   choices=["baseline", "laterality", "separation", "ablate",
+                            "reinforce"])
     p.add_argument("--frames", type=int, default=8)
     p.add_argument("--repeats", type=int, default=5)
     p.add_argument("--levels", type=float, nargs="+", default=[1, 5, 20, 50])
     p.add_argument("--seed", type=int, default=20260914)
     p.add_argument("--out", type=Path, default=Path("tools/results"))
     a = p.parse_args()
-    tests = a.tests or ["baseline", "laterality", "ablate", "reinforce"]
+    tests = a.tests or ["baseline", "laterality", "separation", "ablate",
+                        "reinforce"]
 
     started = time.time()
     superclass = np.load(GRAPH, allow_pickle=False)["superclass"]
@@ -477,6 +591,8 @@ def main():
             report[name] = baseline(controller, a.frames, superclass)
         elif name == "laterality":
             report[name] = laterality(controller, a.frames, superclass)
+        elif name == "separation":
+            report[name] = separation(controller, superclass)
         elif name == "ablate":
             report[name] = ablate(controller, a.levels, a.repeats, a.seed, superclass)
         elif name == "reinforce":
