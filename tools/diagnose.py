@@ -42,7 +42,7 @@ from stonkfly.neural.common import GRAPH, annotations
 from stonkfly.neural.controller import FlyController
 from stonkfly.neural.sensory import retinal_samples
 
-from scenes import RENDERERS, SCENES, scene_history
+from scenes import BASELINE, RENDERERS, SCENES, scene_history
 
 PRODUCT = "BTC-USDC"
 BACKGROUND = (235, 240, 249)
@@ -419,7 +419,7 @@ def verdict_separation(out):
     impossible. So identical pairs decide first, mean overlap second, and raw
     input separation only breaks ties.
     """
-    cur = out["current"]
+    cur = out[BASELINE]
     best = min(
         RENDERERS,
         key=lambda k: (out[k]["kc_identical_pairs"], out[k]["kc_mean_jaccard"],
@@ -443,7 +443,7 @@ def verdict_separation(out):
                 "mushroom body holds), so sparseness is set by network "
                 "dynamics, not by the picture -- fixing the input is necessary "
                 "but not sufficient")
-    if best == "current":
+    if best == BASELINE:
         return line + ". No candidate rendering removes more collisions" + tail
     return (line + f". Best candidate '{best}' removes them: "
             f"{out[best]['kc_identical_pairs']}/{pairs} identical pairs, "
