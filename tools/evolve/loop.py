@@ -150,7 +150,8 @@ def evolve(executor, segments, rng, generations, size, out, resume=None):
     return state
 
 
-def judge(executor, champion, population, segments, rng, out, seed):
+def judge(executor, champion, population, segments, rng, out, seed,
+          source="fixture"):
     """The single pass over the test segment, and the pre-declared verdict."""
     window = 100
     results = {}
@@ -217,6 +218,10 @@ def judge(executor, champion, population, segments, rng, out, seed):
         "train_fitness": champion.get("fitness"),
         "results": results,
         "protocol": {
+            # The fly was evolved on candles at this spacing. A live run
+            # sampling at a different interval shows it a different world, so
+            # Settings.interval_seconds has to match what is recorded here.
+            "source": source,
             "warmup_observations": WARMUP,
             "observations_per_evaluation": FULL_OBSERVATIONS,
             "starts_per_evaluation": FULL_STARTS,

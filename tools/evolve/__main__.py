@@ -89,7 +89,9 @@ def main():
         print(f"champion {G.identity(champion['genome'])} at "
               f"{champion['fitness']:+.4f} on train; opening validation and "
               f"test once", flush=True)
-        report = judge(executor, champion, survivors, segments, rng, a.out, a.seed)
+        report = judge(
+            executor, champion, survivors, segments, rng, a.out, a.seed, label
+        )
     print(f"\n{report['verdict']}\n", flush=True)
     print(f"written {a.out / 'champion.json'} and {a.out / 'population.json'} "
           f"({time.time() - started:.0f}s)", flush=True)
