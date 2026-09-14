@@ -172,6 +172,29 @@ def cuda_headers():
             return
 
 
+def standing_pulses(controller, history, executed, account):
+    """The odour and taste currents for one observation, as the controller
+    assembles them.
+
+    The filter is the point. `Olfaction.stimulation` returns no pulse at all
+    when the genome's floor and width leave every glomerulus at zero, and
+    `FlyController.observe` drops it with `[x for x in (odor, taste) if x is
+    not None]`. The herd did not, and an evolution died on the first random
+    genome that produced no odour -- `cannot unpack non-iterable NoneType`
+    inside `prepare_drive`, four minutes into generation 0.
+    """
+    out = []
+    if controller.olfaction is not None and history is not None:
+        odor = controller.olfaction.stimulation(history, executed)[0]
+        if odor is not None:
+            out.append(odor)
+    if controller.gustation is not None and account is not None:
+        taste = controller.gustation.stimulation(*account)[0]
+        if taste is not None:
+            out.append(taste)
+    return out
+
+
 class Herd:
     """The flies of one wave, all replaying the same chronological start."""
 
@@ -403,14 +426,8 @@ class Herd:
         standing, pulses = [], []
         for b, genome in enumerate(self.genomes):
             self._sensory_parameters(genome)
-            present = []
-            if self.controller.olfaction is not None and histories[b] is not None:
-                present.append(self.controller.olfaction.stimulation(
-                    histories[b], executed[b])[0])
-            if self.controller.gustation is not None and accounts[b] is not None:
-                present.append(self.controller.gustation.stimulation(
-                    *accounts[b])[0])
-            standing.append(present)
+            standing.append(standing_pulses(
+                self.controller, histories[b], executed[b], accounts[b]))
             # Odour and taste are present for the whole observation; the
             # reinforcement pulse is not, and is appended per bin below.
             pulses.append(None if kinds[b] == "none" else
