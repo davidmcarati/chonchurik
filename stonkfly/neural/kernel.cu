@@ -1,26 +1,14 @@
-// CUDA port of kernel.cpp. NOT FINISHED, and not wired into the model.
+// CUDA port of kernel.cpp. Bit-identical to it, and not yet wired in.
 //
 // Measured against the CPU kernel by tools/gpu_port_check.py from one shared
-// state. At batch 1, ten of eighteen arrays come back bit-identical --
-// counts, active, queue, queue_count, nactive, refractory, last, weight,
-// active_flag, previous_drive -- which is the whole of the ordering logic, and
-// the part that was actually at risk. Five differ: v, g, adaptation,
-// modulation, eligibility, by at most 2e-3 and usually far less.
-//
-// That residue is not a race. It is `exp`: the host's libm and the device's
-// do not round identically, and every one of those five arrays reaches a path
-// that calls it rather than the shared lookup table. Bit-equality across the
-// two machines is therefore not reachable while both call their own exp, and
-// claiming it here would be a lie the tests would eventually catch.
-//
-// At batch greater than one, fourteen arrays differ. That IS a bug, in the
-// per-genome indexing here or in the harness, and it is unfixed.
+// state: after 5,000 ticks -- a whole observation -- every one of the eighteen
+// arrays the kernel may touch comes back identical, element for element.
 //
 // The parallelism is across genomes, not inside one brain: one CUDA block runs
-// one genome's whole 5,000-tick observation, and the batch fills the device.
-// That is what makes exactness affordable. Every place kernel.cpp's result
-// depends on the order operations happen in -- the active list, the spike
-// queue, the accumulation into g -- keeps that order here:
+// one genome's whole observation, and the batch fills the device. That is what
+// makes exactness affordable. Every place kernel.cpp's result depends on the
+// order operations happen in -- the active list, the spike queue, the
+// accumulation into g -- keeps that order here:
 //
 //   * the active list is compacted with an ordered block scan, never an atomic
 //     append, so survivors keep their relative positions;
@@ -34,19 +22,79 @@
 //
 // Float addition is not associative, so any of those relaxed into an atomic
 // would give a different answer every run and a different animal from the one
-// docs/validation.md describes. The ordering machinery is not free: a block
-// scan per chunk, and the queue walked one source at a time, is why a single
-// block is slower than a single CPU core here and the gain has to come from
-// running many genomes at once.
+// docs/validation.md describes.
+//
+// WHAT COSTS WHAT, measured rather than guessed. This kernel is bound by the
+// number of scattered memory accesses it makes, and by nothing else. The
+// first version of it spent its whole budget on the wrong thing:
+//
+//   * past 32 blocks, more blocks bought nothing -- 7 ms a genome per 200
+//     ticks at 32, at 64 and at 96, on a card with 84 SMs. Not short of
+//     parallelism.
+//   * 512 threads a block was exactly as fast as 256. Not short of warps to
+//     hide latency with.
+//   * the card serves 14.8 billion random four-byte lookups a second,
+//     measured; that kernel was making 12.0 billion of them. 81% of the
+//     ceiling, and there is no more to have.
+//
+// So the whole game is accesses per neuron touched. A visit used to read seven
+// arrays and write five, and each of those is a separate 32-byte sector
+// fetched to use four bytes of it. They are one struct now, sized and aligned
+// to exactly one sector, so a visit costs one fetch instead of twelve, and the
+// block scan went from sixteen barriers to two. Nothing about the arithmetic
+// changed; only where the bytes live.
+//
+// That is 2.47 ms a genome per 200 ticks, 2.8x the old kernel, and 26.6x one
+// CPU core at batch 84. The ceiling moved but did not go away: throughput is
+// flat from 84 blocks to 420 -- one resident block per SM to the three the
+// register count allows, and the two beyond that queueing -- so the card is
+// again saturated on memory and not on anything this kernel can schedule
+// differently. Getting past it needs a smaller cell or a sorted active list,
+// and a sorted active list is a different animal, not a faster one.
+//
 // NVRTC compiles without the host standard library, so no <cstdint> here;
 // every integer width below is spelled out instead.
 
+#ifndef BLOCK
 #define BLOCK 256
+#endif
+#define WARPS (BLOCK / 32)
 // kernel.cpp keeps 1024 entries and calls std::exp past them. The device
 // cannot reproduce that call, so the table is extended instead -- built by the
 // host's own compiler, it holds exactly what std::exp would have returned, and
 // the fallback below stops being reachable for any tick count a run uses.
 #define TABLE (1 << 20)
+
+// Everything a visit to a cell reads or writes, in one 32-byte line. The field
+// order is the packing, not a preference: eight bytes of `last` first so the
+// struct's alignment is natural, then the floats, then the small ones in the
+// tail. `drive` never changes during a launch but lives here anyway, because a
+// visit needs it and a separate array would cost the sector this whole
+// exercise is about saving.
+struct __align__(32) Cell {
+  long long last;
+  float v, g, adaptation, drive;
+  int counts;
+  short refractory;
+  unsigned char flags, pad;
+};
+
+// The slow half: eligibility and modulation, touched only when a Kenyon cell
+// fires or a modulatory neuron delivers. Four arrays, one sector.
+struct __align__(32) Slow {
+  double eligibility;
+  long long eligibility_last, modulation_last;
+  float modulation, pad;
+};
+
+// What the graph fixes and a genome cannot change. Shared by every block, so
+// all 166,700 of them are 1.3 MB and stay in L2 for the whole launch however
+// many genomes are running.
+struct __align__(8) Fixed {
+  float rest;
+  unsigned char kc, modulatory, pad;
+  signed char dan;
+};
 
 // This device flushes float subnormals to zero in every arithmetic path, and
 // --ftz=false does not change it: measured, a subnormal survives a load and
@@ -116,57 +164,77 @@ __device__ __forceinline__ float table(const float* t, long long d, float dt,
   return d < TABLE ? t[d] : expf(-dt * (float)d / tau);
 }
 
+// The same decay, in double, for the two places the host keeps double.
+//
+// `std::exp` takes a double. The voltage decays multiply it into a float and
+// round once, so a float table reproduces them exactly; eligibility is a
+// double and keeps every bit, and modulation is a float multiplied by the
+// double result and rounded once -- a float table rounds twice for both, and
+// the second rounding is a part in 16 million that never goes away.
+//
+// The argument is still spelled as the host spells it: dt times a tick count
+// in float, divided in float, and only then widened.
+__device__ __forceinline__ double table_d(const double* t, long long d,
+                                          float dt, float tau) {
+  return d < TABLE ? t[d] : exp((double)(-dt * (float)d / tau));
+}
+
 // Ordered exclusive scan over one block. Returns this thread's offset; `total`
-// receives the block's sum. Deliberately a plain shared-memory scan: it is
-// ordered, it is short, and it does not pull CUB through NVRTC.
-__device__ __forceinline__ int block_scan(int value, int* shared, int* total) {
-  const int tid = threadIdx.x;
-  shared[tid] = value;
-  __syncthreads();
-  for (int offset = 1; offset < BLOCK; offset <<= 1) {
-    int add = tid >= offset ? shared[tid - offset] : 0;
-    __syncthreads();
-    shared[tid] += add;
-    __syncthreads();
+// receives the block's sum. The values are zeros and ones, so these additions
+// are exact and their order is free -- unlike everything downstream of them,
+// which is why the scan may be fast and the deliveries may not.
+//
+// Warp shuffles first, then one pass over the per-warp totals. Two barriers
+// for the whole scan, where the shared-memory ladder it replaced needed
+// sixteen, and a tick runs several thousand scans.
+__device__ __forceinline__ int block_scan(int value, int* warp_sum, int* total) {
+  const int lane = threadIdx.x & 31, warp = threadIdx.x >> 5;
+  int x = value;
+  for (int offset = 1; offset < 32; offset <<= 1) {
+    const int up = __shfl_up_sync(0xFFFFFFFFu, x, offset);
+    if (lane >= offset) x += up;
   }
-  const int inclusive = shared[tid];
-  if (tid == BLOCK - 1) *total = inclusive;
+  if (lane == 31) warp_sum[warp] = x;
   __syncthreads();
-  return inclusive - value;
+  int base = 0, sum = 0;
+  // Every thread walks the same handful of warp totals out of shared memory.
+  // Cheaper than a second scan, and it leaves the block's sum in a register
+  // instead of costing another barrier to broadcast it.
+  for (int w = 0; w < WARPS; w++) {
+    const int s = warp_sum[w];
+    if (w < warp) base += s;
+    sum += s;
+  }
+  *total = sum;
+  __syncthreads();
+  return base + x - value;
 }
 
 struct Brain {
-  float* v;
-  float* g;
-  short* refractory;
-  const float* drive;
+  Cell* cell;
+  Slow* slow;
   float* previous_drive;
   int* queue;
   int* queue_count;
-  int* counts;
   int* active;
-  unsigned char* flags;
   int* nactive;
-  long long* last;
-  double* eligibility;
-  long long* eligibility_last;
-  float* modulation;
-  long long* modulation_last;
-  float* adaptation;
   float* weight;
 };
 
-__device__ void evolve(const Brain& b, int i, long long now, float current,
-                       const float* av, const float* ag, const float* aa,
-                       float dt, float tau_a, const float* rest) {
-  long long d = now - b.last[i];
+// Advance one cell to `now`, in registers. The caller owns the load and the
+// store, because every caller needs the cell for something else immediately
+// afterwards and a second trip to memory is the entire cost of this kernel.
+__device__ __forceinline__ void evolve(Cell& c, float rest, long long now,
+                                       float current, const float* av,
+                                       const float* ag, const float* aa,
+                                       float dt, float tau_a) {
+  long long d = now - c.last;
   if (d <= 0) return;
-  const int frozen = b.refractory[i] > 0 ? b.refractory[i] - 1 : 0;
+  const int frozen = c.refractory > 0 ? c.refractory - 1 : 0;
   const int skip = (int)(d < frozen ? d : frozen);
-  if (skip > 0 && b.adaptation[i] > 0.f)
-    b.adaptation[i] = mul_rn(b.adaptation[i], table(aa, skip, dt, tau_a));
-  b.refractory[i] =
-      d >= b.refractory[i] ? 0 : (short)(b.refractory[i] - d);
+  if (skip > 0 && c.adaptation > 0.f)
+    c.adaptation = mul_rn(c.adaptation, table(aa, skip, dt, tau_a));
+  c.refractory = d >= c.refractory ? 0 : (short)(c.refractory - d);
   d -= skip;
   if (d > 0) {
     const float a = table(av, d, dt, 20.f);
@@ -177,46 +245,41 @@ __device__ void evolve(const Brain& b, int i, long long now, float current,
     // half a unit in the last place -- which is a spike, for a cell sitting on
     // the threshold. --fmad=false does not prevent the reassociation; these
     // do, because each is one IEEE operation the compiler cannot fold.
-    const float t1 = mul_rn(sub_rn(b.v[i], rest[i]), a);
+    const float t1 = mul_rn(sub_rn(c.v, rest), a);
     const float t2 = mul_rn(current, sub_rn(1.f, a));
-    const float t3 = div_rn(mul_rn(b.g[i], sub_rn(a, bb)), 3.f);
-    b.v[i] = add_rn(add_rn(add_rn(rest[i], t1), t2), t3);
-    b.g[i] = mul_rn(b.g[i], bb);
-    if (b.adaptation[i] > 0.f) {
-      const float c = table(aa, d, dt, tau_a);
+    const float t3 = div_rn(mul_rn(c.g, sub_rn(a, bb)), 3.f);
+    c.v = add_rn(add_rn(add_rn(rest, t1), t2), t3);
+    c.g = mul_rn(c.g, bb);
+    if (c.adaptation > 0.f) {
+      const float cc = table(aa, d, dt, tau_a);
       const float shed = mul_rn(
-          div_rn(mul_rn(b.adaptation[i], tau_a),
-                    sub_rn(tau_a, 20.f)),
-          sub_rn(c, a));
-      b.v[i] = sub_rn(b.v[i], shed);
-      b.adaptation[i] = mul_rn(b.adaptation[i], c);
+          div_rn(mul_rn(c.adaptation, tau_a), sub_rn(tau_a, 20.f)),
+          sub_rn(cc, a));
+      c.v = sub_rn(c.v, shed);
+      c.adaptation = mul_rn(c.adaptation, cc);
     }
   }
-  b.last[i] = now;
+  c.last = now;
 }
 
 extern "C" __global__ void memory_advance_batch(
     const int n, const int batch, const long long* __restrict__ ptr,
     const int* __restrict__ post, float* weight_all,
-    float* v_all, float* g_all, short* refractory_all,
-    const float* __restrict__ drive_all, float* previous_drive_all,
+    const long long weight_stride,
+    Cell* cell_all, Slow* slow_all, const Fixed* __restrict__ fixed,
+    float* previous_drive_all,
     int* queue_all, int* queue_count_all, long long* clock_all, const int steps,
-    const float dt, int* counts_all, int* active_all, unsigned char* flags_all,
-    int* nactive_all, long long* last_all,
-    const unsigned char* __restrict__ kc_mask,
-    const signed char* __restrict__ dan_index,
-    double* eligibility_all, long long* eligibility_last_all,
+    const float dt, int* active_all, int* nactive_all,
     const int nplastic, const long long* __restrict__ plastic_edge,
-    const int* __restrict__ plastic_pre, const float* __restrict__ baseline_weight,
-    const float* __restrict__ dan_gain, const float eta, const float tau_elig_ms,
-    const float floor_fraction, const int learning_enabled,
-    float* modulation_all, long long* modulation_last_all,
-    const unsigned char* __restrict__ modulation_mask,
-    const float* __restrict__ rest,
-    float* adaptation_all, const float adaptation_jump, const float adaptation_tau,
+    const int* __restrict__ plastic_pre,
+    const float* __restrict__ baseline_weight,
+    const float* __restrict__ dan_gain, const float eta,
+    const float tau_elig_ms, const float floor_fraction,
+    const int learning_enabled, const float adaptation_jump,
+    const float adaptation_tau,
     const float* __restrict__ av, const float* __restrict__ ag,
-    const float* __restrict__ aa, const float* __restrict__ am,
-    const float* __restrict__ ae, const int delay, const int rfc,
+    const float* __restrict__ aa, const double* __restrict__ am,
+    const double* __restrict__ ae, const int delay, const int rfc,
     const int slots, int* scratch_all) {
   const int b = blockIdx.x;
   if (b >= batch) return;
@@ -224,52 +287,53 @@ extern "C" __global__ void memory_advance_batch(
   const int tid = threadIdx.x;
 
   Brain brain;
-  brain.v = v_all + off;
-  brain.g = g_all + off;
-  brain.refractory = refractory_all + off;
-  brain.drive = drive_all + off;
+  brain.cell = cell_all + off;
+  brain.slow = slow_all + off;
   brain.previous_drive = previous_drive_all + off;
   brain.queue = queue_all + (long long)b * n * slots;
   brain.queue_count = queue_count_all + (long long)b * slots;
-  brain.counts = counts_all + off;
   brain.active = active_all + off;
-  brain.flags = flags_all + off;
   brain.nactive = nactive_all + b;
-  brain.last = last_all + off;
-  brain.eligibility = eligibility_all + off;
-  brain.eligibility_last = eligibility_last_all + off;
-  brain.modulation = modulation_all + off;
-  brain.modulation_last = modulation_last_all + off;
-  brain.adaptation = adaptation_all + off;
-  brain.weight = weight_all + (long long)b * ptr[n];
+  // A stride of zero points every genome at one shared copy of the
+  // weights. Sound only while nothing writes to them -- the plasticity
+  // rule does -- so the host passes the real stride whenever learning is
+  // enabled, and 102 MB a genome is what that costs.
+  brain.weight = weight_all + (long long)b * weight_stride;
 
   long long* clock = clock_all + b;
   (void)scratch_all;
 
-  __shared__ int s_scan[BLOCK];
-  __shared__ int s_total;
+  __shared__ int s_warp[WARPS];
   __shared__ int s_kept;
   __shared__ int s_qcount;
+  int total;
 
   // ---- sensory currents, applied after settling the old ones ----
   if (tid == 0) s_kept = *brain.nactive;
   __syncthreads();
   for (int base = 0; base < n; base += BLOCK) {
     const int i = base + tid;
-    const bool changed = i < n && brain.drive[i] != brain.previous_drive[i];
-    if (changed) {
-      evolve(brain, i, *clock - 1, brain.previous_drive[i], av, ag, aa, dt,
-             adaptation_tau, rest);
-      brain.previous_drive[i] = brain.drive[i];
+    bool changed = false;
+    Cell c;
+    c.flags = 1;
+    if (i < n) {
+      c = brain.cell[i];
+      changed = c.drive != brain.previous_drive[i];
+      if (changed) {
+        evolve(c, fixed[i].rest, *clock - 1, brain.previous_drive[i], av, ag,
+               aa, dt, adaptation_tau);
+        brain.previous_drive[i] = c.drive;
+      }
     }
-    const int want = (changed && !brain.flags[i]) ? 1 : 0;
-    const int slot = block_scan(want, s_scan, &s_total);
+    const int want = (changed && !c.flags) ? 1 : 0;
+    const int slot = block_scan(want, s_warp, &total);
     if (want) {
-      brain.flags[i] = 1;
+      c.flags = 1;
       brain.active[s_kept + slot] = i;
     }
+    if (changed) brain.cell[i] = c;
     __syncthreads();
-    if (tid == 0) s_kept += s_total;
+    if (tid == 0) s_kept += total;
     __syncthreads();
   }
   if (tid == 0) *brain.nactive = s_kept;
@@ -290,40 +354,47 @@ extern "C" __global__ void memory_advance_batch(
       const int k = base + tid;
       const bool live = k < original;
       int i = -1, fires = 0, keeps = 0;
+      Cell c;
+      unsigned char kc = 0;
       if (live) {
         i = brain.active[k];
-        evolve(brain, i, now, brain.drive[i], av, ag, aa, dt, adaptation_tau,
-               rest);
-        fires = (brain.refractory[i] == 0 && brain.v[i] > -45.f) ? 1 : 0;
-        const float gap = -45.f - rest[i];
-        keeps = (brain.v[i] > -45.f || brain.drive[i] > gap
-                 || brain.drive[i] + brain.g[i] > gap) ? 1 : 0;
+        const Fixed f = fixed[i];
+        kc = f.kc;
+        c = brain.cell[i];
+        evolve(c, f.rest, now, c.drive, av, ag, aa, dt, adaptation_tau);
+        fires = (c.refractory == 0 && c.v > -45.f) ? 1 : 0;
+        const float gap = -45.f - f.rest;
+        keeps = (c.v > -45.f || c.drive > gap || c.drive + c.g > gap) ? 1 : 0;
       }
       // Ordered append to the spike queue.
-      int qslot = block_scan(fires, s_scan, &s_total);
+      const int qslot = block_scan(fires, s_warp, &total);
       if (fires) {
         brain.queue[(long long)future * n + s_qcount + qslot] = i;
-        brain.counts[i]++;
-        if (kc_mask[i]) {
-          brain.adaptation[i] += adaptation_jump;
-          brain.eligibility[i] *=
-              (double)table(ae, now - brain.eligibility_last[i], dt,
-                            tau_elig_ms);
-          brain.eligibility[i] += 1.0;
-          brain.eligibility_last[i] = now;
+        c.counts++;
+        if (kc) {
+          c.adaptation += adaptation_jump;
+          Slow s = brain.slow[i];
+          s.eligibility *=
+              table_d(ae, now - s.eligibility_last, dt, tau_elig_ms);
+          s.eligibility += 1.0;
+          s.eligibility_last = now;
+          brain.slow[i] = s;
         }
       }
       __syncthreads();
-      if (tid == 0) s_qcount += s_total;
+      if (tid == 0) s_qcount += total;
       __syncthreads();
       // Ordered compaction of the active list. Reads brain.active[k] before
       // any thread writes brain.active[s_kept + kslot]; the write index never
       // exceeds the read index, so the in-place compaction is safe.
-      int kslot = block_scan(keeps, s_scan, &s_total);
+      const int kslot = block_scan(keeps, s_warp, &total);
       if (live && keeps) brain.active[s_kept + kslot] = i;
-      if (live && !keeps) brain.flags[i] = 0;
+      if (live) {
+        if (!keeps) c.flags = 0;
+        brain.cell[i] = c;
+      }
       __syncthreads();
-      if (tid == 0) s_kept += s_total;
+      if (tid == 0) s_kept += total;
       __syncthreads();
     }
     if (tid == 0) {
@@ -338,28 +409,38 @@ extern "C" __global__ void memory_advance_batch(
     for (int q = 0; q < pending; q++) {
       const int i = brain.queue[(long long)slot * n + q];
       const long long first = ptr[i], stop = ptr[i + 1];
-      if (modulation_mask[i]) {
+      if (fixed[i].modulatory) {
         for (long long e = first + tid; e < stop; e += BLOCK) {
           const int j = post[e];
-          brain.modulation[j] = mul_rn(
-              brain.modulation[j],
-              table(am, now - brain.modulation_last[j], dt, 100.f));
-          brain.modulation[j] = add_rn(
-              brain.modulation[j],
-              div_rn(fabsf(brain.weight[e]), .275f));
-          brain.modulation_last[j] = now;
+          Slow s = brain.slow[j];
+          // float *= double on the host: widen, multiply, round once.
+          s.modulation = (float)((double)s.modulation *
+              table_d(am, now - s.modulation_last, dt, 100.f));
+          s.modulation = add_rn(s.modulation,
+                                div_rn(fabsf(brain.weight[e]), .275f));
+          s.modulation_last = now;
+          brain.slow[j] = s;
         }
         __syncthreads();
-        if (learning_enabled && dan_index[i] >= 0) {
+        const int dan = fixed[i].dan;
+        if (learning_enabled && dan >= 0) {
           for (int p = tid; p < nplastic; p += BLOCK) {
             const int pre = plastic_pre[p];
-            const double trace = brain.eligibility[pre] *
-                (double)table(ae, now - brain.eligibility_last[pre], dt,
-                              tau_elig_ms);
-            const float gain = dan_gain[dan_index[i] * nplastic + p];
+            const Slow s = brain.slow[pre];
+            const double trace = s.eligibility *
+                table_d(ae, now - s.eligibility_last, dt, tau_elig_ms);
+            const float gain = dan_gain[dan * nplastic + p];
             const long long edge = plastic_edge[p];
-            const float candidate =
-                brain.weight[edge] * expf(-eta * gain * (float)trace);
+            // The host writes `weight[edge]*std::exp(-eta*gain*trace)`, and
+            // every promotion in that line matters. `-eta*gain` is two floats
+            // and stays float; `trace` is a double, so the argument, the
+            // exponential and the product are double, and the single rounding
+            // to float happens at the assignment. Spelling it `expf` of a
+            // float, which is what this was, rounds three times too early and
+            // moved all 176 weights the rule touched.
+            const float ea = __fmul_rn(-eta, gain);
+            const float candidate = (float)((double)brain.weight[edge] *
+                                            exp((double)ea * trace));
             const float lower = baseline_weight[p] * floor_fraction;
             brain.weight[edge] = candidate > lower ? candidate : lower;
           }
@@ -373,22 +454,26 @@ extern "C" __global__ void memory_advance_batch(
       for (long long base = first; base < stop; base += BLOCK) {
         const long long e = base + tid;
         int j = -1, want = 0;
-        if (e < stop) {
+        Cell c;
+        const bool live = base + tid < stop;
+        if (live) {
           j = post[e];
-          evolve(brain, j, now, brain.drive[j], av, ag, aa, dt, adaptation_tau,
-                 rest);
-          if (brain.refractory[j] == 0) {
-            brain.g[j] = add_rn(brain.g[j], brain.weight[e]);
-            want = brain.flags[j] ? 0 : 1;
+          c = brain.cell[j];
+          evolve(c, fixed[j].rest, now, c.drive, av, ag, aa, dt,
+                 adaptation_tau);
+          if (c.refractory == 0) {
+            c.g = add_rn(c.g, brain.weight[e]);
+            want = c.flags ? 0 : 1;
           }
         }
-        const int aslot = block_scan(want, s_scan, &s_total);
+        const int aslot = block_scan(want, s_warp, &total);
         if (want) {
-          brain.flags[j] = 1;
+          c.flags = 1;
           brain.active[*brain.nactive + aslot] = j;
         }
+        if (live) brain.cell[j] = c;
         __syncthreads();
-        if (tid == 0) *brain.nactive += s_total;
+        if (tid == 0) *brain.nactive += total;
         __syncthreads();
       }
     }
@@ -399,9 +484,11 @@ extern "C" __global__ void memory_advance_batch(
     const int reset = brain.queue_count[future];
     for (int q = tid; q < reset; q += BLOCK) {
       const int i = brain.queue[(long long)future * n + q];
-      brain.v[i] = rest[i];
-      brain.g[i] = 0.f;
-      brain.refractory[i] = (short)rfc;
+      Cell c = brain.cell[i];
+      c.v = fixed[i].rest;
+      c.g = 0.f;
+      c.refractory = (short)rfc;
+      brain.cell[i] = c;
     }
     __syncthreads();
     if (tid == 0) (*clock)++;
@@ -409,7 +496,10 @@ extern "C" __global__ void memory_advance_batch(
   }
 
   // ---- materialise every cell at the observation boundary ----
-  for (int i = tid; i < n; i += BLOCK)
-    evolve(brain, i, *clock - 1, brain.drive[i], av, ag, aa, dt, adaptation_tau,
-           rest);
+  for (int i = tid; i < n; i += BLOCK) {
+    Cell c = brain.cell[i];
+    evolve(c, fixed[i].rest, *clock - 1, c.drive, av, ag, aa, dt,
+           adaptation_tau);
+    brain.cell[i] = c;
+  }
 }
