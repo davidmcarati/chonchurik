@@ -442,6 +442,23 @@ def verdict_separation(out):
                        -out[k]["input_mean_receptors_differing"]),
     )
     pairs = len(out["scenes"]) * (len(out["scenes"]) - 1) // 2
+    # With the shipped excitation/inhibition ratio the chart reaches the
+    # mushroom body with a couple of cells whatever it draws. Comparing
+    # renderings there measures a pathway that is not delivering, not the
+    # pictures, and the comparison has to say so rather than declare a winner.
+    floor = max(out[k]["kc_active_max"] for k in RENDERERS)
+    if floor < 0.005:
+        return (f"the chart reaches the mushroom body with at most "
+                f"{floor:.2%} of Kenyon cells in EVERY rendering, so this "
+                f"comparison is not measuring the picture. The visual pathway "
+                f"does not deliver a code at the shipped excitation/inhibition "
+                f"ratio; renderings were last told apart at ratio 1.0, where "
+                f"the filled area removed all ten collisions the polyline "
+                f"caused. Input separation still differs -- "
+                f"{cur['input_mean_receptors_differing']:.2%} of receptors for "
+                f"'{BASELINE}' against "
+                f"{out['filled']['input_mean_receptors_differing']:.2%} filled "
+                f"-- but nothing downstream of the retina is using it")
     line = (f"current chart: a market state changes only "
             f"{cur['input_mean_receptors_differing']:.2%} of receptors "
             f"(correlation {cur['input_mean_correlation']:.3f}), and "
@@ -2120,6 +2137,22 @@ def main():
         "edges": int(len(controller.brain.post)),
         "decoder_cells": controller.decoder.identities,
         "seed": a.seed,
+        # Which physiology these numbers were taken at. Without it a recorded
+        # table cannot be told apart from the same table measured before a
+        # calibration changed underneath it.
+        "physiology": {
+            "inhibitory_gain": controller.brain.inhibitory_gain,
+            "kc_rest_mV": float(controller.brain.rest[controller.brain.circuit["kc"]][0]),
+            "adaptation_jump_mV": controller.brain.adaptation_jump,
+            "adaptation_tau_ms": controller.brain.adaptation_tau,
+            "pulse_current": controller.s.pulse_current,
+            "decoder_threshold_hz": controller.s.decoder_threshold_hz,
+            "odor_peak_current": controller.olfaction.current,
+            "odor_sigma": controller.olfaction.sigma,
+            "odor_floor": controller.olfaction.floor,
+            "satiety_floor_current": controller.gustation.floor,
+            "satiety_span_current": controller.gustation.span,
+        },
     }
     for name in tests:
         set_learning(controller, name in ("reinforce", "pulse"))

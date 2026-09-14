@@ -1502,7 +1502,7 @@
     },
     "verdict": "reinforcement carries signal: presence moves the memory 11.6% (relative L1) against a 3,401-edge endogenous baseline, timing moves it 2.6%. Presence dominates timing 4.6x -- the rule responds mostly to HOW MUCH dopamine arrived, not WHEN. GA is unblocked, but what it can select on is dose, not credit assignment"
   },
-  "wall_seconds": 56.0,
+  "wall_seconds": 23.3,
   "separation": {
     "scenes": [
       "rally",
@@ -1516,208 +1516,208 @@
     ],
     "kenyon_cells": 4064,
     "apl_cells": 2,
-    "current": {
+    "polyline": {
       "per_scene": {
         "rally": {
-          "kc_active_fraction": 0.2723917322834646,
-          "kc_spikes": 1319,
-          "apl_spikes": 32,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 10,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 6.0
+          "difference_hz": 14.0
         },
         "crash": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 16,
-          "apl_spikes": 10,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 11,
+          "apl_spikes": 6,
           "side": "BUY",
-          "difference_hz": 4.0
+          "difference_hz": 14.0
         },
         "flat": {
-          "kc_active_fraction": 0.3454724409448819,
-          "kc_spikes": 3412,
-          "apl_spikes": 134,
+          "kc_active_fraction": 0.0007381889763779527,
+          "kc_spikes": 12,
+          "apl_spikes": 6,
           "side": "BUY",
-          "difference_hz": 2.0
+          "difference_hz": 8.0
         },
         "chop": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 16,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 8,
           "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 4.0
+          "difference_hz": 18.0
         },
         "spike_up": {
-          "kc_active_fraction": 0.3319389763779528,
-          "kc_spikes": 2127,
-          "apl_spikes": 56,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 11,
+          "apl_spikes": 6,
           "side": "BUY",
-          "difference_hz": 6.0
+          "difference_hz": 10.0
         },
         "spike_down": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 16,
-          "apl_spikes": 3,
-          "side": "BUY",
-          "difference_hz": 6.0
-        },
-        "peak": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 16,
+          "kc_active_fraction": 0.0007381889763779527,
+          "kc_spikes": 12,
           "apl_spikes": 7,
           "side": "BUY",
-          "difference_hz": 6.0
+          "difference_hz": 8.0
+        },
+        "peak": {
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 11,
+          "apl_spikes": 7,
+          "side": "BUY",
+          "difference_hz": 16.0
         },
         "valley": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 17,
-          "apl_spikes": 5,
+          "kc_active_fraction": 0.0007381889763779527,
+          "kc_spikes": 12,
+          "apl_spikes": 7,
           "side": "BUY",
           "difference_hz": 10.0
         }
       },
       "input_mean_correlation": 0.9059558881007668,
       "input_mean_receptors_differing": 0.041871921182266014,
-      "kc_mean_jaccard": 0.448814857609357,
-      "kc_identical_pairs": 10,
-      "kc_active_min": 0.000984251968503937,
-      "kc_active_max": 0.3454724409448819,
+      "kc_mean_jaccard": 0.8214285714285715,
+      "kc_identical_pairs": 13,
+      "kc_active_min": 0.0004921259842519685,
+      "kc_active_max": 0.0007381889763779527,
       "distinct_sides": 1
     },
     "filled": {
       "per_scene": {
         "rally": {
-          "kc_active_fraction": 0.3390748031496063,
-          "kc_spikes": 3356,
-          "apl_spikes": 141,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 9,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 2.0
+          "difference_hz": 20.0
         },
         "crash": {
-          "kc_active_fraction": 0.0007381889763779527,
-          "kc_spikes": 14,
-          "apl_spikes": 8,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 7,
+          "apl_spikes": 4,
           "side": "BUY",
-          "difference_hz": 8.0
+          "difference_hz": 18.0
         },
         "flat": {
-          "kc_active_fraction": 0.35359251968503935,
-          "kc_spikes": 3116,
-          "apl_spikes": 117,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 10,
+          "apl_spikes": 6,
           "side": "BUY",
-          "difference_hz": 8.0
+          "difference_hz": 20.0
         },
         "chop": {
-          "kc_active_fraction": 0.32062007874015747,
-          "kc_spikes": 2081,
-          "apl_spikes": 62,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 9,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 2.0
+          "difference_hz": 18.0
         },
         "spike_up": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 16,
-          "apl_spikes": 7,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 8,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 6.0
+          "difference_hz": 18.0
         },
         "spike_down": {
           "kc_active_fraction": 0.0004921259842519685,
-          "kc_spikes": 12,
-          "apl_spikes": 6,
+          "kc_spikes": 7,
+          "apl_spikes": 4,
           "side": "BUY",
-          "difference_hz": 12.0
+          "difference_hz": 18.0
         },
         "peak": {
-          "kc_active_fraction": 0.343503937007874,
-          "kc_spikes": 3382,
-          "apl_spikes": 138,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 8,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 4.0
+          "difference_hz": 20.0
         },
         "valley": {
-          "kc_active_fraction": 0.3390748031496063,
-          "kc_spikes": 3190,
-          "apl_spikes": 125,
-          "side": "HOLD",
-          "difference_hz": 0.0
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 9,
+          "apl_spikes": 5,
+          "side": "BUY",
+          "difference_hz": 18.0
         }
       },
-      "input_mean_correlation": 0.7524408814334441,
-      "input_mean_receptors_differing": 0.1486935103876633,
-      "kc_mean_jaccard": 0.4019119655511741,
-      "kc_identical_pairs": 0,
+      "input_mean_correlation": 0.7130750722953711,
+      "input_mean_receptors_differing": 0.17731848361533523,
+      "kc_mean_jaccard": 1.0,
+      "kc_identical_pairs": 28,
       "kc_active_min": 0.0004921259842519685,
-      "kc_active_max": 0.35359251968503935,
-      "distinct_sides": 2
+      "kc_active_max": 0.0004921259842519685,
+      "distinct_sides": 1
     },
     "filled_fixed_scale": {
       "per_scene": {
         "rally": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 16,
-          "apl_spikes": 3,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 8,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 6.0
+          "difference_hz": 18.0
         },
         "crash": {
-          "kc_active_fraction": 0.2785433070866142,
-          "kc_spikes": 1414,
-          "apl_spikes": 37,
-          "side": "HOLD",
-          "difference_hz": 0.0
-        },
-        "flat": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 16,
-          "apl_spikes": 10,
-          "side": "BUY",
-          "difference_hz": 4.0
-        },
-        "chop": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 15,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 10,
           "apl_spikes": 6,
           "side": "BUY",
-          "difference_hz": 8.0
+          "difference_hz": 10.0
+        },
+        "flat": {
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 8,
+          "apl_spikes": 5,
+          "side": "BUY",
+          "difference_hz": 18.0
+        },
+        "chop": {
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 8,
+          "apl_spikes": 5,
+          "side": "BUY",
+          "difference_hz": 22.0
         },
         "spike_up": {
-          "kc_active_fraction": 0.000984251968503937,
-          "kc_spikes": 16,
-          "apl_spikes": 3,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 8,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 4.0
+          "difference_hz": 18.0
         },
         "spike_down": {
-          "kc_active_fraction": 0.3425196850393701,
-          "kc_spikes": 2124,
-          "apl_spikes": 53,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 8,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 2.0
+          "difference_hz": 16.0
         },
         "peak": {
-          "kc_active_fraction": 0.3302165354330709,
-          "kc_spikes": 2457,
-          "apl_spikes": 80,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 9,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 2.0
+          "difference_hz": 14.0
         },
         "valley": {
-          "kc_active_fraction": 0.3540846456692913,
-          "kc_spikes": 3974,
-          "apl_spikes": 167,
+          "kc_active_fraction": 0.0004921259842519685,
+          "kc_spikes": 8,
+          "apl_spikes": 5,
           "side": "BUY",
-          "difference_hz": 2.0
+          "difference_hz": 16.0
         }
       },
       "input_mean_correlation": 0.7600875562734305,
       "input_mean_receptors_differing": 0.17251017348468625,
-      "kc_mean_jaccard": 0.3999830001437443,
-      "kc_identical_pairs": 6,
-      "kc_active_min": 0.000984251968503937,
-      "kc_active_max": 0.3540846456692913,
-      "distinct_sides": 2
+      "kc_mean_jaccard": 1.0,
+      "kc_identical_pairs": 28,
+      "kc_active_min": 0.0004921259842519685,
+      "kc_active_max": 0.0004921259842519685,
+      "distinct_sides": 1
     },
-    "verdict": "current chart: a market state changes only 4.19% of receptors (correlation 0.906), and 10/28 state pairs land on an IDENTICAL Kenyon code -- those pairs can never be told apart by any reinforcement rule. Best candidate 'filled' removes them: 0/28 identical pairs, overlap 0.40, input separation 14.87%. Note: every rendering leaves Kenyon activity bimodal (near-silent or ~30% active, never near the ~5% a real mushroom body holds), so sparseness is set by network dynamics, not by the picture -- fixing the input is necessary but not sufficient"
+    "verdict": "the chart reaches the mushroom body with at most 0.07% of Kenyon cells in EVERY rendering, so this comparison is not measuring the picture. The visual pathway does not deliver a code at the shipped excitation/inhibition ratio; renderings were last told apart at ratio 1.0, where the filled area removed all ten collisions the polyline caused. Input separation still differs -- 4.19% of receptors for 'polyline' against 17.73% filled -- but nothing downstream of the retina is using it"
   },
   "sparseness": {
     "target_active_fraction": 0.05,
@@ -7925,5 +7925,18 @@
       }
     },
     "verdict": "signal-to-noise, spread across eight market states over the standard deviation under 5% ablation: descending 0.66; descending_and_motor 0.64; dnp20_shipped 0.43. Every candidate is below 1, so for all of them the market moves the readout less than silencing unrelated neurons does. Widening the readout does not fix that, and a decoder is not the missing piece yet"
+  },
+  "physiology": {
+    "inhibitory_gain": 1.9,
+    "kc_rest_mV": -60.0,
+    "adaptation_jump_mV": 8.0,
+    "adaptation_tau_ms": 200.0,
+    "pulse_current": 40,
+    "decoder_threshold_hz": 2,
+    "odor_peak_current": 30.0,
+    "odor_sigma": 0.9,
+    "odor_floor": 0.1,
+    "satiety_floor_current": 8.0,
+    "satiety_span_current": 24.0
   }
 }
