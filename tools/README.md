@@ -110,3 +110,30 @@ to draw a conclusion.
 **Decoder cells are never silenced.** The two DNp20 and two DNpe017 cells are
 excluded from every lesion set; otherwise the test would measure its own
 intervention.
+
+## Evolution
+
+`tools/evolve` is a separate, disclosed experiment: a profit-selected search
+over fourteen declared free physiological parameters. It never touches wiring
+and never places an order.
+
+```sh
+python -m tools.evolve --source fixture --generations 10 --population 24
+python -m tools.evolve --source candles --candles data/candles.json --resume
+```
+
+Offline by default and never opens a socket. `fixture` replays the
+repository's own deterministic sine, which is a machinery check and not a
+market. `candles` replays real one-minute closes from a file a human fetched
+on purpose, so a run cannot quietly acquire data or change the segment it is
+judged on halfway through.
+
+`--workers` defaults to 8. Each worker holds one brain, measured at 0.6 GB,
+and runs at below-normal priority so the machine stays usable; raise it for an
+unattended night. State is written every generation, so `--resume` continues
+an interrupted run rather than restarting it.
+
+The split, the four baselines and the kill criterion are in
+[docs/validation.md](../docs/validation.md#profit-selected-parameter-search).
+Read `champion.json` bottom-up: the verdict first, then the population out of
+sample, then the genome.

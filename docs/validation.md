@@ -89,6 +89,10 @@ Counting label flips understates this badly. The honest statement is that the de
 
 Eight canonical market shapes, one observation each from an identical reset state, scored on how far apart they are at the retina and in the mushroom body.
 
+Measured at the reconstructed excitation/inhibition ratio of 1.0, which is
+what motivated the filled chart. Read the note below the table before reusing
+these numbers.
+
 | Rendering | Receptors differing | Input correlation | Identical Kenyon codes | Kenyon activity range |
 | --- | --- | --- | --- | --- |
 | current (3px polyline) | 4.19% | 0.906 | **10 / 28 pairs** | 0.10% – 34.6% |
@@ -100,6 +104,14 @@ Eight canonical market shapes, one observation each from an identical reset stat
 The consequence is that **10 of 28 state pairs produce a byte-identical Kenyon-cell code** — a crash and a choppy market are literally indistinguishable in memory. No reinforcement rule can bind an outcome to a situation that has no distinct representation. The learning machinery measured above is working, but it is working on nothing.
 
 Filling the area under the curve removes every collision (10 → 0) and separates the input 3.5×. Adding a fixed price axis separates the input further still (4.1×) but reintroduces six collisions, so raw input separation is the wrong thing to rank on.
+
+**That benefit does not survive the inhibitory gain, and the filled chart is
+kept anyway.** Re-run at the shipped ratio of 1.9, every rendering reaches the
+mushroom body with at most 0.07% of Kenyon cells — two of them — and the
+comparison stops measuring the picture. The rendering still separates the
+retinal input four-fold (4.19% of receptors against 17.73%), and nothing
+downstream of the retina is currently using that. It ships because it is a
+better encoding at no cost, not because it is doing work.
 
 **Sparseness is not fixed by any of this.** Every rendering leaves Kenyon activity bimodal — either near-silent (~0.1%) or about a third of the population — and never near the ~5% a real mushroom body holds. A sub-2% change in retinal input flips 80× swings in Kenyon spiking. The population has two attractors and the picture only chooses between them, so sparseness is set by network dynamics, not by the display. Fixing the input is necessary and not sufficient.
 
@@ -292,6 +304,67 @@ External reinforcement does carry signal: it roughly quadruples the depression, 
 **None of this demonstrates learning, profitability, or accurate fly physiology.** It locates where the current design loses information.
 
 The former dark chart produced no KC spikes in an early three-step probe. A light-background display restored some activity without altering the neural parameters. That is a disclosed sensory-adapter change, not evidence that we found biologically correct vision.
+
+## Profit-selected parameter search
+
+`tools/evolve` searches fourteen declared free parameters for profit. It is
+disclosed here because `AGENTS.md` forbids *hidden* profit-based action
+selection, and because with fourteen parameters and dozens of generations a
+profitable fly will be found whether or not anything has been learned.
+
+**What it does not touch.** Wiring. No edge is added, removed, re-signed or
+re-routed. The parameters are resting potentials, adaptation constants, gains,
+currents and one readout threshold, each already a documented model choice
+before any evolution existed, each with bounds declared in `genome.py` and not
+widened after seeing results. A worker asserts the graph unchanged after every
+genome it evaluates; a leak would look exactly like evolution working.
+
+**What is selected on.** Profit, and only profit, on the network's own
+proposals. Nothing overrides, replaces or second-guesses a BUY, a SELL or a
+HOLD; the harness fills them.
+
+**Protocol, fixed before the first run.**
+
+| | |
+| --- | --- |
+| Split | chronological 60 / 20 / 20, never shuffled |
+| Test segment | opened exactly once, at the end |
+| Fitness | median profit over independent chronological starts |
+| Screening | 20 observations × 1 start; top third proceed |
+| Full evaluation | 50 observations × 5 starts |
+| Warm-up | 15 observations, run but not traded |
+| Baselines | buy-and-hold, all-cash, random fly, wild-type fly |
+| Kill criterion | a champion that does not beat **all four** out of sample is reported as noise |
+| Reported | the whole final population out of sample, not only the winner |
+
+**Two deviations from the plan, both forced by measurement.**
+
+The plan asked for five random seeds per genome. The kernel is deterministic —
+the same genome on the same prices gives a byte-identical spike train — so
+five seeds would have produced five identical numbers and a false impression
+of robustness. Independent chronological start points vary the thing that can
+actually vary, and that is what runs.
+
+The plan asked for shared base weights with per-genome sparse deltas, to keep
+eight workers under about a gigabyte. Measured, a worker holding its own brain
+and reconfiguring it in place costs 0.6 GB, so six workers ran in 3.6 GB and
+the optimisation was not needed.
+
+**What a champion is not.** The evolution harness uses an explicit paper
+simulator with budget, inventory, order size and the same fee rate. It does
+**not** apply the live guard's cooldown, spread, quote-age or STOP checks, so
+a champion is not a validated trading result until it has been re-run through
+`python -m stonkfly run`.
+
+And there is a measured reason to expect little. The best readout tested has a
+signal-to-noise of 0.66: the market moves it less than silencing 5% of
+unrelated neurons does. Selection pressure therefore acts partly on noise. The
+multi-start median, the four baselines and the kill criterion exist precisely
+so that this shows up as a failed criterion rather than as a champion.
+
+**On a sine wave.** The offline `fixture` source replays this repository's own
+deterministic sine. A sine is not a market. Profit there would show that the
+evolution machinery works end to end, and nothing about trading.
 
 ## Reproduce
 
