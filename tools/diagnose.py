@@ -345,9 +345,16 @@ def verdict_ablate(rows, null_ok, threshold):
 def reinforce(controller, count, seed):
     """Does plasticity depend on reinforcement TIMING, or only on its amount?
 
-    Same frames, same multiset of reinforcement labels, different order. If the
-    resulting synaptic weights match, temporal pairing carries no information
-    and a profit signal cannot be what drives the change.
+    Three arms over identical frames from an identical reset state:
+
+      ordered   the real alternating reward/aversive pattern
+      shuffled  the same multiset of labels in a scrambled order
+      none      no external reinforcement at all
+
+    `shuffled` isolates temporal pairing. `none` is the arm that matters most:
+    PPL101 fires endogenously (18 spikes were logged with stimulus "none" in an
+    earlier run), so without it there is no way to tell an externally driven
+    memory from one the network would have written anyway.
     """
     brain = controller.brain
     plastic = brain.circuit["edges"]
@@ -358,42 +365,83 @@ def reinforce(controller, count, seed):
               for i in range(count)]
     shuffled = list(labels)
     rng.shuffle(shuffled)
+    quiet = ["none"] * count
 
-    out = {}
-    for name, order in [("ordered", labels), ("shuffled", shuffled)]:
+    out, traces = {}, {}
+    for name, order in [("ordered", labels), ("shuffled", shuffled),
+                        ("none", quiet)]:
         brain.reset()
+        trace = []
         for i, (frame, kind) in enumerate(zip(series, order)):
             n = observe(controller, frame, kind, reset=False)
-            print(f"  {name:8} {i + 1:3}/{count}  {kind:8}  "
-                  f"changed {n['memory']['changed_edges']:5}", flush=True)
+            trace.append({
+                "changed_edges": n["memory"]["changed_edges"],
+                "KC_spikes": n["KC_spikes"],
+                "reward_spikes": n["reward_spikes"],
+                "aversive_spikes": n["aversive_spikes"],
+                "mean_efficacy": n["memory"]["mean_efficacy"],
+            })
+            if i % 10 == 0 or i == count - 1:
+                print(f"  {name:8} {i + 1:4}/{count}  {kind:8}  "
+                      f"changed {n['memory']['changed_edges']:5}  "
+                      f"KC {n['KC_spikes']:6,}  "
+                      f"DAN r/a {n['reward_spikes']:4}/{n['aversive_spikes']:4}  "
+                      f"eff {n['memory']['mean_efficacy']:.6f}", flush=True)
         out[name] = brain.weight[plastic].copy()
+        traces[name] = trace
 
-    a, b = out["ordered"], out["shuffled"]
-    scale = max(float(np.abs(a).sum()), 1e-12)
-    relative = float(np.abs(a - b).sum() / scale)
+    def gap(x, y):
+        scale = max(float(np.abs(x).sum()), 1e-12)
+        return {
+            "relative_l1": float(np.abs(x - y).sum() / scale),
+            "max_abs": float(np.abs(x - y).max()),
+            "edges_differing": int(np.count_nonzero(x != y)),
+        }
+
+    pairs = {
+        "ordered_vs_shuffled": gap(out["ordered"], out["shuffled"]),
+        "ordered_vs_none": gap(out["ordered"], out["none"]),
+        "shuffled_vs_none": gap(out["shuffled"], out["none"]),
+    }
+    changed = {
+        k: int(np.count_nonzero(v != brain.baseline_plastic))
+        for k, v in out.items()
+    }
     return {
         "observations": count,
-        "labels_ordered": labels,
-        "labels_shuffled": shuffled,
-        "max_abs_weight_difference": float(np.abs(a - b).max()),
-        "relative_l1_difference": relative,
-        "ordered_changed_edges": int(np.count_nonzero(a != brain.baseline_plastic)),
-        "shuffled_changed_edges": int(np.count_nonzero(b != brain.baseline_plastic)),
-        "verdict": verdict_reinforce(relative, int(np.count_nonzero(a != b))),
+        "plastic_edges": int(len(plastic)),
+        "changed_vs_baseline": changed,
+        "pairwise": pairs,
+        "traces": traces,
+        "verdict": verdict_reinforce(pairs, changed, len(plastic)),
     }
 
 
-def verdict_reinforce(relative, differing_edges):
-    if relative < 1e-6:
-        return ("plasticity is order-blind: reinforcement timing carries no "
-                "information -> STOP, fix trace/delay before any GA")
-    if differing_edges < 50:
-        return (f"timing does matter, but only {differing_edges} of 7,835 edges "
-                "differ: the signal is carried on a sliver of the memory. Re-run "
-                "with far more observations before trusting it, and do not treat "
-                "this as a green light for the GA yet")
-    return ("plasticity depends on reinforcement order across a substantial "
-            "share of the memory: signal is carried")
+def verdict_reinforce(pairs, changed, plastic_edges):
+    """Report the size of the effect, not the number of edges touched.
+
+    Edge counts mislead here the same way label flips mislead in `ablate`: the
+    no-reward arm touches almost as many edges as the reinforced arms. What
+    reinforcement changes is how far they move, so the relative L1 is the
+    measurement and the counts are context.
+    """
+    timing = pairs["ordered_vs_shuffled"]["relative_l1"]
+    presence = pairs["ordered_vs_none"]["relative_l1"]
+    if presence < 1e-6:
+        return ("external reinforcement changes NOTHING: the same memory is "
+                "written with no reward or punishment at all. The dopamine "
+                "pulses are decorative -> STOP, the GA has nothing to select")
+    if timing < 1e-6:
+        return ("plasticity is order-blind: only the amount of reinforcement "
+                "matters, never its timing -> no credit assignment is possible, "
+                "fix trace/delay before any GA")
+    ratio = presence / timing
+    return (f"reinforcement carries signal: presence moves the memory "
+            f"{presence:.1%} (relative L1) against a {changed['none']:,}-edge "
+            f"endogenous baseline, timing moves it {timing:.1%}. Presence "
+            f"dominates timing {ratio:.1f}x -- the rule responds mostly to HOW "
+            "MUCH dopamine arrived, not WHEN. GA is unblocked, but what it can "
+            "select on is dose, not credit assignment")
 
 
 def main():

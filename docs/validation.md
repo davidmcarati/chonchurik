@@ -63,7 +63,24 @@ Counting label flips understates this badly. The honest statement is that the de
 
 Baseline over six frames: **11.2%** of neurons fire at least once; participation ratio (effective contributing population) **8,832** of 166,700, i.e. about 5%; superclass entropy 1.47 bits; 404,336 spikes per observation; 1,083 KC spikes.
 
-Presenting identical frames with the same multiset of reinforcement labels in a different order changed the final plastic weights (relative L1 3.6 × 10⁻⁴), so temporal pairing does carry information. But only **5 of 7,835** eligible edges differed over six observations. That is a weak pass, not a green light: it must be re-run over far more observations before any claim rests on it.
+Kenyon-cell activity needs about **8 observations to reach 90% of its plateau** (~4,410 spikes). A first six-observation probe therefore measured a network still warming up and saw only 5 of 7,835 edges move. Re-run at 60 observations per arm, with a third arm receiving no external reinforcement at all:
+
+| Arm | Edges changed vs baseline | Final mean efficacy |
+| --- | --- | --- |
+| ordered (real reward/aversive pattern) | 3,462 | 0.9415 |
+| shuffled (same labels, scrambled order) | 3,460 | 0.9336 |
+| **none (no external reinforcement)** | **3,401** | **0.9868** |
+
+| Comparison | Edges differing | Relative L1 |
+| --- | --- | --- |
+| ordered vs shuffled — *timing* | 3,504 | **2.6%** |
+| ordered vs none — *presence* | 3,500 | **11.6%** |
+
+Two things follow, and the second is the important one.
+
+External reinforcement does carry signal: it roughly quadruples the depression, −5.8% mean efficacy against −1.3% with no reward at all. But the no-reward arm still moves **3,401 edges — 97% as many** as the reinforced arms. Endogenous dopamine writes almost the same *number* of synapses; reinforcement changes how far they move, not how many. Counting changed edges is therefore a misleading metric, in the same way counting decision flips is misleading for the ablation above.
+
+**Presence of reinforcement outweighs its timing by 4.6×** (11.6% vs 2.6%). The rule responds mostly to how much dopamine arrived, not to when it arrived relative to Kenyon-cell activity. Temporal pairing — the part that would constitute credit assignment — is the minority of the effect. Any claim that this system assigns credit to actions must contend with that ratio.
 
 **None of this demonstrates learning, profitability, or accurate fly physiology.** It locates where the current design loses information.
 
