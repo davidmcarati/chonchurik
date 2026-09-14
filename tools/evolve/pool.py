@@ -110,3 +110,41 @@ def pool(settings, workers=DEFAULT_WORKERS):
     return ProcessPoolExecutor(
         max_workers=workers, initializer=initialise, initargs=(settings,)
     )
+
+
+class PoolRunner:
+    """The worker pool behind the interface the GPU herd also offers.
+
+    The evolution asks a runner for rows and does not care where they came
+    from, which is the only reason a card can be swapped in for the pool
+    without the loop knowing. `tools/herd_check.py` is what says the two
+    runners agree; this class is just the pool, unchanged, wearing the shape.
+    """
+
+    def __init__(self, executor, workers=DEFAULT_WORKERS):
+        self.executor = executor
+        self.workers = workers
+
+    def describe(self):
+        return f"{self.workers} worker processes at below-normal priority"
+
+    def evaluate(self, genomes, prices, offsets, observations):
+        """One (genome, start) task per future; the pool decides the packing."""
+        futures = {}
+        for index, individual in enumerate(genomes):
+            for start in offsets:
+                futures[self.executor.submit(
+                    run_one, (individual, prices, start, observations)
+                )] = index
+        rows = [[] for _ in genomes]
+        for future, index in futures.items():
+            rows[index].append(future.result())
+        return rows
+
+    def baselines(self, prices, offsets, observations, seed):
+        futures = [
+            self.executor.submit(run_baselines,
+                                 (prices, start, observations, seed + i))
+            for i, start in enumerate(offsets)
+        ]
+        return [f.result() for f in futures]

@@ -23,7 +23,6 @@ from pathlib import Path
 
 from . import genome as G
 from .evaluate import WARMUP, ceiling, degenerate
-from .pool import run_baselines, run_one
 from .series import starts
 
 SCREEN_STARTS, FULL_STARTS = 1, 5
@@ -95,27 +94,19 @@ def median_row(rows):
     return sorted(rows, key=lambda r: r["excess"])[len(rows) // 2]
 
 
-def evaluate_population(executor, population, prices, observations, count, window):
-    """One (genome, start) task per future; the pool decides the packing."""
+def evaluate_population(runner, population, prices, observations, count, window):
+    """Every genome at every start. A runner is the pool or one GPU."""
     # The warm-up is consumed from the same segment, so a start that leaves
     # room only for the scored observations would silently score a short run.
     offsets = starts(prices, count, window, observations + WARMUP)
-    futures = {}
-    for index, individual in enumerate(population):
-        for start in offsets:
-            futures[executor.submit(
-                run_one, (individual["genome"], prices, start, observations)
-            )] = (index, start)
-    rows = [[] for _ in population]
-    for future, (index, _) in futures.items():
-        rows[index].append(future.result())
-    return rows
+    return runner.evaluate([i["genome"] for i in population], prices, offsets,
+                           observations)
 
 
-def screen(executor, population, prices, window, observations):
+def screen(runner, population, prices, window, observations):
     """Cheap pass that removes flies that cannot act before paying for them."""
     rows = evaluate_population(
-        executor, population, prices, screen_length(observations),
+        runner, population, prices, screen_length(observations),
         SCREEN_STARTS, window,
     )
     for individual, row in zip(population, rows):
@@ -158,7 +149,7 @@ def save(path, state):
     temporary.replace(path)
 
 
-def evolve(executor, segments, rng, generations, size, out, resume=None,
+def evolve(runner, segments, rng, generations, size, out, resume=None,
            observations=FULL_OBSERVATIONS):
     """Generations on the train segment only. Validation is looked at; test is
     not opened here at all."""
@@ -170,10 +161,10 @@ def evolve(executor, segments, rng, generations, size, out, resume=None,
     for generation in range(state["generation"], generations):
         started = time.time()
         survivors, dropped = screen(
-            executor, population, segments["train"], window, observations
+            runner, population, segments["train"], window, observations
         )
         rows = evaluate_population(
-            executor, survivors, segments["train"], observations,
+            runner, survivors, segments["train"], observations,
             FULL_STARTS, window,
         )
         for individual, row in zip(survivors, rows):
@@ -216,7 +207,7 @@ def evolve(executor, segments, rng, generations, size, out, resume=None,
     return state
 
 
-def judge(executor, champion, population, segments, rng, out, seed,
+def judge(runner, champion, population, segments, rng, out, seed,
           source="fixture", observations=FULL_OBSERVATIONS):
     """The single pass over the test segment, and the pre-declared verdict."""
     window = 100
@@ -229,13 +220,9 @@ def judge(executor, champion, population, segments, rng, out, seed,
         prices = segments[name]
         offsets = starts(prices, FULL_STARTS, window, observations + WARMUP)
         rows = evaluate_population(
-            executor, population, prices, observations, FULL_STARTS, window
+            runner, population, prices, observations, FULL_STARTS, window
         )
-        base = [
-            executor.submit(run_baselines, (prices, start, observations, seed + i))
-            for i, start in enumerate(offsets)
-        ]
-        collected = [f.result() for f in base]
+        collected = runner.baselines(prices, offsets, observations, seed)
         results[name] = {
             # Absolute profit: the only thing comparable to the baselines, and
             # what the criterion below is applied to. Selection used `excess`;

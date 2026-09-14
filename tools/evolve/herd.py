@@ -142,6 +142,21 @@ def capacity(free_bytes, n, nedges, slots, reserve=0.15):
     return max(1, int((free_bytes * (1 - reserve)) // per))
 
 
+_MODULE = {}
+
+
+def module(block=BLOCK):
+    """Compiled once per process. NVRTC takes about three seconds, and a
+    generation builds a new herd for every wave."""
+    import cupy as cp
+
+    if block not in _MODULE:
+        _MODULE[block] = cp.RawModule(
+            code=KERNEL.read_text(encoding="utf-8") + SUPPORT,
+            options=OPTIONS + (f"-D BLOCK={block}",))
+    return _MODULE[block]
+
+
 def cuda_headers():
     """NVRTC has to find the CUDA headers; the pip wheels hide them."""
     import os
@@ -159,24 +174,30 @@ def cuda_headers():
 class Herd:
     """The flies of one wave, all replaying the same chronological start."""
 
-    def __init__(self, controller, pristine_inhibitory, genomes, settings):
+    def __init__(self, controller, pristine_inhibitory, genomes, settings,
+                 starts=None):
         cuda_headers()
         import cupy as cp
 
-        from tools.gpu_port_check import assert_no_repeated_targets, tables
+        from tools.gpu_port_check import tables
 
         self.cp = cp
         self.controller = controller
         self.settings = settings
         self.genomes = [dict(g) for g in genomes]
         self.batch = len(self.genomes)
+        # A fly is a genome at a chronological start, and a wave of them can
+        # hold several starts at once -- the full tier evaluates every survivor
+        # at five. Flies sharing a start share the chart, so they share the
+        # rendering and the photoreceptor settling; what they never share is
+        # the account, and with it the reinforcement sign, the satiety current
+        # and the odour of the last fill.
+        self.starts = list(starts) if starts is not None else [0] * self.batch
+        if len(self.starts) != self.batch:
+            raise ValueError("one start per genome")
         brain = self.brain = controller.brain
         n = self.n = brain.n
         c = self.circuit = brain.circuit
-
-        # The delivery loop parallelises one source's edges without atomics,
-        # which is sound only because no neuron lists the same target twice.
-        assert_no_repeated_targets(brain.ptr, brain.post)
 
         dt = self.dt = brain.dt
         self.ticks = round(settings.neural_ms / dt)
@@ -193,10 +214,9 @@ class Herd:
         self.rfc = int(round(2.2 / dt))
         self.slots = self.delay + 1
 
-        module = cp.RawModule(code=KERNEL.read_text(encoding="utf-8") + SUPPORT,
-                              options=OPTIONS + (f"-D BLOCK={BLOCK}",))
-        self.kernel = module.get_function("memory_advance_batch")
-        self.helper = {name: module.get_function(name) for name in
+        built = module()
+        self.kernel = built.get_function("memory_advance_batch")
+        self.helper = {name: built.get_function(name) for name in
                        ["set_drive", "clear_counts", "gather_counts",
                         "spread_weights", "scale_inhibitory", "set_plastic",
                         "apply_memory"]}
@@ -335,6 +355,17 @@ class Herd:
                      (self.weight, np.int64(self.nedges), self.edges,
                       self.baseline, np.int32(self.nplastic), np.int32(B)))
 
+        # Retinal and photoreceptor settling belongs to the chart, so it is
+        # kept per start rather than per fly.
+        self.optics = {
+            start: [np.asarray(initial["luminance"]).copy(),
+                    np.asarray(initial["r8_light"]).copy()]
+            for start in set(self.starts)
+        }
+        self.groups = {}
+        for b, start in enumerate(self.starts):
+            self.groups.setdefault(start, []).append(b)
+
         # The memory rule's own state stays on the host, where the rule runs.
         self.rate_kc = np.tile(initial["rate_kc"], (B, 1))
         self.rate_dan = np.tile(initial["rate_dan"], (B, 1))
@@ -348,19 +379,20 @@ class Herd:
 
     # -- one observation ----------------------------------------------------
 
-    def observe(self, frame, history, kinds, executed, accounts):
+    def observe(self, frames, histories, kinds, executed, accounts):
         """One market observation for every fly. `FlyController.observe`."""
         B, n = self.batch, self.n
         brain = self.brain
         seconds = self.bin * self.dt / 1000
+        interval = self.bin * self.dt
 
         standing, pulses = [], []
         for b, genome in enumerate(self.genomes):
             self._sensory_parameters(genome)
             present = []
-            if self.controller.olfaction is not None and history is not None:
+            if self.controller.olfaction is not None and histories[b] is not None:
                 present.append(self.controller.olfaction.stimulation(
-                    history, executed[b])[0])
+                    histories[b], executed[b])[0])
             if self.controller.gustation is not None and accounts[b] is not None:
                 present.append(self.controller.gustation.stimulation(
                     *accounts[b])[0])
@@ -375,20 +407,29 @@ class Herd:
         remaining_pulse = [self.pulse if p is not None else 0 for p in pulses]
         totals = np.zeros((B, int(self.cuts[-1])), np.int64)
         while left:
-            luminance, r8 = brain.rgb_bin(frame, self.bin * self.dt, None)
-            # r8_light advanced once for the bin; `luminance` must advance once
-            # too, so every fly starts its own prepare_drive from this value.
-            settled = brain.luminance.copy()
-            for b, genome in enumerate(self.genomes):
+            for start, members in self.groups.items():
+                settled, light = self.optics[start]
+                head = members[0]
                 brain.luminance[:] = settled
-                brain.tonic[brain.lamina] = (
-                    genome["lamina_bias"] - WILD_TYPE["lamina_bias"])
-                extra = list(standing[b])
-                if remaining_pulse[b]:
-                    extra.append(pulses[b])
-                brain.prepare_drive(luminance, self.bin * self.dt,
-                                    stimulation=extra + r8)
-                self.drive_host[b] = brain.drive
+                brain.r8_light[:] = light
+                samples, r8 = brain.rgb_bin(frames[head], interval, None)
+                # rgb_bin advanced the photoreceptors once for this chart;
+                # prepare_drive advances `luminance`, so every fly on this
+                # chart has to start from the same unadvanced copy.
+                light[:] = brain.r8_light
+                before = brain.luminance.copy()
+                for b in members:
+                    brain.luminance[:] = before
+                    brain.tonic[brain.lamina] = (
+                        self.genomes[b]["lamina_bias"]
+                        - WILD_TYPE["lamina_bias"])
+                    extra = list(standing[b])
+                    if remaining_pulse[b]:
+                        extra.append(pulses[b])
+                    brain.prepare_drive(samples, interval,
+                                        stimulation=extra + r8)
+                    self.drive_host[b] = brain.drive
+                settled[:] = brain.luminance
             self.drive.set(self.drive_host.reshape(-1))
             self._launch("set_drive", B * n,
                          (self.cell, self.drive, np.int64(B * n)))
@@ -489,37 +530,54 @@ class Herd:
         }
 
 
-def replay_herd(herd, prices, start, observations):
-    """`evaluate.replay` for every fly at once. One account each, one history.
+def replay_herd(herd, prices, observations):
+    """`evaluate.replay` for every fly at once, one account each.
 
-    The history is the price series, not anything a fly did, so every fly sees
-    the same chart. What diverges is the account, and with it the reinforcement
-    sign, the satiety current and the odour of the last fill.
+    The chart is the price series and not anything a fly did, so flies sharing
+    a start share it. What diverges is the account, and with it the
+    reinforcement sign, the satiety current and the odour of the last fill.
     """
     settings = herd.settings
-    B = herd.batch
+    B, starts = herd.batch, herd.starts
+    unique = sorted(set(starts))
+    need = CHART_WINDOW + WARMUP + observations
+    short = [s for s in unique if s + need > len(prices)]
+    if short:
+        # `series.starts` never produces one of these. The CPU path would run
+        # the affected fly short and report it as a full evaluation, which is a
+        # wrong number rather than a missing one.
+        raise ValueError(
+            f"starts {short} leave fewer than {need} prices; the run would be "
+            f"scored over fewer observations than it claims"
+        )
+
     accounts = [Account(settings.capital, settings.order_limit,
                         settings.paper_fee) for _ in range(B)]
-    history = list(prices[start:start + CHART_WINDOW])
-    cursor = start + CHART_WINDOW
+    history = {s: list(prices[s:s + CHART_WINDOW]) for s in unique}
+    cursor = {s: s + CHART_WINDOW for s in unique}
     herd.reset()
     anchors = [str(a.start) for a in accounts]
     executed = [None] * B
     sides = [[] for _ in range(B)]
     kc = [0] * B
     for step in range(WARMUP + observations):
-        if cursor >= len(prices):
-            break
-        price = prices[cursor]
-        bid, ask = quotes(price)
-        equities = [a.equity(bid) for a in accounts]
+        frame, quote = {}, {}
+        for start in unique:
+            price = prices[cursor[start]]
+            bid, ask = quotes(price)
+            quote[start] = (bid, ask, price)
+            frame[start] = market_frame(PRODUCT, history[start], bid, ask)
+        equities = [accounts[b].equity(quote[starts[b]][0]) for b in range(B)]
         kinds = [reinforcement(str(equities[b]), anchors[b], "0.01")[0]
                  for b in range(B)]
         out = herd.observe(
-            market_frame(PRODUCT, history, bid, ask), history, kinds, executed,
+            [frame[starts[b]] for b in range(B)],
+            [history[starts[b]] for b in range(B)],
+            kinds, executed,
             [(str(equities[b]), anchors[b]) for b in range(B)],
         )
         for b in range(B):
+            bid, ask, _ = quote[starts[b]]
             anchors[b] = str(equities[b])
             kc[b] += out[b]["KC_spikes"]
             if step >= WARMUP:
@@ -530,12 +588,13 @@ def replay_herd(herd, prices, start, observations):
                 # judged from a charged mushroom body and a full balance.
                 executed[b] = None
                 accounts[b].cash, accounts[b].base = accounts[b].start, 0.0
-        history.append(price)
-        cursor += 1
+        for start in unique:
+            history[start].append(quote[start][2])
+            cursor[start] += 1
 
-    bid = quotes(prices[min(cursor, len(prices)) - 1])[0]
     rows = []
     for b in range(B):
+        bid = quotes(prices[cursor[starts[b]] - 1])[0]
         final = accounts[b].equity(bid)
         rows.append({
             "profit": float(final - accounts[b].start),
@@ -551,11 +610,106 @@ def replay_herd(herd, prices, start, observations):
     return rows
 
 
-def evaluate_herd(herd, prices, start, observations):
+def evaluate_herd(herd, prices, observations):
     """`evaluate.evaluate` for every fly: profit, and profit over benchmark."""
-    rows = replay_herd(herd, prices, start, observations)
-    benchmark = buy_and_hold(prices, start, observations, herd.settings)
-    for row in rows:
-        row["buy_and_hold"] = benchmark
-        row["excess"] = row["profit"] - benchmark
+    rows = replay_herd(herd, prices, observations)
+    benchmark = {}
+    for row, start in zip(rows, herd.starts):
+        if start not in benchmark:
+            benchmark[start] = buy_and_hold(prices, start, observations,
+                                            herd.settings)
+        row["buy_and_hold"] = benchmark[start]
+        row["excess"] = row["profit"] - benchmark[start]
     return rows
+
+
+class HerdRunner:
+    """What the worker pool is to the CPU, one card is to a whole generation.
+
+    Same interface as `pool.PoolRunner`, and the same rows out of it. The batch
+    is taken from free device memory unless it is given: a fly costs 102 MB of
+    weights and that is what limits it. There is nothing to gain by squeezing
+    past eighty-four either way -- throughput stopped improving there.
+    """
+
+    def __init__(self, settings, batch=None, controller=None, pristine=None):
+        from .evaluate import build
+
+        cuda_headers()
+        import cupy as cp
+
+        self.cp = cp
+        self.settings = settings
+        if controller is None:
+            controller, pristine = build(settings)
+        self.controller, self.pristine = controller, pristine
+        brain = controller.brain
+        # The delivery loop parallelises one source's edges without atomics,
+        # which is sound only because no neuron lists the same target twice.
+        # Checked once here rather than once per wave.
+        from tools.gpu_port_check import assert_no_repeated_targets
+
+        assert_no_repeated_targets(brain.ptr, brain.post)
+        slots = int(round(1.8 / brain.dt)) + 1
+        free = cp.cuda.Device().mem_info[0]
+        room = capacity(free, brain.n, len(brain.post), slots)
+        self.room = room
+        self.batch = int(batch or min(room, 84))
+        if self.batch > room:
+            raise ValueError(
+                f"a batch of {self.batch} does not fit in the "
+                f"{free / 1e9:.1f} GB free on the device; {room} do"
+            )
+
+    def describe(self):
+        name = self.cp.cuda.runtime.getDeviceProperties(0)["name"]
+        if isinstance(name, bytes):
+            name = name.decode()
+        return f"{name}, {self.batch} flies a wave"
+
+    def _wave(self, genomes, starts, prices, observations):
+        herd = Herd(self.controller, self.pristine, genomes, self.settings,
+                    starts)
+        try:
+            return evaluate_herd(herd, prices, observations)
+        finally:
+            del herd
+            self.cp.get_default_memory_pool().free_all_blocks()
+
+    def evaluate(self, genomes, prices, offsets, observations):
+        """Rows per genome, one per start, in the order the offsets came in."""
+        tasks = [(i, start) for i in range(len(genomes)) for start in offsets]
+        rows = [[] for _ in genomes]
+        for cut in range(0, len(tasks), self.batch):
+            wave = tasks[cut:cut + self.batch]
+            done = self._wave([genomes[i] for i, _ in wave],
+                              [s for _, s in wave], prices, observations)
+            for (i, _), row in zip(wave, done):
+                rows[i].append(row)
+        return rows
+
+    def baselines(self, prices, offsets, observations, seed):
+        """One dict per start. Three of the four never touch the brain."""
+        import random
+
+        from .evaluate import (Account, fixed_proposal, random_proposal,
+                               replay)
+        from .genome import WILD_TYPE
+
+        out = [{} for _ in offsets]
+        for i, start in enumerate(offsets):
+            rng = random.Random(seed + i)
+            for name, propose in [("buy_and_hold", fixed_proposal("BUY")),
+                                  ("all_cash", fixed_proposal("HOLD")),
+                                  ("random", random_proposal(rng))]:
+                out[i][name] = replay(
+                    self.controller, prices, start, observations, propose,
+                    Account(self.settings.capital, self.settings.order_limit,
+                            self.settings.paper_fee),
+                )
+        # The fourth is a real fly, so it goes through the card like the rest.
+        wild = self._wave([dict(WILD_TYPE)] * len(offsets), list(offsets),
+                          prices, observations)
+        for i, row in enumerate(wild):
+            out[i]["wild_type"] = row
+        return out

@@ -11,6 +11,7 @@ it is judged on halfway through.
 """
 
 import argparse
+import contextlib
 import json
 import random
 import time
@@ -22,8 +23,18 @@ from . import genome as G
 from .evaluate import ceiling
 from .loop import (FULL_OBSERVATIONS, FULL_STARTS, evolve,
                    judge)
-from .pool import DEFAULT_WORKERS, pool
+from .pool import DEFAULT_WORKERS, PoolRunner, pool
 from .series import candle_series, fixture_series, split
+
+
+def build_runner(a, settings):
+    """The pool or the card, behind the one interface the loop knows about."""
+    if a.device == "cpu":
+        executor = pool(settings, a.workers)
+        return PoolRunner(executor, a.workers), executor
+    from .herd import HerdRunner
+
+    return HerdRunner(settings, a.batch), None
 
 
 def main():
@@ -43,7 +54,16 @@ def main():
     p.add_argument("--generations", type=int, default=10)
     p.add_argument("--population", type=int, default=24)
     p.add_argument("--workers", type=int, default=DEFAULT_WORKERS,
-                   help="8 leaves the machine usable; raise it for a night")
+                   help="cpu only: 8 leaves the machine usable, raise it for "
+                        "a night")
+    p.add_argument("--device", choices=["cpu", "gpu"], default="cpu",
+                   help="gpu runs a whole wave of flies as one CUDA launch. "
+                        "`python -m tools.herd_check` is what says the two "
+                        "devices produce the same flies")
+    p.add_argument("--batch", type=int, default=None,
+                   help="gpu only: flies per wave. Defaults to what fits in "
+                        "free device memory, capped at 84 -- the point past "
+                        "which the card stops going faster")
     p.add_argument("--seed", type=int, default=20260914)
     p.add_argument("--out", type=Path, default=Path("runs/evolution"))
     p.add_argument("--resume", action="store_true")
@@ -78,10 +98,11 @@ def main():
     print(f"source {label}: {len(series)} observations, train "
           f"{len(segments['train'])} / validation {len(segments['validation'])} "
           f"/ test {len(segments['test'])}", flush=True)
+    settings = Settings()
+    runner, executor = build_runner(a, settings)
     print(f"{a.population} genomes x {a.generations} generations on "
-          f"{a.workers} workers at below-normal priority; "
-          f"{a.observations} observations x {FULL_STARTS} starts per full "
-          f"evaluation", flush=True)
+          f"{runner.describe()}; {a.observations} observations x "
+          f"{FULL_STARTS} starts per full evaluation", flush=True)
     # Written before the first generation so a watcher started at any moment
     # knows what it is watching. Nothing reads it back into the run.
     a.out.mkdir(parents=True, exist_ok=True)
@@ -91,15 +112,17 @@ def main():
         "population": a.population,
         "observations": a.observations,
         "starts": FULL_STARTS,
-        "workers": a.workers,
+        "device": a.device,
+        "workers": a.workers if a.device == "cpu" else 1,
+        "runner": runner.describe(),
         "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-    }, indent=2) + "
-", encoding="utf-8")
+    }, indent=2) + "\n", encoding="utf-8")
     started = time.time()
-    settings = Settings()
-    with pool(settings, a.workers) as executor:
+    with contextlib.ExitStack() as stack:
+        if executor is not None:
+            stack.enter_context(executor)
         state = evolve(
-            executor, segments, rng, a.generations, a.population, a.out, state,
+            runner, segments, rng, a.generations, a.population, a.out, state,
             a.observations,
         )
         survivors = state["survivors"]
@@ -108,7 +131,7 @@ def main():
               f"{champion['fitness']:+.4f} on train; opening validation and "
               f"test once", flush=True)
         report = judge(
-            executor, champion, survivors, segments, rng, a.out, a.seed, label,
+            runner, champion, survivors, segments, rng, a.out, a.seed, label,
             a.observations,
         )
     print(f"\n{report['verdict']}\n", flush=True)
