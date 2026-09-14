@@ -127,6 +127,19 @@ class VisualMemoryBrain(MemoryBrain):
                 ticks -= n
             self.counts[:] = total
             return total, wall
+        luminance, pulses = self.rgb_bin(
+            frame, duration_ms, kwargs.pop("stimulation", None)
+        )
+        return self.step(luminance, duration_ms, stimulation=pulses, **kwargs)
+
+    def rgb_bin(self, frame, duration_ms, stimulation=None):
+        """Settle the photoreceptors for one bin and return what to step with.
+
+        Split out of `rgb_step` for the same reason `prepare_drive` was split
+        out of `_neural_step`: a batch runner needs the sensory input without
+        the integration. `r8_light` is advanced exactly once here, as it was
+        exactly once in the bin this replaces.
+        """
         from .sensory import retinal_samples
 
         frame = np.asarray(frame)
@@ -142,14 +155,12 @@ class VisualMemoryBrain(MemoryBrain):
         self.r8_light += (
             1 - math.exp(-round(duration_ms / self.dt) * self.dt / 10)
         ) * (values - self.r8_light)
-        extra = kwargs.pop("stimulation", None)
+        extra = stimulation
         pulses = (
             [] if extra is None else list(extra) if isinstance(extra, list) else [extra]
         )
         pulses.append((self.r8, 30 * self.r8_light / (0.02 + self.r8_light)))
-        return self.step(
-            retinal_samples(frame, self.uv), duration_ms, stimulation=pulses, **kwargs
-        )
+        return retinal_samples(frame, self.uv), pulses
 
     def configuration_signature(self):
         return {

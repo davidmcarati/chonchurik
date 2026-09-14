@@ -113,6 +113,22 @@ def tables(dt, adaptation_tau, tau_elig):
     entries. Every one of those is one unit in the last place, and every
     voltage that touches one inherits it.
     """
+    lib = _table_library()
+    arrays = [np.zeros(1 << 20, np.float32) for _ in range(3)]
+    arrays += [np.zeros(1 << 20, np.float64) for _ in range(2)]
+    import ctypes
+    lib.build(ctypes.c_float(dt), ctypes.c_float(adaptation_tau),
+              ctypes.c_float(tau_elig),
+              *[x.ctypes.data_as(ctypes.c_void_p) for x in arrays])
+    return tuple(arrays)
+
+
+_LIBRARY = []
+
+
+def _table_library():
+    """Compiled once. A herd asks for one table per genome, and rebuilding a
+    DLL eighty-four times to fill eighty-four arrays is most of a minute."""
     import ctypes
     import shutil
     import subprocess
@@ -120,6 +136,8 @@ def tables(dt, adaptation_tau, tau_elig):
 
     from stonkfly.neural.brain import msvc_environment
 
+    if _LIBRARY:
+        return _LIBRARY[0]
     out = Path(tempfile.mkdtemp(prefix="stonkfly-tables-"))
     (out / "tab.cpp").write_text(TABLE_SOURCE, encoding="utf-8")
     env = msvc_environment()
@@ -133,13 +151,8 @@ def tables(dt, adaptation_tau, tau_elig):
                 "-o", "tab.so"]
         library = out / "tab.so"
     subprocess.run(argv, cwd=out, env=env, check=True, capture_output=True)
-    lib = ctypes.CDLL(str(library))
-    arrays = [np.zeros(1 << 20, np.float32) for _ in range(3)]
-    arrays += [np.zeros(1 << 20, np.float64) for _ in range(2)]
-    lib.build(ctypes.c_float(dt), ctypes.c_float(adaptation_tau),
-              ctypes.c_float(tau_elig),
-              *[x.ctypes.data_as(ctypes.c_void_p) for x in arrays])
-    return tuple(arrays)
+    _LIBRARY.append(ctypes.CDLL(str(library)))
+    return _LIBRARY[0]
 
 
 # The kernel keeps a neuron's state in one 32-byte struct rather than in a

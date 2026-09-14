@@ -305,15 +305,19 @@ class MemoryBrain(NativeBrain):
         else:
             self.memory_u[:], self.memory_w[:] = saved
 
-    def _neural_step(
-        self,
-        luminance,
-        duration_ms,
-        *,
-        learning=False,
-        stimulation=None,
-        lamina_bias=12.0,
+    def prepare_drive(
+        self, luminance, duration_ms, *, stimulation=None, lamina_bias=12.0
     ):
+        """Settle the sensory state and build `drive`. Integrates nothing.
+
+        Split out of `_neural_step` so a batch runner can build the same input
+        for many genomes from one brain without advancing any of them. The
+        body is unchanged and the caller below is the only one that existed
+        before, so a fly stepped through the old path and a fly stepped
+        through the new one see the same currents.
+
+        Returns the tick count the interval asks for, which the caller needs.
+        """
         light = np.asarray(luminance)
         if light.shape != (len(self.retina),) or not np.isfinite(light).all():
             raise ValueError("Invalid retinal input")
@@ -345,6 +349,21 @@ class MemoryBrain(NativeBrain):
                 ):
                     raise ValueError("Invalid external stimulation")
                 self.drive[ix] += amplitude
+        return steps
+
+    def _neural_step(
+        self,
+        luminance,
+        duration_ms,
+        *,
+        learning=False,
+        stimulation=None,
+        lamina_bias=12.0,
+    ):
+        steps = self.prepare_drive(
+            luminance, duration_ms, stimulation=stimulation,
+            lamina_bias=lamina_bias,
+        )
         self.counts.fill(0)
         clock = np.asarray([self.cursor], dtype=np.int64)
         c = self.circuit
