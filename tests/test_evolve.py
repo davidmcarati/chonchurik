@@ -1,0 +1,128 @@
+"""The evolution harness, minus the brain.
+
+Everything here runs offline in milliseconds. The parts that need a connectome
+are exercised by the run itself; the parts that decide whether a result counts
+are exercised here, because those are the ones that must not drift.
+"""
+
+import random
+
+import pytest
+
+from tools.evolve import genome as G
+from tools.evolve.evaluate import Account, degenerate
+from tools.evolve.loop import BASELINES, decide, median, next_generation
+from tools.evolve.series import candle_series, fixture_series, split, starts
+
+
+def test_genome_stays_inside_its_declared_bounds():
+    rng = random.Random(1)
+    individual = G.random_genome(rng)
+    assert set(individual) == set(G.SPACE) == set(G.WILD_TYPE)
+    for _ in range(200):
+        individual = G.mutate(individual, rng, rate=1.0, strength=3.0)
+        for name, (low, high, _) in G.SPACE.items():
+            assert low <= individual[name] <= high, name
+    child = G.crossover(individual, G.WILD_TYPE, rng)
+    assert set(child) == set(G.SPACE)
+    assert all(child[k] in (individual[k], G.WILD_TYPE[k]) for k in G.SPACE)
+
+
+def test_genome_identity_is_stable_and_discriminating():
+    a = dict(G.WILD_TYPE)
+    assert G.identity(a) == G.identity(dict(reversed(list(a.items()))))
+    b = {**a, "kc_rest": a["kc_rest"] - 1}
+    assert G.identity(a) != G.identity(b)
+
+
+def test_split_is_chronological_and_never_overlaps():
+    series = fixture_series(1000)
+    segments = split(series)
+    assert segments["train"] + segments["validation"] + segments["test"] == series[
+        : len(segments["train"]) + len(segments["validation"]) + len(segments["test"])
+    ]
+    assert len(segments["train"]) > len(segments["validation"])
+    with pytest.raises(ValueError):
+        split(fixture_series(100))
+
+
+def test_starts_leave_room_for_the_whole_evaluation():
+    segment = fixture_series(500)
+    offsets = starts(segment, 5, 100, 65)
+    assert offsets == sorted(offsets) and len(set(offsets)) == 5
+    assert offsets[0] == 0 and offsets[-1] + 100 + 65 == len(segment)
+    with pytest.raises(ValueError):
+        starts(segment, 5, 100, 500)
+
+
+def test_candle_series_never_opens_a_socket(tmp_path):
+    import json
+
+    path = tmp_path / "candles.json"
+    path.write_text(json.dumps({"BTC-USDC": [{"close": 100.0 + i} for i in range(250)]}))
+    assert len(candle_series(path)) == 250
+    path.write_text(json.dumps([1.0, 2.0]))
+    with pytest.raises(ValueError):
+        candle_series(path)
+
+
+def test_account_never_invents_money():
+    a = Account("100", "10", "0.006")
+    assert a.apply("HOLD", 50.0, 50.0) is None
+    # A sell with nothing held is rejected, not borrowed.
+    assert a.apply("SELL", 50.0, 50.0) is None and a.base == 0.0
+    assert a.apply("BUY", 50.0, 50.0) == "BUY"
+    assert a.cash == pytest.approx(100 - 10 * 1.006) and a.base == pytest.approx(0.2)
+    # Ten orders of ten against a hundred of capital, fees included: the
+    # tenth cannot fill.
+    for _ in range(8):
+        a.apply("BUY", 50.0, 50.0)
+    assert a.apply("BUY", 50.0, 50.0) is None
+    assert a.cash >= 0 and a.fills["BUY"] == 9 and a.rejected == 2
+
+
+def test_degenerate_rejects_a_fly_that_cannot_act():
+    row = {"observations": 20, "buy": 20, "sell": 0, "hold": 0, "kc_spikes": 99}
+    assert degenerate(row) == "one proposal for every observation"
+    assert degenerate({**row, "buy": 10, "hold": 10, "kc_spikes": 0}) == (
+        "silent mushroom body"
+    )
+    assert degenerate({**row, "observations": 0}) == "no observations"
+    assert degenerate({**row, "buy": 9, "sell": 5, "hold": 6}) is None
+
+
+def test_median_is_the_middle_not_the_mean():
+    # One enormous lucky start must not carry a genome.
+    assert median([0.0, 0.0, 0.0, 0.0, 1000.0]) == 0.0
+    assert median([1.0, 3.0]) == 2.0
+    assert median([]) == float("-inf")
+
+
+def test_kill_criterion_needs_every_baseline():
+    beats_all = {
+        "champion": 1.0,
+        "baselines": {b: 0.5 for b in BASELINES},
+    }
+    assert "beat every declared baseline" in decide(beats_all)
+    assert "NOISE" not in decide(beats_all)
+    for missed in BASELINES:
+        one_short = {
+            "champion": 1.0,
+            "baselines": {**{b: 0.5 for b in BASELINES}, missed: 1.0},
+        }
+        verdict = decide(one_short)
+        assert "NOISE" in verdict and missed in verdict
+    # Equalling a baseline is not beating it.
+    assert "NOISE" in decide({"champion": 0.0, "baselines": {b: 0.0 for b in BASELINES}})
+
+
+def test_next_generation_keeps_the_elites_verbatim():
+    rng = random.Random(7)
+    survivors = [
+        {"genome": G.random_genome(rng), "fitness": f} for f in [3.0, 2.0, 1.0]
+    ]
+    children = next_generation(survivors, rng, 10)
+    assert len(children) == 10
+    assert children[0]["genome"] == survivors[0]["genome"]
+    assert children[1]["genome"] == survivors[1]["genome"]
+    assert children[0]["genome"] is not survivors[0]["genome"]
