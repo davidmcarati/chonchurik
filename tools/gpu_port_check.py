@@ -14,6 +14,7 @@ directory and never touches the CPU kernel the model actually uses.
 """
 
 import argparse
+import sys
 import time
 from pathlib import Path
 
@@ -22,6 +23,11 @@ import numpy as np
 from stonkfly.config import Settings
 
 BLOCK = 256
+# Double-dashed: NVRTC silently ignores an option it does not recognise, so a
+# single dash here would leave contraction and denormal flushing on while
+# looking as though they were off.
+OPTIONS = ("--fmad=false", "--ftz=false", "--prec-div=true",
+           "--prec-sqrt=true")
 SOURCE = Path(__file__).resolve().parent.parent / "stonkfly" / "neural" / "kernel.cu"
 
 
@@ -68,11 +74,57 @@ def snapshot(brain, clock):
     return out
 
 
+TABLE_SOURCE = """// The decay tables exactly as kernel.cpp builds them, same compiler, same
+// libm. numpy's exp differs from MSVC's in 40% of the 1024 entries -- by one
+// unit in the last place, which is enough to make every voltage downstream
+// disagree and look like a race in the port.
+#include <cmath>
+extern "C" __declspec(dllexport) void build(float dt, float tau_a,
+                                            float* av, float* ag, float* aa) {
+  for (int i = 0; i < 1024; i++) {
+    av[i] = std::exp(-dt * i / 20.f);
+    ag[i] = std::exp(-dt * i / 5.f);
+    aa[i] = std::exp(-dt * i / tau_a);
+  }
+}
+"""
+
+
 def tables(dt, adaptation_tau):
-    i = np.arange(1024, dtype=np.float32)
-    return (np.exp(-dt * i / 20.0).astype(np.float32),
-            np.exp(-dt * i / 5.0).astype(np.float32),
-            np.exp(-dt * i / adaptation_tau).astype(np.float32))
+    """Built by the kernel's own compiler, not by numpy.
+
+    The GPU has to be handed the same numbers the CPU kernel computes for
+    itself, and `np.exp(...).astype(float32)` is not those numbers: it rounds
+    twice, through float64, and disagrees with MSVC's `std::exp` in 40% of the
+    entries. Every one of those is one unit in the last place, and every
+    voltage that touches one inherits it.
+    """
+    import ctypes
+    import shutil
+    import subprocess
+    import tempfile
+
+    from stonkfly.neural.brain import msvc_environment
+
+    out = Path(tempfile.mkdtemp(prefix="stonkfly-tables-"))
+    (out / "tab.cpp").write_text(TABLE_SOURCE, encoding="utf-8")
+    env = msvc_environment()
+    if sys.platform == "win32":
+        cl = shutil.which("cl", path=env["PATH"] if env else None)
+        argv = [cl, "/nologo", "/O2", "/std:c++17", "/EHsc", "/LD", "tab.cpp",
+                "/Fe:tab.dll"]
+        library = out / "tab.dll"
+    else:
+        argv = ["c++", "-O3", "-std=c++17", "-shared", "-fPIC", "tab.cpp",
+                "-o", "tab.so"]
+        library = out / "tab.so"
+    subprocess.run(argv, cwd=out, env=env, check=True, capture_output=True)
+    lib = ctypes.CDLL(str(library))
+    arrays = [np.zeros(1024, np.float32) for _ in range(3)]
+    lib.build(ctypes.c_float(dt), ctypes.c_float(adaptation_tau),
+              *[x.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
+                for x in arrays])
+    return tuple(arrays)
 
 
 def run_gpu(cp, kernel, brain, state, steps, batch, settings):
@@ -207,7 +259,7 @@ def main():
           f"{int(brain.nactive[0]):,} active\n")
 
     kernel = cp.RawKernel(SOURCE.read_text(encoding="utf-8"),
-                          "memory_advance_batch", options=("-fmad=false",))
+                          "memory_advance_batch", options=OPTIONS)
     gpu, gpu_seconds = run_gpu(cp, kernel, brain, before, a.steps, a.batch,
                                controller.s)
     print(f"GPU {a.steps} ticks x {a.batch} genome(s): {gpu_seconds:.3f}s")
