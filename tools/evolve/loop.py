@@ -154,6 +154,10 @@ def judge(executor, champion, population, segments, rng, out, seed):
     """The single pass over the test segment, and the pre-declared verdict."""
     window = 100
     results = {}
+    index = next(
+        i for i, p in enumerate(population)
+        if G.identity(p["genome"]) == G.identity(champion["genome"])
+    )
     for name in ["validation", "test"]:
         prices = segments[name]
         offsets = starts(prices, FULL_STARTS, window, FULL_OBSERVATIONS + WARMUP)
@@ -168,12 +172,21 @@ def judge(executor, champion, population, segments, rng, out, seed):
         ]
         collected = [f.result() for f in base]
         results[name] = {
-            "champion": fitness(
-                rows[next(
-                    i for i, p in enumerate(population)
-                    if G.identity(p["genome"]) == G.identity(champion["genome"])
-                )]
-            ),
+            "champion": fitness(rows[index]),
+            # Without this a champion that never filled an order reads as a
+            # flat 0.0000, which is indistinguishable from one that traded and
+            # broke even. On a segment with negative expectancy, profit
+            # fitness correctly selects doing nothing, and the report has to
+            # say which of the two happened.
+            "champion_activity": {
+                "fills": sum(
+                    r["fills"]["BUY"] + r["fills"]["SELL"] for r in rows[index]
+                ),
+                "proposals": {
+                    k: sum(r[k] for r in rows[index]) for k in ["buy", "sell", "hold"]
+                },
+                "rejected": sum(r["rejected"] for r in rows[index]),
+            },
             "population": sorted(fitness(r) for r in rows),
             "baselines": {
                 b: median([c[b]["profit"] for c in collected]) for b in BASELINES
@@ -227,6 +240,18 @@ def decide(test):
         f"{b} {v:+.4f}{' (beaten)' if beaten[b] else ''}"
         for b, v in test["baselines"].items()
     )
+    activity = test.get("champion_activity", {})
+    if activity and not activity["fills"]:
+        return (f"the champion never filled an order: "
+                f"{activity['proposals']['buy']} BUY, "
+                f"{activity['proposals']['sell']} SELL, "
+                f"{activity['proposals']['hold']} HOLD, all "
+                f"{activity['rejected']} orders rejected for budget or "
+                f"inventory. Its {test['champion']:+.4f} is the score for "
+                f"doing nothing, not for trading well -- on a segment where "
+                f"trading loses money, profit fitness selects inaction and "
+                f"correctly so. Read the perfect-foresight ceiling before "
+                f"reading this as a result")
     if all(beaten.values()):
         return (f"champion {test['champion']:+.4f} on the held-out test "
                 f"segment, against {table}. It beat every declared baseline. "
