@@ -25,13 +25,29 @@ Every number here comes from a read-only probe in `tools/diagnose.py`, including
 - **The readout is noise-limited, and widening it does not fix that.** Silencing a random 1% of the network flips the decision four times in five. Three candidate readouts, up to 2,119 cells, all score signal-to-noise below 1 — the market moves them less than silencing unrelated neurons does. So **no decoder change ships**; the bottleneck is upstream.
 - **Nothing has traded at a profit.** Not the fixture runs, not the first evolution, whose pre-declared kill criterion rejected its own champion. That result is published rather than retried until it passes.
 
+## Evolving it on a GPU
+
+An evolution is thousands of 500 ms observations, and 95.2% of each one is the spiking kernel. `stonkfly/neural/kernel.cu` is a CUDA port of that kernel which runs one fly per CUDA block, and `--device gpu` puts a whole wave of flies through one launch.
+
+The port is **bit-identical**, not approximate. `tools/gpu_port_check.py` advances the same brain on both kernels from the same state and compares all eighteen mutable arrays element for element after a full 5,000-tick observation; `tools/herd_check.py` does the same claim end to end, comparing profit, every proposal count, fills and Kenyon spikes for the same genomes at the same chronological starts. Getting there meant reconstructing the subnormals this hardware flushes to zero, tabulating every exponential the host keeps at double precision, and spelling the voltage update in round-to-nearest intrinsics so the compiler cannot reassociate a four-term sum.
+
+**9.7 fly-observations a second, against 2.08 for the eight-worker pool.** The kernel is still the largest cost at 61.7%, which is the answer to whether moving it was worth doing; `tools/herd_cost.py` prints the rest of the split.
+
+```sh
+python -m tools.gpu_port_check --steps 5000 --batch 84   # the kernel alone
+python -m tools.herd_check --genomes 3 --starts 2        # the whole fly
+python -m tools.evolve --device gpu --population 84
+```
+
 ## What is in here
 
 | Path | What it is |
 | --- | --- |
 | `stonkfly/` | the model, the sensory channels and the live worker; the package keeps the old name, and so do `python -m stonkfly` and the `STONKFLY_*` variables |
 | `tools/diagnose.py` | read-only probes; never modifies the graph and asserts so |
-| `tools/evolve/` | disclosed profit-selected search over declared free parameters |
+| `tools/evolve/` | disclosed profit-selected search over declared free parameters; `--device gpu` runs it as herds |
+| `stonkfly/neural/kernel.cu` | the CUDA port of the kernel, proven equal to `kernel.cpp` array by array |
+| `tools/gpu_port_check.py`, `tools/herd_check.py` | the two proofs of that, one for the kernel and one for the whole fly |
 | `tools/fetch_candles.py` | the only thing outside `stonkfly/` that opens a socket |
 | `docs/` | [model](docs/model.md), [validation](docs/validation.md), [operations](docs/operations.md) |
 

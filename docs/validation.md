@@ -635,6 +635,108 @@ segment and all-cash makes exactly zero, because a 0.6% fee on a 10 unit order
 needs a 1.2% round trip to break even. Beating all four baselines means being
 strictly profitable after fees, which is a hard bar and the right one.
 
+## The GPU path, and what makes it the same animal
+
+An evolution is thousands of observations and 95.2% of each one is the spiking
+kernel, measured by `tools/kernel_cost.py`. `stonkfly/neural/kernel.cu` moves
+that kernel to the card, one fly per CUDA block, and `tools/evolve --device
+gpu` runs a whole wave of flies as one launch.
+
+A port that is *nearly* the same is worse than no port. Spike counts would stay
+plausible, profits would stay plausible, a champion would still appear, and
+every number in this document would silently describe a different animal. So
+the requirement was equality, not agreement, and two checks enforce it.
+
+**The kernel.** `tools/gpu_port_check.py` advances one brain on both kernels
+from the same state and compares all eighteen mutable arrays element for
+element. After a full 5,000-tick observation, at batches of 8, 16, 48 and 84,
+with the plasticity rule off and on: identical, every element. The rule has to
+be forced to run -- nothing in an offline fixture makes a dopaminergic neuron
+spike, and with none firing both weight arrays agree because neither kernel
+writes to them -- so the check drives those cells and reports how many weights
+actually moved.
+
+Three things had to be true for that, none of them obvious:
+
+- **`exp` does not agree across the two machines.** This device's
+  `exp(double)` differs from the host compiler's by one unit in the last place
+  on up to 6.2% of arguments. Everything the host keeps at double precision
+  therefore comes from a table the host's own compiler filled; a device-built
+  eligibility table disagreed on 1,048,575 entries out of 1,048,576. What the
+  host rounds to float absorbs the difference: over 4,194,304 draws spanning
+  every scale the plasticity rule reaches, `weight * exp(arg)` narrowed to
+  float disagreed zero times.
+- **The device flushes subnormal floats to zero**, in every arithmetic path,
+  and `--ftz=false` does not change it. It also lies about them twice: `x ==
+  0.f` is true for a subnormal and `(double)x` is `-0.0`, so both the guard and
+  the widening go through the bits. A subnormal is an exact multiple of
+  2^-149, so the operands are decoded bitwise, multiplied in double and
+  reassembled -- verified against the host on 20,007 values.
+- **The compiler reassociates.** The voltage update written plainly compiles to
+  `rest + ((t1 + t2) + t3)` while the host computes `((rest + t1) + t2) + t3`,
+  and the two differ by half a unit in the last place, which is a spike for a
+  cell sitting on the threshold. `--fmad=false` does not prevent it;
+  round-to-nearest intrinsics do.
+
+**The whole fly.** Between the launches sit the retina, the olfactory and
+gustatory channels, the memory rule, the accounts and the decoder.
+`tools/herd_check.py` runs the same genomes through `evolve.evaluate`, the
+worker path, and through the herd, from the same prices and the same starts,
+and compares the rows: profit, final equity, each proposal count, fills,
+rejections, Kenyon spikes. Eight genomes at one start and three genomes at two
+starts, including flies that trade and one that makes +0.5258 at one start and
+-0.1133 at the other: every field equal.
+
+The sensory front end and the memory rule still run on the CPU, in the
+functions the shipped path calls -- `prepare_drive` and `rgb_bin` are
+extractions from `_neural_step` and `rgb_step` with their bodies unchanged,
+and the memory rule is `rule.advance` itself, once per fly per bin. Only the
+integration moved.
+
+**Speed.** 9.7 fly-observations a second against 2.08 for the eight-worker
+pool. `tools/herd_cost.py` splits it, at a batch of 84:
+
+| | seconds | share |
+| --- | --- | --- |
+| kernel | 90.3 | 61.7% |
+| memory rule | 39.9 | 27.3% |
+| sensory front end | 10.6 | 7.3% |
+| upload | 5.5 | 3.7% |
+| charts and accounts | 0.9 | 0.6% |
+
+The kernel is still the largest bucket, which is the answer to whether moving
+it was the right thing to move. The rule is second and it stays as it is: a
+batched version was written and tested equal, and was *slower* -- one fly's
+traces are 63 kB and stay in cache, a herd's are 5 MB and do not. Its real
+cost is two matrix-vector products against a float32 `gain` with float64
+rates, which makes numpy promote a 1 MB matrix on each. Passing a float64
+`gain` is 7.5x quicker and moves the result by one unit in the last place, so
+it is a change to the model rather than to the runner, and it has not been
+made.
+
+**Two faults this work found, neither of them in the port.**
+
+`decoder_threshold_hz` is a dead gene. `configured()` writes it into a
+replaced `Settings`, and the `Decoder` read its threshold when the controller
+was built and never looks at `Settings` again. One of the fourteen declared
+free parameters has been doing nothing, in every evolution run so far. The
+herd reproduces that rather than quietly fixing it, because matching the CPU
+path is what the herd is for.
+
+`tools/evolve/__main__.py` had not parsed since the commit that added
+`plan.json`: writing that file put a literal newline inside a string literal,
+so the whole evolution entry point raised `SyntaxError` before argparse ran.
+Nothing caught it, because no test imports a `__main__` and every module that
+is imported was fine. `tests/test_sources.py` now compiles every source file
+in the repository, which is the general form of that check.
+
+**What this does not claim.** The card makes the same fly faster. It does not
+make it better: the readout is still noise-limited at a signal-to-noise ratio
+of 0.66, the visual pathway still has no operating point, and nothing here has
+traded at a profit. A faster search over a noisy objective finds an overfit
+champion sooner, which is what the held-out segments and the four baselines
+exist to catch.
+
 ## Reproduce
 
 ```sh
@@ -644,6 +746,8 @@ python -m stonkfly verify
 python -m stonkfly run --fixture --fast --steps 6 --out runs/check-fixture
 python -m stonkfly run --fast --steps 6 --out runs/check-public
 python tools/diagnose.py
+python -m tools.gpu_port_check --steps 5000 --batch 84 --learning --reinforce aversive
+python -m tools.herd_check --genomes 3 --starts 2 --observations 4
 ```
 
 The `run --fast` command without `--fixture` reads current public prices and simulates fills; `tools/diagnose.py` is offline and read-only. Prices, signals and paper outcomes will differ. All runtime evidence stays local in `runs/`; it is not uploaded with this report. A normal `run` omits `--fast` and samples at the configured wall interval.
