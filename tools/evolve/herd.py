@@ -28,6 +28,7 @@ Nothing here decides a trade. The herd reports what the decoder says and the
 accounts do the rest, exactly as `evaluate.replay` does for one fly.
 """
 
+import time
 from pathlib import Path
 
 import numpy as np
@@ -175,7 +176,7 @@ class Herd:
     """The flies of one wave, all replaying the same chronological start."""
 
     def __init__(self, controller, pristine_inhibitory, genomes, settings,
-                 starts=None):
+                 starts=None, measure=False):
         cuda_headers()
         import cupy as cp
 
@@ -257,9 +258,22 @@ class Herd:
         self.index = cp.asarray(np.concatenate(parts))
         self.gathered = cp.zeros(self.batch * int(self.cuts[-1]), cp.int32)
 
+        # Off by default: timing the kernel means waiting for it, which is
+        # exactly what a run should not do.
+        self.measure = measure
+        self.cost = dict.fromkeys(["sensory", "upload", "kernel", "rule"], 0.0)
+
         self._allocate()
         self._physiology()
         self.reset()
+
+    def _mark(self, bucket, since):
+        if not self.measure:
+            return None
+        self.cp.cuda.Stream.null.synchronize()
+        now = time.perf_counter()
+        self.cost[bucket] += now - since
+        return now
 
     # -- device memory ------------------------------------------------------
 
@@ -407,6 +421,7 @@ class Herd:
         remaining_pulse = [self.pulse if p is not None else 0 for p in pulses]
         totals = np.zeros((B, int(self.cuts[-1])), np.int64)
         while left:
+            clock = time.perf_counter() if self.measure else None
             for start, members in self.groups.items():
                 settled, light = self.optics[start]
                 head = members[0]
@@ -430,12 +445,16 @@ class Herd:
                                         stimulation=extra + r8)
                     self.drive_host[b] = brain.drive
                 settled[:] = brain.luminance
+            clock = self._mark("sensory", clock)
             self.drive.set(self.drive_host.reshape(-1))
             self._launch("set_drive", B * n,
                          (self.cell, self.drive, np.int64(B * n)))
             self._launch("clear_counts", B * n, (self.cell, np.int64(B * n)))
+            clock = self._mark("upload", clock)
             self._advance(self.bin)
+            clock = self._mark("kernel", clock)
             totals += self._rule(seconds)
+            clock = self._mark("rule", clock)
             remaining_pulse = [max(0, x - self.bin) for x in remaining_pulse]
             left -= self.bin
 
@@ -473,7 +492,22 @@ class Herd:
         ))
 
     def _rule(self, seconds):
-        """`MemoryBrain.step`'s other half of a bin, once per fly."""
+        """`MemoryBrain.step`'s other half of a bin, once per fly.
+
+        A loop, deliberately. This is 27% of a herd's time and the obvious fix
+        is to batch it, so: measured, a batched `advance` over (flies, edges)
+        arrays is *slower* -- 60.3s against 39.9s for the same work -- because
+        one fly's traces are 63 kB and stay in cache while the herd's are 5 MB
+        and do not.
+
+        Nor is it call overhead. It is two matrix-vector products against
+        `gain`, which is float32 while the rates are float64, so numpy promotes
+        a 1 MB matrix on every one of them. 0.209 ms each, and nothing exact is
+        faster: a contiguous transpose, einsum and np.dot are all either the
+        same speed or a different answer. Handing `advance` a float64 `gain`
+        is 7.5x quicker and changes the result by one unit in the last place,
+        which is a change to the model and not a change to this file.
+        """
         from stonkfly.neural.rule import advance
 
         cp, B = self.cp, self.batch
