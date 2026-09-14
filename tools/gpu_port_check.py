@@ -200,6 +200,10 @@ def run_gpu(cp, kernel, brain, state, steps, batch, settings, block=BLOCK,
     av, ag, aa, am, ae = (
         cp.asarray(x)
         for x in tables(brain.dt, brain.adaptation_tau, float(tau_elig)))
+    # The resting potential of a Kenyon cell is an evolved parameter and the
+    # resting potential of everything else is not, so the kernel takes one
+    # number and the mask, rather than an array per genome.
+    kc_rest = float(np.asarray(brain.rest)[c["kc"][0]])
     delay = int(round(1.8 / brain.dt))
     rfc = int(round(2.2 / brain.dt))
     slots = delay + 1
@@ -249,10 +253,18 @@ def run_gpu(cp, kernel, brain, state, steps, batch, settings, block=BLOCK,
         d["queue_count"], d["clock"], np.int32(steps), dt, d["active"],
         d["nactive"], np.int32(len(c["edges"])), cp.asarray(c["edges"]),
         cp.asarray(c["pre"]), cp.asarray(brain.baseline_plastic),
-        cp.asarray(c["gain"]), np.float32(brain.eta), tau_elig,
-        np.float32(PARAMETERS["minimum_fraction"]), np.int32(learning),
-        np.float32(brain.adaptation_jump), tau_a,
-        av, ag, aa, am, ae, np.int32(delay), np.int32(rfc), np.int32(slots),
+        cp.asarray(c["gain"]),
+        # Per genome, because the evolution moves them. Here every genome is
+        # the same brain, which is the point: the comparison is against the
+        # CPU kernel, and the CPU kernel has one physiology.
+        cp.full(batch, brain.eta, np.float32),
+        cp.full(batch, brain.adaptation_jump, np.float32),
+        cp.full(batch, brain.adaptation_tau, np.float32),
+        cp.full(batch, kc_rest, np.float32),
+        tau_elig, np.float32(PARAMETERS["minimum_fraction"]),
+        np.int32(learning),
+        av, ag, cp.tile(aa, batch), am, ae,
+        np.int32(delay), np.int32(rfc), np.int32(slots),
         cp.zeros(1, cp.int32),
     )
     cp.cuda.Stream.null.synchronize()

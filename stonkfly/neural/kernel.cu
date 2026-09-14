@@ -52,6 +52,22 @@
 // differently. Getting past it needs a smaller cell or a sorted active list,
 // and a sorted active list is a different animal, not a faster one.
 //
+// ABOUT exp. The host and this device do not agree on it, and the three
+// places it appears need three different answers. Measured, not assumed:
+//
+//   * `exp(double)` here differs from MSVC's by one unit in the last place on
+//     up to 6.2% of arguments, so anything the host keeps at double precision
+//     must come from a table the host's own compiler filled. The eligibility
+//     trace is a double all the way through, and a device-built table for it
+//     disagreed on 1,048,575 entries out of 1,048,576.
+//   * anything the host rounds to float absorbs that difference: over
+//     4,194,304 draws spanning every scale the plasticity rule reaches,
+//     `weight * exp(arg)` narrowed to float disagreed zero times. So the one
+//     exponential with a free argument -- the rule's own -- is computed here
+//     rather than tabulated, and that is why it is sound.
+//   * `expf` is not any of this. It is a different function with a wider
+//     error, and spelling the rule with it is what made all 176 weights wrong.
+//
 // NVRTC compiles without the host standard library, so no <cstdint> here;
 // every integer width below is spelled out instead.
 
@@ -95,6 +111,14 @@ struct __align__(8) Fixed {
   unsigned char kc, modulatory, pad;
   signed char dan;
 };
+
+// `kc_rest` is one of the evolved parameters, and it moves the resting
+// potential of every Kenyon cell and of nothing else -- `rest` is a constant
+// everywhere else in the graph. So a genome changes one number rather than an
+// array, and Fixed stays shared across the whole batch.
+__device__ __forceinline__ float rest_of(const Fixed& f, float kc_rest) {
+  return f.kc ? kc_rest : f.rest;
+}
 
 // This device flushes float subnormals to zero in every arithmetic path, and
 // --ftz=false does not change it: measured, a subnormal survives a load and
@@ -273,12 +297,19 @@ extern "C" __global__ void memory_advance_batch(
     const int nplastic, const long long* __restrict__ plastic_edge,
     const int* __restrict__ plastic_pre,
     const float* __restrict__ baseline_weight,
-    const float* __restrict__ dan_gain, const float eta,
+    const float* __restrict__ dan_gain,
+    // One entry per genome: these four are evolved, and a batch that shared
+    // one physiology would not be an evolution.
+    const float* __restrict__ eta_all,
+    const float* __restrict__ adaptation_jump_all,
+    const float* __restrict__ adaptation_tau_all,
+    const float* __restrict__ kc_rest_all,
     const float tau_elig_ms, const float floor_fraction,
-    const int learning_enabled, const float adaptation_jump,
-    const float adaptation_tau,
+    const int learning_enabled,
     const float* __restrict__ av, const float* __restrict__ ag,
-    const float* __restrict__ aa, const double* __restrict__ am,
+    // `aa` tabulates exp(-dt*i/adaptation_tau), so it is one whole table per
+    // genome, TABLE entries apart. The other four do not depend on a genome.
+    const float* __restrict__ aa_all, const double* __restrict__ am,
     const double* __restrict__ ae, const int delay, const int rfc,
     const int slots, int* scratch_all) {
   const int b = blockIdx.x;
@@ -300,6 +331,12 @@ extern "C" __global__ void memory_advance_batch(
   // enabled, and 102 MB a genome is what that costs.
   brain.weight = weight_all + (long long)b * weight_stride;
 
+  const float eta = eta_all[b];
+  const float adaptation_jump = adaptation_jump_all[b];
+  const float adaptation_tau = adaptation_tau_all[b];
+  const float kc_rest = kc_rest_all[b];
+  const float* aa = aa_all + (long long)b * TABLE;
+
   long long* clock = clock_all + b;
   (void)scratch_all;
 
@@ -320,8 +357,8 @@ extern "C" __global__ void memory_advance_batch(
       c = brain.cell[i];
       changed = c.drive != brain.previous_drive[i];
       if (changed) {
-        evolve(c, fixed[i].rest, *clock - 1, brain.previous_drive[i], av, ag,
-               aa, dt, adaptation_tau);
+        evolve(c, rest_of(fixed[i], kc_rest), *clock - 1,
+               brain.previous_drive[i], av, ag, aa, dt, adaptation_tau);
         brain.previous_drive[i] = c.drive;
       }
     }
@@ -360,10 +397,11 @@ extern "C" __global__ void memory_advance_batch(
         i = brain.active[k];
         const Fixed f = fixed[i];
         kc = f.kc;
+        const float rest = rest_of(f, kc_rest);
         c = brain.cell[i];
-        evolve(c, f.rest, now, c.drive, av, ag, aa, dt, adaptation_tau);
+        evolve(c, rest, now, c.drive, av, ag, aa, dt, adaptation_tau);
         fires = (c.refractory == 0 && c.v > -45.f) ? 1 : 0;
-        const float gap = -45.f - f.rest;
+        const float gap = -45.f - rest;
         keeps = (c.v > -45.f || c.drive > gap || c.drive + c.g > gap) ? 1 : 0;
       }
       // Ordered append to the spike queue.
@@ -459,8 +497,8 @@ extern "C" __global__ void memory_advance_batch(
         if (live) {
           j = post[e];
           c = brain.cell[j];
-          evolve(c, fixed[j].rest, now, c.drive, av, ag, aa, dt,
-                 adaptation_tau);
+          evolve(c, rest_of(fixed[j], kc_rest), now, c.drive, av, ag, aa,
+                 dt, adaptation_tau);
           if (c.refractory == 0) {
             c.g = add_rn(c.g, brain.weight[e]);
             want = c.flags ? 0 : 1;
@@ -485,7 +523,7 @@ extern "C" __global__ void memory_advance_batch(
     for (int q = tid; q < reset; q += BLOCK) {
       const int i = brain.queue[(long long)future * n + q];
       Cell c = brain.cell[i];
-      c.v = fixed[i].rest;
+      c.v = rest_of(fixed[i], kc_rest);
       c.g = 0.f;
       c.refractory = (short)rfc;
       brain.cell[i] = c;
@@ -498,8 +536,8 @@ extern "C" __global__ void memory_advance_batch(
   // ---- materialise every cell at the observation boundary ----
   for (int i = tid; i < n; i += BLOCK) {
     Cell c = brain.cell[i];
-    evolve(c, fixed[i].rest, *clock - 1, c.drive, av, ag, aa, dt,
-           adaptation_tau);
+    evolve(c, rest_of(fixed[i], kc_rest), *clock - 1, c.drive, av, ag, aa,
+           dt, adaptation_tau);
     brain.cell[i] = c;
   }
 }
