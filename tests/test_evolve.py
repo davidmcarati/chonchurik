@@ -247,3 +247,42 @@ def test_median_row_subtracts_exactly():
     mid = median_row(rows)
     assert round(mid["profit"] - mid["buy_and_hold"], 4) == round(mid["excess"], 4)
     assert round(mid["excess"], 4) == round(fitness(rows), 4)
+
+
+def test_equivalence_comparator_catches_a_single_bit():
+    """A comparator that never fails would certify a broken port.
+
+    One float changed by one unit in the last place, in one element of one
+    array out of twenty-four, is the smallest thing a rewrite can get wrong --
+    and in a spiking network it is not small, because a neuron sitting on the
+    -45 mV threshold turns it into a spike that did not happen. So that is
+    what the comparator is asked to find.
+    """
+    import numpy as np
+
+    from tools.kernel_equivalence import differences
+
+    a = {
+        "v": np.linspace(-70, -40, 1000, dtype=np.float32),
+        "counts": np.arange(1000, dtype=np.int32),
+        "weight": np.full(500, 0.275, dtype=np.float32),
+    }
+    b = {k: v.copy() for k, v in a.items()}
+    assert differences(a, b) == [], "identical inputs must compare equal"
+
+    b["v"][617] = np.nextafter(b["v"][617], np.float32(0), dtype=np.float32)
+    found = differences(a, b)
+    assert len(found) == 1 and found[0][0] == "v", found
+    assert found[0][3] == 617, "must say which element"
+    assert 0 < found[0][2] < 1e-4, "and how far apart they are"
+
+    # A changed integer count, and a changed weight the plasticity rule wrote.
+    b = {k: v.copy() for k, v in a.items()}
+    b["counts"][3] += 1
+    b["weight"][0] *= np.float32(1.000001)
+    assert sorted(x[0] for x in differences(a, b)) == ["counts", "weight"]
+
+    # Shape and dtype changes are differences, not crashes.
+    assert differences({"v": a["v"]}, {"v": a["v"].astype(np.float64)})
+    assert differences({"v": a["v"]}, {"v": a["v"][:10]})
+    assert differences({"v": a["v"]}, {})

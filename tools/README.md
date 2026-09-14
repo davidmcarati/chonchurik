@@ -222,3 +222,26 @@ Float atomics are **not** reproducible — the same input run twice differs,
 because float addition is not associative and the warps finish in whatever
 order they finish. Integer atomics are, because integer addition is. That is
 the entire determinism question, and it is free.
+
+## Proving a kernel rewrite equal
+
+```sh
+python -m tools.kernel_equivalence --write reference.npz
+python -m tools.kernel_equivalence --check reference.npz
+```
+
+The kernel mutates twenty-four arrays. A port that gets twenty-three right
+would still produce plausible spike counts, plausible trades and plausible
+evolution, and every number measured afterwards would describe a different
+animal without saying so. This records every array after every observation and
+compares elementwise, naming the array, the count of differing elements, the
+largest gap and the first index.
+
+`--check` must pass in a fresh process before the reference is used for
+anything: otherwise it records the machine rather than the code. It does, on
+this one, bit for bit.
+
+The comparator is unit-tested against a one-ULP change in one element of one
+array — the smallest thing a rewrite can get wrong, and not a small thing in a
+spiking network, where a cell sitting on the −45 mV threshold turns it into a
+spike that did not happen.
