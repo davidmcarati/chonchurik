@@ -11,7 +11,7 @@ import json
 
 import pytest
 
-from stonkfly.genome import INERT, SPACE, WILD_TYPE, apply, load
+from stonkfly.genome import SETTINGS, SPACE, WILD_TYPE, apply, load
 
 
 def write(tmp_path, genome):
@@ -60,11 +60,17 @@ def test_something_that_is_not_an_object_is_refused(tmp_path):
         load(path)
 
 
-def test_the_dead_gene_is_named_as_dead_rather_than_hidden():
-    # It is in the genome and the Decoder never reads it. Repairing that means
-    # re-running the search; pretending otherwise would be worse than either.
-    assert "decoder_threshold_hz" in SPACE
-    assert "decoder_threshold_hz" in INERT
+def test_the_settings_genes_are_declared_and_checked():
+    # These two cannot be written onto a brain, so `apply` cannot set them and
+    # the caller has to. It used to be documented and unenforced, and one of
+    # them -- the decoder threshold -- was silently dead for every run before
+    # this: searched, recorded, and never felt by any fly.
+    for name in SETTINGS:
+        assert name in SPACE
+    c = Controller()
+    c.s.decoder_threshold_hz = 9.0
+    with pytest.raises(ValueError, match="decoder_threshold_hz"):
+        apply(c, dict(WILD_TYPE), c.brain.weight[c.brain.inhibitory_edges].copy())
 
 
 class Brain:
@@ -89,11 +95,20 @@ class Channel:
     pass
 
 
+class Settings:
+    """The two genes that live here rather than on the brain."""
+
+    def __init__(self):
+        self.pulse_current = WILD_TYPE["pulse_current"]
+        self.decoder_threshold_hz = WILD_TYPE["decoder_threshold_hz"]
+
+
 class Controller:
     def __init__(self):
         self.brain = Brain()
         self.olfaction = Channel()
         self.gustation = Channel()
+        self.s = Settings()
 
 
 def test_applying_a_genome_moves_the_fly():
@@ -116,6 +131,7 @@ def test_applying_a_genome_moves_the_fly():
     assert c.brain.weight[2] == 3.0 and c.brain.weight[3] == 4.0
     assert c.olfaction.sigma == 1.1
     assert "decoder_threshold_hz" not in report["applied"]
+    assert report["settings"] == list(SETTINGS)
 
 
 def test_applying_twice_does_not_compound_the_gain():

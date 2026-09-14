@@ -36,6 +36,7 @@ from stonkfly.neural.olfaction import FAST
 from stonkfly.reinforcement import reinforcement
 
 from .genome import WILD_TYPE
+from .information import readout_ic
 from .series import quotes
 
 PRODUCT = "BTC-USDC"
@@ -78,11 +79,9 @@ def configured(controller, genome, pristine_inhibitory):
         "taste": (controller.gustation.floor, controller.gustation.span),
     }
     try:
-        # One implementation, in the model. A champion loaded by
-        # `python -m stonkfly run --genome` has to be the fly the search
-        # scored, and two copies of these assignments would drift apart
-        # exactly where nobody would look.
-        apply_genome(controller, genome, pristine_inhibitory)
+        # Settings first: two of the fourteen live there rather than on the
+        # brain, and `apply_genome` refuses to run against a controller whose
+        # Settings disagree with the genome it is being handed.
         # replace(), not a fresh Settings: capital, order size, fee and
         # learning belong to the experiment, not to the genome.
         controller.s = dataclasses.replace(
@@ -90,6 +89,11 @@ def configured(controller, genome, pristine_inhibitory):
             pulse_current=genome["pulse_current"],
             decoder_threshold_hz=genome["decoder_threshold_hz"],
         )
+        # One implementation, in the model. A champion loaded by
+        # `python -m stonkfly run --genome` has to be the fly the search
+        # scored, and two copies of these assignments would drift apart
+        # exactly where nobody would look.
+        apply_genome(controller, genome, pristine_inhibitory)
         yield
     finally:
         controller.s = saved["settings"]
@@ -103,8 +107,9 @@ def configured(controller, genome, pristine_inhibitory):
         brain.inhibitory_gain = saved["gain"]
         brain.weight[brain.inhibitory_edges] = saved["inhibitory"]
         # Learning moved the plastic edges; reset puts them back to baseline,
-        # so the next genome starts from the same brain this one did.
-        brain.reset()
+        # so the next genome starts from the same brain this one did. Through
+        # the controller, so the readout history goes with it.
+        controller.reset()
         (
             controller.olfaction.current,
             controller.olfaction.sigma,
@@ -152,14 +157,18 @@ class Account:
 
 
 def replay(controller, prices, start, observations, propose, account,
-           bars=None):
+           bars=None, record=False):
     """One chronological pass. `propose` turns an observation into a side."""
     history = list(prices[start:start + CHART_WINDOW])
     cursor = start + CHART_WINDOW
-    controller.brain.reset()
+    # Not brain.reset(): the fly's resting difference is carried on the
+    # controller, and a run that inherited the previous one's would be judged
+    # against a level it never established.
+    controller.reset()
     anchor = str(account.start)
     executed = None
     sides = []
+    readouts = []
     kc = 0
     for step in range(WARMUP + observations):
         if cursor >= len(prices):
@@ -168,7 +177,7 @@ def replay(controller, prices, start, observations, propose, account,
         bid, ask = quotes(price)
         equity = account.equity(bid)
         kind, _ = reinforcement(str(equity), anchor, "0.01")
-        side, spikes = propose(
+        side, spikes, readout = propose(
             market_frame(PRODUCT, history, bid, ask), kind, history, executed,
             (str(equity), anchor),
             None if bars is None else bars[max(0, cursor - FAST + 1):cursor + 1],
@@ -177,6 +186,8 @@ def replay(controller, prices, start, observations, propose, account,
         kc += spikes
         if step >= WARMUP:
             sides.append(side)
+            if record:
+                readouts.append(readout)
             executed = account.apply(side, bid, ask)
         else:
             # Warm-up runs the network but never the account, so the fly is
@@ -196,6 +207,10 @@ def replay(controller, prices, start, observations, propose, account,
         "fills": dict(account.fills),
         "rejected": account.rejected,
         "kc_spikes": int(kc),
+        # Opt-in for the same reason the herd's is; `score` reads it and then
+        # drops it unless a diagnostic asked to keep it.
+        **({"sides": list(sides), "difference_hz": list(readouts)}
+           if record else {}),
     }
 
 
@@ -203,7 +218,7 @@ def neural_proposal(controller):
     def propose(frame, kind, history, executed, balance, bars=None):
         n = controller.observe(frame, kind, history, executed, balance,
                                bars)
-        return n["side"], n["KC_spikes"]
+        return n["side"], n["KC_spikes"], n["difference_hz"]
 
     return propose
 
@@ -226,14 +241,40 @@ def buy_and_hold(prices, start, observations, settings):
     return float(account.equity(quotes(window[-1])[0]) - account.start)
 
 
-def evaluate(controller, pristine, genome, prices, start, observations, settings):
+def score(row, prices, start, horizon, keep=False):
+    """Attach the readout's information coefficient and drop the raw series.
+
+    What the search is ranked on. The readout is the continuous difference the
+    decoder thresholds, and it is graded against the return `horizon` bars
+    ahead with both sides demeaned, so the large per-genome constant in it --
+    26 Hz between the wild type and the fittest evolved genome, against a
+    spread of about 5.5 for every one of them -- contributes exactly nothing.
+
+    The series itself is dropped unless asked for. A row is written into the
+    population state after every generation, and a readout per observation per
+    fly per start would add tens of thousands of numbers to a file that is
+    read back on every resume.
+    """
+    values = row.get("difference_hz") or []
+    row["readout_ic"] = (readout_ic(prices, values, start + CHART_WINDOW + WARMUP,
+                                    horizon) if horizon and values else 0.0)
+    if not keep:
+        row.pop("difference_hz", None)
+        row.pop("gate_spikes", None)
+        row.pop("sides", None)
+    return row
+
+
+def evaluate(controller, pristine, genome, prices, start, observations,
+             settings, horizon=None, bars=None):
     """One genome, one chronological start. Profit, and profit over benchmark."""
     with configured(controller, genome, pristine):
         account = Account(settings.capital, settings.order_limit, settings.paper_fee)
         row = replay(
             controller, prices, start, observations,
-            neural_proposal(controller), account,
+            neural_proposal(controller), account, bars, record=bool(horizon),
         )
+    score(row, prices, start, horizon)
     # Both are reported. `profit` is what the kill criterion compares against
     # the baselines; `excess` is what the search is actually ranked on, and the
     # gap between them is how much of a result was the market rather than the
@@ -284,11 +325,11 @@ def degenerate(row):
 
 
 def fixed_proposal(side):
-    return lambda *_, **__: (side, 0)
+    return lambda *_, **__: (side, 0, 0.0)
 
 
 def random_proposal(rng):
-    return lambda *_, **__: (rng.choice(["BUY", "SELL", "HOLD"]), 0)
+    return lambda *_, **__: (rng.choice(["BUY", "SELL", "HOLD"]), 0, 0.0)
 
 
 def baselines(controller, pristine, prices, start, observations, settings, rng):

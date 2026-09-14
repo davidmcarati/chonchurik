@@ -129,6 +129,8 @@ def main():
     if a.steps < 0:
         p.error("steps cannot be negative")
     genome = None
+    from .genome import SETTINGS as GENOME_SETTINGS
+
     if getattr(a, "genome", None):
         from .genome import load as load_genome
 
@@ -138,10 +140,12 @@ def main():
         learning=not a.frozen,
         neural_ms=a.neural_ms,
         pulse_ms=min(200, a.neural_ms),
-        # The reinforcement current is the one evolved parameter that lives in
-        # Settings rather than on the brain, so it has to be put here, before
-        # the ledger takes the signature that guards the run directory.
-        **({"pulse_current": genome["pulse_current"]} if genome else {}),
+        # Two evolved parameters live in Settings rather than on the brain,
+        # so they go here, before the ledger takes the signature that guards
+        # the run directory -- and before the controller is built, because
+        # `apply_genome` refuses a controller whose Settings disagree with the
+        # genome. `stonkfly.genome.SETTINGS` names them.
+        **({k: genome[k] for k in GENOME_SETTINGS} if genome else {}),
     )
     out = a.out or Path("runs/live" if a.live else "runs/paper")
     out.mkdir(parents=True, exist_ok=True)

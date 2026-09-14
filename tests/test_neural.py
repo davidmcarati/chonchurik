@@ -20,6 +20,37 @@ def test_fixed_neuron_decoder():
     assert d.decode(np.array([10, 0, 1]), 0.5)["side"] == "SELL"
     assert d.decode(np.array([4, 4, 1]), 0.5)["side"] == "HOLD"
 
+    # The threshold is a declared free parameter, so it has to be read per
+    # observation and not remembered from construction. It was remembered for
+    # every run before this one: the gene was searched, recorded in every
+    # champion, and felt by no fly. The same counts must decide differently
+    # at a different threshold, or that is true again.
+    counts = np.array([0, 10, 1])
+    assert d.decode(counts, 0.5, 30.0)["side"] == "HOLD"
+    assert d.decode(counts, 0.5, 30.0)["threshold_hz"] == 30.0
+    assert d.decode(counts, 0.5, 1.0)["side"] == "BUY"
+    # Omitted still means the one it was built with, so a caller that never
+    # knew about the parameter is unchanged.
+    assert d.decode(counts, 0.5)["threshold_hz"] == d.threshold
+
+    # The readout carries a large constant that differs by genome -- measured
+    # at -17.15 Hz for the wild type and +9.05 for the fittest evolved one,
+    # against a spread of about 5.5 either way and a threshold declared over
+    # 0.5 to 12. Compared against zero, that constant decides everything and
+    # the market decides nothing. Subtracting the fly's own resting level is
+    # what makes both directions reachable at all.
+    # 20 spikes over half a second is 40 Hz on the right and nothing on the
+    # left, so the difference is +40 -- the scale the real offset sits at.
+    loud = np.array([0, 20, 1])
+    assert d.decode(loud, 0.5, 2.0)["side"] == "BUY"
+    assert d.decode(loud, 0.5, 2.0, baseline=40.0)["side"] == "HOLD"
+    assert d.decode(loud, 0.5, 2.0, baseline=60.0)["side"] == "SELL"
+    reported = d.decode(loud, 0.5, 2.0, baseline=60.0)
+    # The raw readout is still reported: the baseline changes the decision,
+    # never the measurement a diagnostic reads.
+    assert reported["difference_hz"] == 40.0
+    assert reported["relative_hz"] == -20.0 and reported["baseline_hz"] == 60.0
+
 
 @pytest.mark.parametrize(
     "equity,expected",

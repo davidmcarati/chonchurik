@@ -56,14 +56,17 @@ WILD_TYPE = {
     "decoder_threshold_hz": 2.0,
 }
 
-# `decoder_threshold_hz` is in the genome and does nothing. The Decoder reads
-# its threshold when the controller is built and never consults Settings
-# again, so every evolution run so far has searched a parameter it could not
-# feel. `apply` reproduces that rather than repairing it: a champion run with
-# a threshold its own selection never used is a different fly from the one
-# that won, and the comparison the whole exercise rests on would be void.
-# Repairing it means re-running the search, not changing this line.
-INERT = ("decoder_threshold_hz",)
+# Two of the fourteen live in Settings rather than on the brain, so `apply`
+# below cannot set them: the caller has to build the Settings the controller
+# runs under. `apply` checks that it did, and refuses otherwise.
+#
+# That check exists because of `decoder_threshold_hz`. It sat in this genome
+# doing nothing for every run before this one -- the Decoder read its
+# threshold when the controller was built and never consulted Settings again,
+# so the search optimised a number no fly could feel, and nothing said so.
+# Both paths now read it per observation. Every result recorded before that
+# was produced by a fly deciding at 2 Hz whatever its genome claimed.
+SETTINGS = ("pulse_current", "decoder_threshold_hz")
 
 
 def load(path):
@@ -110,6 +113,15 @@ def apply(controller, genome, pristine=None):
     """
     brain = controller.brain
     kc = brain.circuit["kc"]
+    for name in SETTINGS:
+        if getattr(controller.s, name) != genome[name]:
+            raise ValueError(
+                f"{name} is {getattr(controller.s, name)} on the controller "
+                f"and {genome[name]} in the genome. It lives in Settings, so "
+                f"it must be set before the fly is built or replaced on the "
+                f"controller before this is called -- otherwise the fly runs "
+                f"at one value and the record claims another."
+            )
     if pristine is None:
         pristine = pristine_inhibitory(brain)
     brain.rest[kc] = genome["kc_rest"]
@@ -130,8 +142,8 @@ def apply(controller, genome, pristine=None):
     if controller.gustation is not None:
         controller.gustation.floor = genome["satiety_floor"]
         controller.gustation.span = genome["satiety_span"]
-    return {"applied": [k for k in SPACE if k not in INERT],
-            "inert": list(INERT)}
+    return {"applied": [k for k in SPACE if k not in SETTINGS],
+            "settings": list(SETTINGS)}
 
 
 def pristine_inhibitory(brain):

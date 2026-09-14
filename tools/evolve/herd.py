@@ -28,6 +28,7 @@ Nothing here decides a trade. The herd reports what the decoder says and the
 accounts do the rest, exactly as `evaluate.replay` does for one fly.
 """
 
+import collections
 import json
 import time
 from pathlib import Path
@@ -35,11 +36,13 @@ from pathlib import Path
 import numpy as np
 
 from stonkfly.display import market_frame
+from stonkfly.neural.controller import BASELINE
 from stonkfly.neural.brain import PARAMETERS
 from stonkfly.neural.olfaction import FAST
 from stonkfly.reinforcement import reinforcement
 
-from .evaluate import CHART_WINDOW, PRODUCT, WARMUP, Account, buy_and_hold
+from .evaluate import (CHART_WINDOW, PRODUCT, WARMUP, Account,
+                       buy_and_hold, score)
 from .genome import WILD_TYPE
 from .series import quotes
 
@@ -219,6 +222,8 @@ class Herd:
         # the account, and with it the reinforcement sign, the satiety current
         # and the odour of the last fill.
         self.starts = list(starts) if starts is not None else [0] * self.batch
+        self.readouts = [collections.deque(maxlen=BASELINE)
+                         for _ in range(self.batch)]
         if len(self.starts) != self.batch:
             raise ValueError("one start per genome")
         brain = self.brain = controller.brain
@@ -344,6 +349,10 @@ class Herd:
         cp, B, n = self.cp, self.batch, self.n
         brain = self.brain
         brain.reset()
+        # One readout history per fly, for the resting difference the decoder
+        # subtracts. `FlyController` keeps the same thing for one fly; a wave
+        # holds eighty-four, and they must not share it.
+        self.readouts = [collections.deque(maxlen=BASELINE) for _ in range(B)]
         initial = brain.initial
 
         cells = np.zeros((B, n), CELL)
@@ -480,7 +489,7 @@ class Herd:
             left -= self.bin
 
         window = self.settings.neural_ms / 1000
-        return [self._decode(totals[b], window) for b in range(B)]
+        return [self._decode(totals[b], window, fly=b) for b in range(B)]
 
     def _sensory_parameters(self, genome):
         """The genome's front end, on the one CPU brain the herd borrows."""
@@ -557,29 +566,37 @@ class Herd:
                           np.int32(self.nplastic), np.int32(B)))
         return counts.astype(np.int64)
 
-    def _decode(self, row, window):
+    def _decode(self, row, window, fly):
         """`Decoder.decode`, on the gathered rows rather than all 166,700.
 
-        The threshold is the controller's, not the genome's. `configured()`
-        puts `decoder_threshold_hz` into a replaced Settings, and the Decoder
-        read its threshold when the controller was built and never looks at
-        Settings again -- so that gene does nothing in the CPU path either.
-        Matching the CPU is the point of this class; the gene is reported as
-        dead rather than quietly brought to life here.
+        The threshold comes from this fly's own genome. A wave holds
+        eighty-four different flies and the threshold is one of the fourteen
+        things that differ between them, so it cannot be taken from the shared
+        controller -- `configured()` does that on the CPU side, where there is
+        one fly at a time. Both paths read it per observation now; before,
+        both read it once when the controller was built, and every search up
+        to that point optimised a gene no fly could feel.
         """
         a, b, c, e = (int(self.cuts[i]) for i in (2, 3, 4, 5))
         left = float(np.mean(row[a:b]) / window)
         right = float(np.mean(row[b:c]) / window)
         difference = right - left
         gate = int(row[c:e].sum())
-        threshold = self.controller.decoder.threshold
-        side = ("HOLD" if not gate or abs(difference) < threshold
-                else "BUY" if difference > 0 else "SELL")
+        threshold = float(self.genomes[fly]["decoder_threshold_hz"])
+        history = self.readouts[fly]
+        resting = float(np.median(history)) if history else 0.0
+        relative = difference - resting
+        # Appended after the decision, never before.
+        history.append(difference)
+        side = ("HOLD" if not gate or abs(relative) < threshold
+                else "BUY" if relative > 0 else "SELL")
         return {
             "side": side,
             "left_hz": left,
             "right_hz": right,
             "difference_hz": difference,
+            "relative_hz": relative,
+            "baseline_hz": resting,
             "gate_spikes": gate,
             "KC_spikes": int(row[e:].sum()),
         }
@@ -695,9 +712,11 @@ def replay_herd(herd, prices, observations, report=None, record=False,
     return rows
 
 
-def evaluate_herd(herd, prices, observations, report=None):
-    """`evaluate.evaluate` for every fly: profit, and profit over benchmark."""
-    rows = replay_herd(herd, prices, observations, report)
+def evaluate_herd(herd, prices, observations, report=None, horizon=None,
+                  bars=None):
+    """`evaluate.evaluate` for every fly: profit, benchmark, and readout IC."""
+    rows = replay_herd(herd, prices, observations, report,
+                       record=bool(horizon), bars=bars)
     benchmark = {}
     for row, start in zip(rows, herd.starts):
         if start not in benchmark:
@@ -705,6 +724,7 @@ def evaluate_herd(herd, prices, observations, report=None):
                                             herd.settings)
         row["buy_and_hold"] = benchmark[start]
         row["excess"] = row["profit"] - benchmark[start]
+        score(row, prices, start, horizon)
     return rows
 
 
@@ -718,7 +738,7 @@ class HerdRunner:
     """
 
     def __init__(self, settings, batch=None, controller=None, pristine=None,
-                 out=None):
+                 out=None, horizon=None, bars=None):
         from .evaluate import build
 
         # Where the heartbeat goes. A generation writes nothing to disk until
@@ -732,6 +752,11 @@ class HerdRunner:
 
         deprioritise()
         self.out = out
+        # What the search is ranked on: the readout against the return this
+        # many bars ahead. None reproduces the money-ranked search.
+        self.horizon = horizon
+        # Whole klines beside the closes, for the whole-bar odour channels.
+        self.bars = bars
         self.stage = ""
         self.wave = (0, 0)
         self.beat = 0.0
@@ -811,19 +836,24 @@ class HerdRunner:
             name = name.decode()
         return f"{name}, {self.batch} flies a wave"
 
-    def _wave(self, genomes, starts, prices, observations):
+    def _wave(self, genomes, starts, prices, observations, bars=None):
         herd = Herd(self.controller, self.pristine, genomes, self.settings,
                     starts)
         try:
             return evaluate_herd(
                 herd, prices, observations,
-                self._report(len(genomes), starts, observations, WARMUP))
+                self._report(len(genomes), starts, observations, WARMUP),
+                self.horizon, self.bars if bars is None else bars)
         finally:
             del herd
             self.cp.get_default_memory_pool().free_all_blocks()
 
-    def evaluate(self, genomes, prices, offsets, observations):
-        """Rows per genome, one per start, in the order the offsets came in."""
+    def evaluate(self, genomes, prices, offsets, observations, bars=None):
+        """Rows per genome, one per start, in the order the offsets came in.
+
+        `bars` overrides the runner's own, so a validation segment can be
+        handed over without building a second runner.
+        """
         tasks = [(i, start) for i in range(len(genomes)) for start in offsets]
         rows = [[] for _ in genomes]
         waves = (len(tasks) + self.batch - 1) // self.batch
@@ -831,7 +861,8 @@ class HerdRunner:
             self.wave = (index, waves)
             wave = tasks[cut:cut + self.batch]
             done = self._wave([genomes[i] for i, _ in wave],
-                              [s for _, s in wave], prices, observations)
+                              [s for _, s in wave], prices, observations,
+                              bars)
             for (i, _), row in zip(wave, done):
                 rows[i].append(row)
         return rows
