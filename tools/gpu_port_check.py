@@ -79,18 +79,26 @@ TABLE_SOURCE = """// The decay tables exactly as kernel.cpp builds them, same co
 // unit in the last place, which is enough to make every voltage downstream
 // disagree and look like a race in the port.
 #include <cmath>
+#define ENTRIES (1 << 20)
 extern "C" __declspec(dllexport) void build(float dt, float tau_a,
-                                            float* av, float* ag, float* aa) {
-  for (int i = 0; i < 1024; i++) {
+                                            float tau_elig,
+                                            float* av, float* ag, float* aa,
+                                            float* am, float* ae) {
+  for (int i = 0; i < ENTRIES; i++) {
     av[i] = std::exp(-dt * i / 20.f);
     ag[i] = std::exp(-dt * i / 5.f);
     aa[i] = std::exp(-dt * i / tau_a);
+    // The kernel decays these two inline rather than from a table; the
+    // argument is still -dt times a whole number of ticks, so it tabulates
+    // exactly the same way and stops the device's exp from disagreeing.
+    am[i] = std::exp(-dt * i / 100.f);
+    ae[i] = std::exp(-dt * i / tau_elig);
   }
 }
 """
 
 
-def tables(dt, adaptation_tau):
+def tables(dt, adaptation_tau, tau_elig):
     """Built by the kernel's own compiler, not by numpy.
 
     The GPU has to be handed the same numbers the CPU kernel computes for
@@ -120,8 +128,9 @@ def tables(dt, adaptation_tau):
         library = out / "tab.so"
     subprocess.run(argv, cwd=out, env=env, check=True, capture_output=True)
     lib = ctypes.CDLL(str(library))
-    arrays = [np.zeros(1024, np.float32) for _ in range(3)]
+    arrays = [np.zeros(1 << 20, np.float32) for _ in range(5)]
     lib.build(ctypes.c_float(dt), ctypes.c_float(adaptation_tau),
+              ctypes.c_float(tau_elig),
               *[x.ctypes.data_as(ctypes.POINTER(ctypes.c_float))
                 for x in arrays])
     return tuple(arrays)
@@ -134,27 +143,35 @@ def run_gpu(cp, kernel, brain, state, steps, batch, settings):
     c = brain.circuit
     dt = np.float32(brain.dt)
     tau_a = np.float32(brain.adaptation_tau)
-    av, ag, aa = (cp.asarray(x) for x in tables(brain.dt, brain.adaptation_tau))
+    tau_elig = np.float32(PARAMETERS["trace_kc_seconds"] * 1000)
+    av, ag, aa, am, ae = (
+        cp.asarray(x)
+        for x in tables(brain.dt, brain.adaptation_tau, float(tau_elig)))
     delay = int(round(1.8 / brain.dt))
     rfc = int(round(2.2 / brain.dt))
     slots = delay + 1
 
-    def tile(name, dtype=None):
-        a = np.asarray(state[name])
-        a = a.astype(dtype) if dtype else a
-        return cp.asarray(np.tile(a, (batch,) + (1,) * (a.ndim - 1))
-                          if a.ndim else np.repeat(a, batch))
+    def tile(name):
+        """Genome-major: the kernel offsets each genome by a whole array.
+
+        Always raveled first. `np.tile` on a 2-D array with a scalar repeat
+        tiles the last axis, so `queue`, which numpy holds as (slots, n), came
+        out interleaved by row -- genome 0's slot 0 beside genome 1's slot 0 --
+        and every delivery after that read another genome's spikes.
+        """
+        return cp.asarray(np.tile(np.asarray(state[name]).ravel(), batch))
 
     d = {name: tile(name) for name in
          ["v", "g", "refractory", "previous_drive", "counts", "active",
           "last", "eligibility", "eligibility_last", "modulation",
           "modulation_last", "adaptation", "weight"]}
-    d["flags"] = cp.asarray(np.tile(state["active_flag"], batch))
-    d["queue"] = cp.asarray(np.tile(state["queue"], batch))
-    d["queue_count"] = cp.asarray(np.tile(state["queue_count"], batch))
-    d["nactive"] = cp.asarray(np.tile(state["nactive"], batch).astype(np.int32))
+    d["flags"] = tile("active_flag")
+    d["queue"] = tile("queue")
+    d["queue_count"] = tile("queue_count")
+    d["nactive"] = cp.asarray(
+        np.tile(np.asarray(state["nactive"]).ravel(), batch).astype(np.int32))
     d["clock"] = cp.asarray(np.full(batch, state["clock"][0], np.int64))
-    drive = cp.asarray(np.tile(np.asarray(brain.drive), batch))
+    drive = cp.asarray(np.tile(np.asarray(brain.drive).ravel(), batch))
 
     args = (
         np.int32(brain.n), np.int32(batch), cp.asarray(brain.ptr),
@@ -167,11 +184,11 @@ def run_gpu(cp, kernel, brain, state, steps, batch, settings):
         cp.asarray(c["edges"]), cp.asarray(c["pre"]),
         cp.asarray(brain.baseline_plastic), cp.asarray(c["gain"]),
         np.float32(brain.eta),
-        np.float32(PARAMETERS["trace_kc_seconds"] * 1000),
-        np.float32(PARAMETERS["minimum_fraction"]), np.int32(0),
+        tau_elig, np.float32(PARAMETERS["minimum_fraction"]), np.int32(0),
         d["modulation"], d["modulation_last"], cp.asarray(brain.modulation_mask),
         cp.asarray(brain.rest), d["adaptation"], np.float32(brain.adaptation_jump),
-        tau_a, av, ag, aa, np.int32(delay), np.int32(rfc), np.int32(slots),
+        tau_a, av, ag, aa, am, ae, np.int32(delay), np.int32(rfc),
+        np.int32(slots),
         cp.zeros(1, cp.int32),
     )
     cp.cuda.Stream.null.synchronize()
@@ -187,8 +204,11 @@ def run_gpu(cp, kernel, brain, state, steps, batch, settings):
                  "modulation_last", "adaptation"]:
         out[name] = cp.asnumpy(d[name])[:n]
     out["active_flag"] = cp.asnumpy(d["flags"])[:n]
-    out["queue"] = cp.asnumpy(d["queue"])[:len(state["queue"])]
-    out["queue_count"] = cp.asnumpy(d["queue_count"])[:len(state["queue_count"])]
+    # Genome 0's slice, reshaped back to however numpy held it.
+    q = np.asarray(state["queue"])
+    out["queue"] = cp.asnumpy(d["queue"])[:q.size].reshape(q.shape)
+    qc = np.asarray(state["queue_count"])
+    out["queue_count"] = cp.asnumpy(d["queue_count"])[:qc.size].reshape(qc.shape)
     out["nactive"] = cp.asnumpy(d["nactive"])[:1].astype(state["nactive"].dtype)
     out["weight"] = cp.asnumpy(d["weight"])[:len(state["weight"])]
     out["clock"] = cp.asnumpy(d["clock"])[:1]

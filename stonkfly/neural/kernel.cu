@@ -42,7 +42,11 @@
 // every integer width below is spelled out instead.
 
 #define BLOCK 256
-#define TABLE 1024
+// kernel.cpp keeps 1024 entries and calls std::exp past them. The device
+// cannot reproduce that call, so the table is extended instead -- built by the
+// host's own compiler, it holds exactly what std::exp would have returned, and
+// the fallback below stops being reachable for any tick count a run uses.
+#define TABLE (1 << 20)
 
 __device__ __forceinline__ float table(const float* t, long long d, float dt,
                                        float tau) {
@@ -97,20 +101,32 @@ __device__ void evolve(const Brain& b, int i, long long now, float current,
   const int frozen = b.refractory[i] > 0 ? b.refractory[i] - 1 : 0;
   const int skip = (int)(d < frozen ? d : frozen);
   if (skip > 0 && b.adaptation[i] > 0.f)
-    b.adaptation[i] *= table(aa, skip, dt, tau_a);
+    b.adaptation[i] = __fmul_rn(b.adaptation[i], table(aa, skip, dt, tau_a));
   b.refractory[i] =
       d >= b.refractory[i] ? 0 : (short)(b.refractory[i] - d);
   d -= skip;
   if (d > 0) {
     const float a = table(av, d, dt, 20.f);
     const float bb = table(ag, d, dt, 5.f);
-    b.v[i] = rest[i] + (b.v[i] - rest[i]) * a + current * (1.f - a)
-           + b.g[i] * (a - bb) / 3.f;
-    b.g[i] *= bb;
+    // Spelled with round-to-nearest intrinsics, not operators. The same
+    // expression written plainly compiles to rest + ((t1 + t2) + t3) here
+    // while the host computes ((rest + t1) + t2) + t3, and the two differ by
+    // half a unit in the last place -- which is a spike, for a cell sitting on
+    // the threshold. --fmad=false does not prevent the reassociation; these
+    // do, because each is one IEEE operation the compiler cannot fold.
+    const float t1 = __fmul_rn(__fsub_rn(b.v[i], rest[i]), a);
+    const float t2 = __fmul_rn(current, __fsub_rn(1.f, a));
+    const float t3 = __fdiv_rn(__fmul_rn(b.g[i], __fsub_rn(a, bb)), 3.f);
+    b.v[i] = __fadd_rn(__fadd_rn(__fadd_rn(rest[i], t1), t2), t3);
+    b.g[i] = __fmul_rn(b.g[i], bb);
     if (b.adaptation[i] > 0.f) {
       const float c = table(aa, d, dt, tau_a);
-      b.v[i] -= b.adaptation[i] * tau_a / (tau_a - 20.f) * (c - a);
-      b.adaptation[i] *= c;
+      const float shed = __fmul_rn(
+          __fdiv_rn(__fmul_rn(b.adaptation[i], tau_a),
+                    __fsub_rn(tau_a, 20.f)),
+          __fsub_rn(c, a));
+      b.v[i] = __fsub_rn(b.v[i], shed);
+      b.adaptation[i] = __fmul_rn(b.adaptation[i], c);
     }
   }
   b.last[i] = now;
@@ -136,7 +152,8 @@ extern "C" __global__ void memory_advance_batch(
     const float* __restrict__ rest,
     float* adaptation_all, const float adaptation_jump, const float adaptation_tau,
     const float* __restrict__ av, const float* __restrict__ ag,
-    const float* __restrict__ aa, const int delay, const int rfc,
+    const float* __restrict__ aa, const float* __restrict__ am,
+    const float* __restrict__ ae, const int delay, const int rfc,
     const int slots, int* scratch_all) {
   const int b = blockIdx.x;
   if (b >= batch) return;
@@ -226,9 +243,9 @@ extern "C" __global__ void memory_advance_batch(
         brain.counts[i]++;
         if (kc_mask[i]) {
           brain.adaptation[i] += adaptation_jump;
-          brain.eligibility[i] *= exp(
-              -(double)dt * (double)(now - brain.eligibility_last[i])
-              / (double)tau_elig_ms);
+          brain.eligibility[i] *=
+              (double)table(ae, now - brain.eligibility_last[i], dt,
+                            tau_elig_ms);
           brain.eligibility[i] += 1.0;
           brain.eligibility_last[i] = now;
         }
@@ -261,18 +278,21 @@ extern "C" __global__ void memory_advance_batch(
       if (modulation_mask[i]) {
         for (long long e = first + tid; e < stop; e += BLOCK) {
           const int j = post[e];
-          brain.modulation[j] *= expf(
-              -dt * (float)(now - brain.modulation_last[j]) / 100.f);
-          brain.modulation[j] += fabsf(brain.weight[e]) / .275f;
+          brain.modulation[j] = __fmul_rn(
+              brain.modulation[j],
+              table(am, now - brain.modulation_last[j], dt, 100.f));
+          brain.modulation[j] = __fadd_rn(
+              brain.modulation[j],
+              __fdiv_rn(fabsf(brain.weight[e]), .275f));
           brain.modulation_last[j] = now;
         }
         __syncthreads();
         if (learning_enabled && dan_index[i] >= 0) {
           for (int p = tid; p < nplastic; p += BLOCK) {
             const int pre = plastic_pre[p];
-            const double trace = brain.eligibility[pre] * exp(
-                -(double)dt * (double)(now - brain.eligibility_last[pre])
-                / (double)tau_elig_ms);
+            const double trace = brain.eligibility[pre] *
+                (double)table(ae, now - brain.eligibility_last[pre], dt,
+                              tau_elig_ms);
             const float gain = dan_gain[dan_index[i] * nplastic + p];
             const long long edge = plastic_edge[p];
             const float candidate =
@@ -295,7 +315,7 @@ extern "C" __global__ void memory_advance_batch(
           evolve(brain, j, now, brain.drive[j], av, ag, aa, dt, adaptation_tau,
                  rest);
           if (brain.refractory[j] == 0) {
-            brain.g[j] += brain.weight[e];
+            brain.g[j] = __fadd_rn(brain.g[j], brain.weight[e]);
             want = brain.flags[j] ? 0 : 1;
           }
         }
