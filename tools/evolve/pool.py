@@ -16,18 +16,48 @@ _STATE = {}
 
 
 def deprioritise():
-    """Below-normal scheduling priority, on either platform."""
+    """Below-normal scheduling priority, on either platform.
+
+    The Windows branch declares its argument types. Without them ctypes gives
+    GetCurrentProcess a C `int` return, so the pseudo-handle (HANDLE)-1 comes
+    back as a 32-bit -1, SetPriorityClass rejects it and returns 0, and the
+    process quietly keeps running at normal priority -- which is what shipped,
+    and what made "eight workers that leave the machine usable" untrue on the
+    one platform this repository is developed on. A failure here is raised
+    rather than ignored: a background run that silently competes with the
+    interactive session is the whole thing this function exists to prevent.
+    """
     if sys.platform == "win32":
         import ctypes
 
         BELOW_NORMAL_PRIORITY_CLASS = 0x00004000
-        handle = ctypes.windll.kernel32.GetCurrentProcess()
-        ctypes.windll.kernel32.SetPriorityClass(handle, BELOW_NORMAL_PRIORITY_CLASS)
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+        kernel32.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+        kernel32.SetPriorityClass.restype = ctypes.c_int
+        ok = kernel32.SetPriorityClass(
+            kernel32.GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS
+        )
+        if not ok:
+            raise ctypes.WinError(ctypes.get_last_error())
     else:
         try:
             os.nice(10)
         except OSError:
             pass
+
+
+def priority():
+    """What the scheduler actually thinks, for a test to check."""
+    if sys.platform == "win32":
+        import ctypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+        kernel32.GetPriorityClass.argtypes = [ctypes.c_void_p]
+        kernel32.GetPriorityClass.restype = ctypes.c_uint32
+        return int(kernel32.GetPriorityClass(kernel32.GetCurrentProcess()))
+    return os.getpriority(os.PRIO_PROCESS, 0)
 
 
 def initialise(settings):

@@ -150,3 +150,25 @@ def test_ceiling_is_an_upper_bound_and_detects_a_dead_window():
     a = Account("100", "10", "0.006")
     assert a.start == 100.0
     assert high["round_trip_cost_percent"] == pytest.approx(1.2)
+
+
+def test_deprioritise_actually_lowers_priority():
+    """The shipped Windows branch failed silently and left workers at normal.
+
+    ctypes gave GetCurrentProcess an int return, so the (HANDLE)-1 pseudo-handle
+    arrived as a 32-bit -1 and SetPriorityClass refused it. Nothing raised, and
+    eight background workers competed with the interactive session for months.
+    Asserting the scheduler's own answer is the only version of this test that
+    would have caught it.
+    """
+    import sys
+
+    from tools.evolve.pool import deprioritise, priority
+
+    before = priority()
+    deprioritise()
+    after = priority()
+    if sys.platform == "win32":
+        assert after == 0x4000, f"expected BELOW_NORMAL, got {after:#x}"
+    else:
+        assert after > before
