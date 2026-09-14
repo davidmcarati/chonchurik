@@ -8,7 +8,7 @@ inside the package would invalidate every existing run directory.
 Requires a prepared dataset (`python -m stonkfly prepare`).
 
 ```sh
-python tools/diagnose.py                      # all four tests
+python tools/diagnose.py                      # every test
 python tools/diagnose.py laterality --frames 8
 python tools/diagnose.py ablate --levels 1 5 20 50 --repeats 5
 ```
@@ -25,6 +25,14 @@ leaves the machine usable.
 | `laterality` | What produces the standing R>L drive behind the one-sided proposals? | four arms: baseline, mirrored, header repainted, per-side drive equalised |
 | `separation` | Can the fly tell one market state from another? | per-receptor input separation and Kenyon-code collisions across 8 market shapes and 3 candidate chart renderings |
 | `ablate` | How much of the brain actually changes the decision? | spread of `difference_hz` against the decision threshold, as neurons are silenced |
+| `sparseness` | Is there any parameter regime where the Kenyon code is sparse? | `kc_rest`, APL gain, adaptation and lamina bias, one at a time and crossed |
+| `olfaction` | Does the odour channel separate what the chart could not? | glomerular and Kenyon codes over peak current x APL gain |
+| `kc_input` | Do the same loudest Kenyon cells always win? | code overlap with summed input onto each Kenyon cell equalised |
+| `odor_tuning` | Is the shared Kenyon code inherited from the receptors? | input overlap against Kenyon overlap across four tuning widths |
+| `pathway` | Which synapse does the market signal stop surviving? | overlap layer by layer out from the receptors |
+| `inhibition` | Does one excitation/inhibition ratio explain every saturation? | every layer's overlap and Kenyon sparseness across inhibitory gains |
+| `pulse` | How much current does each dopamine compartment actually need? | per-cell spikes in PAM11 against PPL101 |
+| `decoder` | Would a wider readout have more market signal than noise? | spread across market states over standard deviation under ablation |
 | `reinforce` | Does plasticity carry the reinforcement signal, or only its amount? | plastic weights under three arms: ordered, shuffled, and no external reinforcement |
 
 `tools/scenes.py` holds the canonical market shapes and the candidate chart
@@ -66,11 +74,26 @@ magnitude metric has been right. Prefer spread and effect size over counts:
 | `ablate` | decision survives 50% ablation, so it is robust | spread reaches 14x the decision threshold, so the label is held by a standing bias |
 | `reinforce` | the no-reward arm moves 97% as many edges, so reinforcement barely matters | reinforcement quadruples how far they move |
 | `separation` | a fixed price axis separates the input best | it also reintroduces six Kenyon-code collisions, which is what actually blocks learning |
+| `olfaction` | no two Kenyon codes are byte-identical, so the states are distinguishable | they share 88% of their active cells; zero identical pairs is what saturation looks like |
+| `decoder` | a wider readout beats the shipped one at 1.15 signal-to-noise | at 15 repeats instead of 5 it is 0.64, and the first number was noise in an estimate of noise |
 
 The verdict strings encode these rules, so read them rather than eyeballing
 the raw tables.
 
 ## Method notes
+
+**Every physiology change is restored and checked.** `sparseness`, `olfaction`,
+`kc_input`, `odor_tuning`, `pathway` and `inhibition` all alter resting
+potentials, adaptation, tonic current or synaptic gain inside a context
+manager and assert `ptr`, `post` and `weight` byte-identical on the way out.
+An arm that leaks would silently contaminate every later arm in the same run.
+
+**Read overlap, not identical pairs.** When 38% of the Kenyon population
+fires, no two codes are ever byte-identical and a collision count reads as a
+perfect score while the representation carries nothing. The verdicts rank on
+mean Jaccard overlap and treat a code as usable only if it is also sparse in
+every market state.
+
 
 **Silencing, not pruning.** `ablate` hyperpolarises cells with a large negative
 `tonic` current — the in-silico analogue of Kir2.1/GtACR. No node or edge is

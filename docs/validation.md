@@ -105,6 +105,167 @@ Filling the area under the curve removes every collision (10 → 0) and separate
 
 Both APL cells are present in the graph and correctly wired — 2,259 and 2,374 inhibitory outputs onto Kenyon cells (net −26,274 and −27,681), with 2,270 and 2,423 Kenyon inputs returning to them. The feedback loop that enforces sparseness in a real mushroom body exists here; it is not holding the population in range.
 
+### Is there any parameter regime where the Kenyon code is sparse?
+
+The separation measurement above left Kenyon activity bimodal in every chart
+rendering. Sparseness is therefore set by the dynamics, not by the picture, so
+each declared free parameter was swept to see whether the biological range —
+a few percent of Kenyon cells per stimulus — is reachable at all. Frozen
+weights, filled rendering, four market states per point, everything restored
+and `ptr`/`post`/`weight` asserted byte-identical afterwards.
+
+One lever at a time, median Kenyon activity across the four states:
+
+| Lever | Range swept | Median Kenyon activity |
+| --- | --- | --- |
+| `kc_rest` | −75 to −50 mV | 0.05% – 18.5% |
+| APL gain on 4,633 existing APL→KC edges | ×1 to ×16 | 0.10% – 33.0% |
+| `adaptation_jump` | 0 to 40 mV | 0.10% – 33.1% |
+| `lamina_bias` | 4 to 16 | 0.10% – 33.0% |
+
+Then `kc_rest` crossed with APL gain, 30 points. **Not one holds all four
+states inside a 1%–15% band.** Over all 196 observations of the sweep, 84%
+leave Kenyon cells near-silent and 10% put more than a fifth of the population
+in spikes; **6% land in between**. Whole-brain spiking moves with it, 385,000
+spikes per observation when Kenyon cells are silent against 452,000 when they
+are active, so this is a property of the network and not of one population.
+
+The floor is literally two cells out of 4,064. The ceiling is a third of the
+population. The parameters choose which of the two the network falls into;
+they do not produce a graded response. **Sparseness here cannot be set by
+gain**, and any improvement to the input only picks between the same two
+attractors.
+
+One finding came out of this sweep that was not what it was looking for. Every
+manipulation of the *input* tested earlier produced zero SELL proposals in 24
+observations. Moving these *physiology* parameters produced 23 SELLs in 196
+observations, and 17 of the 30 grid points give more than one distinct
+decision. That does not mean the fly changed its mind: the widest SELL margin
+is 4 spikes past the threshold against 6 for BUY, on a quantity whose standard
+deviation under 1% ablation is already 2.94 Hz. The readout came off its rail,
+which is a different thing from deciding.
+
+### Does the olfactory channel give the mushroom body what vision could not?
+
+Olfactory receptor neurons reach 3,829 of the 4,064 Kenyon cells in two
+synapses through the antennal lobe. Vision has no such route. The channel
+described in [the model](model.md) was measured against the chart on the same
+eight market states, with the chart held at the neutral scene for the
+odour-only arm, so any difference is attributable to the antennal lobe.
+
+The odour is distinct where the chart was not — 0 of 28 state pairs share a
+glomerular code, against 10 of 28 sharing a Kenyon code under the old chart.
+But the receptor population is itself a step: it emits no spike at all up to a
+peak current of 5 and saturates the Kenyon population immediately above it.
+Crossing peak current with APL gain over 25 points found one sparse regime,
+APL ×2, holding Kenyon activity at 7.5–8.7% for **all eight** market states —
+the first time any configuration in this experiment reached the biological
+range. The states still shared 77% of their active Kenyon cells.
+
+**Two explanations for that shared code were tested and both failed.**
+
+| Hypothesis | Test | Result |
+| --- | --- | --- |
+| The same intrinsically loudest cells always win | Equalise summed excitatory input onto every Kenyon cell (spread 26.4 to 509.9, a factor of 19) | overlap 0.76 → **0.76** |
+| The states share too many glomeruli to begin with | Sharpen the tuning curve, 17.2 glomeruli per state down to 4.9 | input overlap 0.44 → 0.19, Kenyon overlap 0.76 → **0.79** |
+
+Halving the input overlap moved the Kenyon overlap by −0.03. The shared code
+is made in the mushroom body, not inherited from the receptors.
+
+### Where the market signal is actually lost
+
+Walking out from the receptors one synapse at a time, overlap between market
+states:
+
+| Layer | Cells | Median active | Overlap | Rate correlation |
+| --- | --- | --- | --- | --- |
+| glomerular code (before any spike) | 53 channels | — | **0.44** | — |
+| olfactory receptors | 2,635 | 43.7% | 0.61 | 0.346 |
+| **antennal lobe (1 synapse)** | 1,151 | **94.0%** | **0.98** | 0.964 |
+| 2 synapses | 43,438 | 16.6% | 0.87 | 0.984 |
+| Kenyon cells | 4,064 | 8.9% | 0.76 | 0.933 |
+
+**The first synapse destroys it.** 94% of the antennal lobe fires for every
+market state; the overlap goes from 0.61 to 0.98 in one step and nothing
+downstream recovers what is lost there.
+
+### One ratio explains every saturation
+
+Excitation and inhibition are both set from contact count × 0.275, with the
+sign taken from the transmitter annotation. Real circuits are not balanced
+that way. Scaling every one of the 9,813,608 inhibitory edges (38% of the
+graph) — sign, wiring and relative magnitudes untouched:
+
+| Inhibitory gain | Antennal lobe overlap | Kenyon overlap | Kenyon active | States in 1–15% band | Whole-brain spikes |
+| --- | --- | --- | --- | --- | --- |
+| ×1 (as reconstructed) | 0.98 | 0.88 | 41.3 – 46.6% | 0 / 8 | 667,430 |
+| ×1.5 | 0.93 | 0.64 | 7.9 – 11.7% | 8 / 8 | 505,565 |
+| ×1.7 | 0.92 | 0.57 | 3.7 – 5.3% | 8 / 8 | 466,920 |
+| **×1.9** | 0.91 | **0.50** | **1.6 – 2.4%** | **8 / 8** | 442,477 |
+| ×2 | 0.90 | 0.49 | 1.0 – 1.4% | 5 / 8 | 435,366 |
+| ×3 | 0.84 | 0.32 | 0.05 – 0.17% | 0 / 8 | 398,305 |
+
+×1.9 was selected by a rule declared before the sweep ran: sparse in every
+market state first, lowest overlap second. It is a declared free parameter and
+it ships. A real mushroom body holds an overlap nearer 0.1–0.3, so 0.50 is
+still poor; what changed is that a graded regime exists at all.
+
+**This has a cost, and the cost is informative.** At ×1.9 a white field no
+longer reaches the mushroom body: 12 Kenyon spikes against 2,089 before. That
+is not a regression. Measured across the whole gain range, the chart drives
+either a third of the Kenyon population or exactly two cells of it and never
+anything between — the visual pathway has no operating point at any ratio, and
+what used to look like sensory drive was saturation. The earlier finding that
+the chart produced 10 of 28 identical Kenyon codes says the same thing from
+the other side.
+
+One consequence is worth stating separately. With the network out of
+saturation, an observation with no reinforcement now changes **zero** plastic
+edges, where reward changes 144. The earlier measurement — 3,401 edges moved
+with no external reward, 97% of the reinforced arms — was a property of the
+saturated regime, not of the learning rule.
+
+### Two calibrations that were never decisions
+
+Both were found by measurement, not by intent.
+
+The reward and aversive pulses are the same engineered amplitude into
+identified cells, but PAM11 has 15 cells and PPL101 has 2. At the shipped
+amplitude of 20 the reward compartment received **14.7× the per-cell drive**
+the aversive one did — an accident of population size. 40 is the smallest
+swept amplitude driving both within 2× (32.2 against 21.0 spikes per cell).
+
+The satiety channel was written to deliver a current between zero and a peak.
+A cell needs about 7 units of drive to reach threshold, so it reported gains
+and nothing else: a 2% loss, a 5% loss and an untouched account all arrived as
+silence. Delivered between 8 and 32 instead, it is monotone across the range —
+264 spikes at −7% equity, 808 at rest, 1,275 at a gain.
+
+### Would a wider readout help?
+
+Three candidate readouts, each a whole anatomical class split by soma side, so
+none is selected for how it behaves. Signal is the spread of the reading
+across eight market states; noise is its standard deviation over 15 repeats
+with 5% of the network silenced and the market held fixed. Both readings come
+from the same observations, split into ten 50 ms bins.
+
+| Readout | Cells (L/R) | Best signal-to-noise |
+| --- | --- | --- |
+| DNp20, as shipped | 1 / 1 | 0.43 |
+| descending neurons | 656 / 648 | **0.66** |
+| descending + motor | 1,065 / 1,054 | 0.64 |
+
+An integrating statistic — whether the side difference held across the window,
+rather than how large the summed difference was — is what the wide populations
+score best on. **Every candidate is still below 1.** For all of them the
+market moves the readout less than silencing unrelated neurons does. Widening
+the readout improves it by about half and does not fix it, so **no decoder
+change ships**; the bottleneck is still upstream.
+
+A first pass at 5 repeats put `descending + motor` at 1.15 and would have
+justified shipping it. The 15-repeat re-run put it at 0.64. The number that
+mattered was noise in a five-sample estimate of noise.
+
 ### Participation and plasticity
 
 Baseline over six frames: **11.2%** of neurons fire at least once; participation ratio (effective contributing population) **8,832** of 166,700, i.e. about 5%; superclass entropy 1.47 bits; 404,336 spikes per observation; 1,083 KC spikes.

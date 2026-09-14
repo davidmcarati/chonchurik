@@ -1502,7 +1502,7 @@
     },
     "verdict": "reinforcement carries signal: presence moves the memory 11.6% (relative L1) against a 3,401-edge endogenous baseline, timing moves it 2.6%. Presence dominates timing 4.6x -- the rule responds mostly to HOW MUCH dopamine arrived, not WHEN. GA is unblocked, but what it can select on is dose, not credit assignment"
   },
-  "wall_seconds": 37.1,
+  "wall_seconds": 56.0,
   "separation": {
     "scenes": [
       "rally",
@@ -1718,5 +1718,6212 @@
       "distinct_sides": 2
     },
     "verdict": "current chart: a market state changes only 4.19% of receptors (correlation 0.906), and 10/28 state pairs land on an IDENTICAL Kenyon code -- those pairs can never be told apart by any reinforcement rule. Best candidate 'filled' removes them: 0/28 identical pairs, overlap 0.40, input separation 14.87%. Note: every rendering leaves Kenyon activity bimodal (near-silent or ~30% active, never near the ~5% a real mushroom body holds), so sparseness is set by network dynamics, not by the picture -- fixing the input is necessary but not sufficient"
+  },
+  "sparseness": {
+    "target_active_fraction": 0.05,
+    "acceptable_band": [
+      0.01,
+      0.15
+    ],
+    "renderer": "filled",
+    "sweep_scenes": [
+      "rally",
+      "crash",
+      "flat",
+      "chop"
+    ],
+    "kenyon_cells": 4064,
+    "apl_cells": 2,
+    "apl_kc_edges": 4633,
+    "levers": {
+      "kc_rest": [
+        -75.0,
+        -70.0,
+        -65.0,
+        -60.0,
+        -55.0,
+        -50.0
+      ],
+      "apl_gain": [
+        1.0,
+        2.0,
+        4.0,
+        8.0,
+        16.0
+      ],
+      "adaptation_jump": [
+        0.0,
+        8.0,
+        20.0,
+        40.0
+      ],
+      "lamina_bias": [
+        4.0,
+        8.0,
+        12.0,
+        16.0
+      ]
+    },
+    "defaults": {
+      "kc_rest": -60.0,
+      "apl_gain": 1.0,
+      "adaptation_jump": 8.0,
+      "lamina_bias": 12.0
+    },
+    "single_lever": {
+      "kc_rest": {
+        "-75.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 4,
+              "apl_spikes": 1,
+              "total_spikes": 376794,
+              "side": "SELL",
+              "difference_hz": -2.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.05585629921259842,
+              "kc_spikes": 360,
+              "apl_spikes": 74,
+              "total_spikes": 429172,
+              "side": "BUY",
+              "difference_hz": 4.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 4,
+              "apl_spikes": 1,
+              "total_spikes": 376176,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 4,
+              "apl_spikes": 1,
+              "total_spikes": 373096,
+              "side": "BUY",
+              "difference_hz": 4.0
+            }
+          },
+          "kc_active_min": 0.0004921259842519685,
+          "kc_active_max": 0.05585629921259842,
+          "kc_active_median": 0.0004921259842519685,
+          "in_band": false,
+          "distance_from_target": 0.049507874015748035,
+          "distinct_sides": 2
+        },
+        "-70.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 8,
+              "apl_spikes": 1,
+              "total_spikes": 378623,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 6,
+              "apl_spikes": 3,
+              "total_spikes": 370107,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.01796259842519685,
+              "kc_spikes": 79,
+              "apl_spikes": 15,
+              "total_spikes": 386197,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 8,
+              "apl_spikes": 1,
+              "total_spikes": 378705,
+              "side": "BUY",
+              "difference_hz": 8.0
+            }
+          },
+          "kc_active_min": 0.0004921259842519685,
+          "kc_active_max": 0.01796259842519685,
+          "kc_active_median": 0.0004921259842519685,
+          "in_band": false,
+          "distance_from_target": 0.049507874015748035,
+          "distinct_sides": 1
+        },
+        "-65.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 11,
+              "apl_spikes": 4,
+              "total_spikes": 369091,
+              "side": "BUY",
+              "difference_hz": 4.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 9,
+              "apl_spikes": 4,
+              "total_spikes": 371128,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.2204724409448819,
+              "kc_spikes": 2041,
+              "apl_spikes": 143,
+              "total_spikes": 497811,
+              "side": "HOLD",
+              "difference_hz": 0.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 12,
+              "apl_spikes": 4,
+              "total_spikes": 375663,
+              "side": "HOLD",
+              "difference_hz": 0.0
+            }
+          },
+          "kc_active_min": 0.0004921259842519685,
+          "kc_active_max": 0.2204724409448819,
+          "kc_active_median": 0.0004921259842519685,
+          "in_band": false,
+          "distance_from_target": 0.049507874015748035,
+          "distinct_sides": 2
+        },
+        "-60.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 9,
+              "total_spikes": 361443,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.3184055118110236,
+              "kc_spikes": 1830,
+              "apl_spikes": 47,
+              "total_spikes": 400437,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 4,
+              "total_spikes": 381499,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 3,
+              "total_spikes": 376025,
+              "side": "BUY",
+              "difference_hz": 4.0
+            }
+          },
+          "kc_active_min": 0.000984251968503937,
+          "kc_active_max": 0.3184055118110236,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 1
+        },
+        "-55.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.0014763779527559055,
+              "kc_spikes": 27,
+              "apl_spikes": 5,
+              "total_spikes": 375336,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.0014763779527559055,
+              "kc_spikes": 24,
+              "apl_spikes": 12,
+              "total_spikes": 359020,
+              "side": "BUY",
+              "difference_hz": 10.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.0014763779527559055,
+              "kc_spikes": 27,
+              "apl_spikes": 6,
+              "total_spikes": 390495,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.0014763779527559055,
+              "kc_spikes": 25,
+              "apl_spikes": 7,
+              "total_spikes": 370717,
+              "side": "BUY",
+              "difference_hz": 6.0
+            }
+          },
+          "kc_active_min": 0.0014763779527559055,
+          "kc_active_max": 0.0014763779527559055,
+          "kc_active_median": 0.0014763779527559055,
+          "in_band": false,
+          "distance_from_target": 0.0485236220472441,
+          "distinct_sides": 1
+        },
+        "-50.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.7792814960629921,
+              "kc_spikes": 8406,
+              "apl_spikes": 103,
+              "total_spikes": 442505,
+              "side": "HOLD",
+              "difference_hz": 0.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.36368110236220474,
+              "kc_spikes": 1789,
+              "apl_spikes": 18,
+              "total_spikes": 374337,
+              "side": "BUY",
+              "difference_hz": 4.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.005659448818897638,
+              "kc_spikes": 65,
+              "apl_spikes": 8,
+              "total_spikes": 382177,
+              "side": "BUY",
+              "difference_hz": 4.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.006643700787401575,
+              "kc_spikes": 69,
+              "apl_spikes": 10,
+              "total_spikes": 376903,
+              "side": "SELL",
+              "difference_hz": -2.0
+            }
+          },
+          "kc_active_min": 0.005659448818897638,
+          "kc_active_max": 0.7792814960629921,
+          "kc_active_median": 0.18516240157480315,
+          "in_band": false,
+          "distance_from_target": 0.13516240157480314,
+          "distinct_sides": 3
+        }
+      },
+      "apl_gain": {
+        "1.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 9,
+              "total_spikes": 361443,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.3184055118110236,
+              "kc_spikes": 1830,
+              "apl_spikes": 47,
+              "total_spikes": 400437,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 4,
+              "total_spikes": 381499,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 3,
+              "total_spikes": 376025,
+              "side": "BUY",
+              "difference_hz": 4.0
+            }
+          },
+          "kc_active_min": 0.000984251968503937,
+          "kc_active_max": 0.3184055118110236,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 1
+        },
+        "2.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.0007381889763779527,
+              "kc_spikes": 15,
+              "apl_spikes": 11,
+              "total_spikes": 357401,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.04699803149606299,
+              "kc_spikes": 249,
+              "apl_spikes": 53,
+              "total_spikes": 408374,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 10,
+              "total_spikes": 363386,
+              "side": "BUY",
+              "difference_hz": 4.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 6,
+              "total_spikes": 360760,
+              "side": "BUY",
+              "difference_hz": 8.0
+            }
+          },
+          "kc_active_min": 0.0007381889763779527,
+          "kc_active_max": 0.04699803149606299,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 1
+        },
+        "4.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 7,
+              "total_spikes": 363689,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 14,
+              "apl_spikes": 45,
+              "total_spikes": 395957,
+              "side": "BUY",
+              "difference_hz": 4.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.007627952755905512,
+              "kc_spikes": 43,
+              "apl_spikes": 73,
+              "total_spikes": 440806,
+              "side": "SELL",
+              "difference_hz": -6.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 4,
+              "total_spikes": 375018,
+              "side": "BUY",
+              "difference_hz": 4.0
+            }
+          },
+          "kc_active_min": 0.000984251968503937,
+          "kc_active_max": 0.007627952755905512,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 2
+        },
+        "8.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 7,
+              "total_spikes": 364724,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 12,
+              "apl_spikes": 6,
+              "total_spikes": 370883,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.0012303149606299212,
+              "kc_spikes": 10,
+              "apl_spikes": 153,
+              "total_spikes": 512333,
+              "side": "SELL",
+              "difference_hz": -2.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.002952755905511811,
+              "kc_spikes": 19,
+              "apl_spikes": 115,
+              "total_spikes": 471013,
+              "side": "BUY",
+              "difference_hz": 8.0
+            }
+          },
+          "kc_active_min": 0.0004921259842519685,
+          "kc_active_max": 0.002952755905511811,
+          "kc_active_median": 0.0011072834645669291,
+          "in_band": false,
+          "distance_from_target": 0.048892716535433076,
+          "distinct_sides": 2
+        },
+        "16.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 14,
+              "apl_spikes": 8,
+              "total_spikes": 359348,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.0007381889763779527,
+              "kc_spikes": 11,
+              "apl_spikes": 72,
+              "total_spikes": 425625,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 15,
+              "apl_spikes": 8,
+              "total_spikes": 369821,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.0007381889763779527,
+              "kc_spikes": 14,
+              "apl_spikes": 6,
+              "total_spikes": 360962,
+              "side": "BUY",
+              "difference_hz": 10.0
+            }
+          },
+          "kc_active_min": 0.0007381889763779527,
+          "kc_active_max": 0.000984251968503937,
+          "kc_active_median": 0.0008612204724409449,
+          "in_band": false,
+          "distance_from_target": 0.04913877952755906,
+          "distinct_sides": 1
+        }
+      },
+      "adaptation_jump": {
+        "0.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.0007381889763779527,
+              "kc_spikes": 38,
+              "apl_spikes": 23,
+              "total_spikes": 361646,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.3887795275590551,
+              "kc_spikes": 7716,
+              "apl_spikes": 114,
+              "total_spikes": 450437,
+              "side": "BUY",
+              "difference_hz": 4.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 49,
+              "apl_spikes": 8,
+              "total_spikes": 379908,
+              "side": "HOLD",
+              "difference_hz": 0.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 46,
+              "apl_spikes": 9,
+              "total_spikes": 374158,
+              "side": "HOLD",
+              "difference_hz": 0.0
+            }
+          },
+          "kc_active_min": 0.0007381889763779527,
+          "kc_active_max": 0.3887795275590551,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 2
+        },
+        "8.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 9,
+              "total_spikes": 361443,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.3184055118110236,
+              "kc_spikes": 1830,
+              "apl_spikes": 47,
+              "total_spikes": 400437,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 4,
+              "total_spikes": 381499,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 3,
+              "total_spikes": 376025,
+              "side": "BUY",
+              "difference_hz": 4.0
+            }
+          },
+          "kc_active_min": 0.000984251968503937,
+          "kc_active_max": 0.3184055118110236,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 1
+        },
+        "20.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 10,
+              "apl_spikes": 4,
+              "total_spikes": 358532,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.32947834645669294,
+              "kc_spikes": 1574,
+              "apl_spikes": 66,
+              "total_spikes": 419703,
+              "side": "BUY",
+              "difference_hz": 10.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 10,
+              "apl_spikes": 3,
+              "total_spikes": 382254,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 10,
+              "apl_spikes": 1,
+              "total_spikes": 377647,
+              "side": "BUY",
+              "difference_hz": 2.0
+            }
+          },
+          "kc_active_min": 0.000984251968503937,
+          "kc_active_max": 0.32947834645669294,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 1
+        },
+        "40.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.3107775590551181,
+              "kc_spikes": 1270,
+              "apl_spikes": 42,
+              "total_spikes": 397581,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.3361220472440945,
+              "kc_spikes": 1390,
+              "apl_spikes": 60,
+              "total_spikes": 412830,
+              "side": "BUY",
+              "difference_hz": 4.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.3262795275590551,
+              "kc_spikes": 1342,
+              "apl_spikes": 54,
+              "total_spikes": 417360,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.34424212598425197,
+              "kc_spikes": 1433,
+              "apl_spikes": 66,
+              "total_spikes": 429460,
+              "side": "BUY",
+              "difference_hz": 6.0
+            }
+          },
+          "kc_active_min": 0.3107775590551181,
+          "kc_active_max": 0.34424212598425197,
+          "kc_active_median": 0.33120078740157477,
+          "in_band": false,
+          "distance_from_target": 0.2812007874015748,
+          "distinct_sides": 1
+        }
+      },
+      "lamina_bias": {
+        "4.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 3,
+              "total_spikes": 276617,
+              "side": "SELL",
+              "difference_hz": -6.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.32209645669291337,
+              "kc_spikes": 1754,
+              "apl_spikes": 37,
+              "total_spikes": 301453,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.3555610236220472,
+              "kc_spikes": 4227,
+              "apl_spikes": 184,
+              "total_spikes": 423806,
+              "side": "SELL",
+              "difference_hz": -8.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 4,
+              "total_spikes": 274389,
+              "side": "SELL",
+              "difference_hz": -2.0
+            }
+          },
+          "kc_active_min": 0.000984251968503937,
+          "kc_active_max": 0.3555610236220472,
+          "kc_active_median": 0.16154035433070865,
+          "in_band": false,
+          "distance_from_target": 0.11154035433070865,
+          "distinct_sides": 2
+        },
+        "8.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 3,
+              "total_spikes": 313441,
+              "side": "SELL",
+              "difference_hz": -6.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 13,
+              "apl_spikes": 4,
+              "total_spikes": 309095,
+              "side": "HOLD",
+              "difference_hz": 0.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 8,
+              "total_spikes": 302678,
+              "side": "HOLD",
+              "difference_hz": 0.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 7,
+              "total_spikes": 294854,
+              "side": "SELL",
+              "difference_hz": -2.0
+            }
+          },
+          "kc_active_min": 0.0004921259842519685,
+          "kc_active_max": 0.000984251968503937,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 2
+        },
+        "12.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 9,
+              "total_spikes": 361443,
+              "side": "BUY",
+              "difference_hz": 8.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.3184055118110236,
+              "kc_spikes": 1830,
+              "apl_spikes": 47,
+              "total_spikes": 400437,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 4,
+              "total_spikes": 381499,
+              "side": "BUY",
+              "difference_hz": 6.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 16,
+              "apl_spikes": 3,
+              "total_spikes": 376025,
+              "side": "BUY",
+              "difference_hz": 4.0
+            }
+          },
+          "kc_active_min": 0.000984251968503937,
+          "kc_active_max": 0.3184055118110236,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 1
+        },
+        "16.0": {
+          "per_scene": {
+            "rally": {
+              "kc_active_fraction": 0.34596456692913385,
+              "kc_spikes": 2505,
+              "apl_spikes": 69,
+              "total_spikes": 494515,
+              "side": "BUY",
+              "difference_hz": 2.0
+            },
+            "crash": {
+              "kc_active_fraction": 0.0004921259842519685,
+              "kc_spikes": 15,
+              "apl_spikes": 7,
+              "total_spikes": 431050,
+              "side": "BUY",
+              "difference_hz": 10.0
+            },
+            "flat": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 18,
+              "apl_spikes": 3,
+              "total_spikes": 449335,
+              "side": "BUY",
+              "difference_hz": 10.0
+            },
+            "chop": {
+              "kc_active_fraction": 0.000984251968503937,
+              "kc_spikes": 18,
+              "apl_spikes": 5,
+              "total_spikes": 444179,
+              "side": "BUY",
+              "difference_hz": 2.0
+            }
+          },
+          "kc_active_min": 0.0004921259842519685,
+          "kc_active_max": 0.34596456692913385,
+          "kc_active_median": 0.000984251968503937,
+          "in_band": false,
+          "distance_from_target": 0.04901574803149607,
+          "distinct_sides": 1
+        }
+      }
+    },
+    "grid": {
+      "kc_rest=-75.0,apl_gain=1.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376794,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.05585629921259842,
+            "kc_spikes": 360,
+            "apl_spikes": 74,
+            "total_spikes": 429172,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376176,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 373096,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.05585629921259842,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -75.0,
+          "apl_gain": 1.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-75.0,apl_gain=2.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376794,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0031988188976377952,
+            "kc_spikes": 15,
+            "apl_spikes": 73,
+            "total_spikes": 428461,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376176,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 373096,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0031988188976377952,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -75.0,
+          "apl_gain": 2.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-75.0,apl_gain=4.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376794,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.00024606299212598425,
+            "kc_spikes": 1,
+            "apl_spikes": 72,
+            "total_spikes": 429841,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376176,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 373096,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "kc_active_min": 0.00024606299212598425,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -75.0,
+          "apl_gain": 4.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-75.0,apl_gain=8.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376794,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.00024606299212598425,
+            "kc_spikes": 1,
+            "apl_spikes": 72,
+            "total_spikes": 429841,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376176,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 373096,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "kc_active_min": 0.00024606299212598425,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -75.0,
+          "apl_gain": 8.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-75.0,apl_gain=16.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376794,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.00024606299212598425,
+            "kc_spikes": 1,
+            "apl_spikes": 72,
+            "total_spikes": 429841,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 376176,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 1,
+            "total_spikes": 373096,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "kc_active_min": 0.00024606299212598425,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -75.0,
+          "apl_gain": 16.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-70.0,apl_gain=1.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 8,
+            "apl_spikes": 1,
+            "total_spikes": 378623,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 6,
+            "apl_spikes": 3,
+            "total_spikes": 370107,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.01796259842519685,
+            "kc_spikes": 79,
+            "apl_spikes": 15,
+            "total_spikes": 386197,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 8,
+            "apl_spikes": 1,
+            "total_spikes": 378705,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.01796259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -70.0,
+          "apl_gain": 1.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-70.0,apl_gain=2.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 8,
+            "apl_spikes": 1,
+            "total_spikes": 377933,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 6,
+            "apl_spikes": 3,
+            "total_spikes": 370107,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 9,
+            "apl_spikes": 15,
+            "total_spikes": 386125,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.010088582677165354,
+            "kc_spikes": 56,
+            "apl_spikes": 66,
+            "total_spikes": 432093,
+            "side": "BUY",
+            "difference_hz": 2.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.010088582677165354,
+        "kc_active_median": 0.0006151574803149606,
+        "in_band": false,
+        "distance_from_target": 0.04938484251968504,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -70.0,
+          "apl_gain": 2.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-70.0,apl_gain=4.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 8,
+            "apl_spikes": 1,
+            "total_spikes": 379047,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 7,
+            "apl_spikes": 3,
+            "total_spikes": 369643,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 7,
+            "apl_spikes": 85,
+            "total_spikes": 445058,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 8,
+            "apl_spikes": 1,
+            "total_spikes": 376888,
+            "side": "BUY",
+            "difference_hz": 2.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0007381889763779527,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -70.0,
+          "apl_gain": 4.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-70.0,apl_gain=8.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 8,
+            "apl_spikes": 1,
+            "total_spikes": 379605,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 7,
+            "apl_spikes": 3,
+            "total_spikes": 371198,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 6,
+            "apl_spikes": 87,
+            "total_spikes": 446148,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 4,
+            "apl_spikes": 120,
+            "total_spikes": 476570,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -70.0,
+          "apl_gain": 8.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-70.0,apl_gain=16.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 8,
+            "apl_spikes": 1,
+            "total_spikes": 378145,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 5,
+            "apl_spikes": 58,
+            "total_spikes": 418682,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 6,
+            "apl_spikes": 87,
+            "total_spikes": 451300,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 8,
+            "apl_spikes": 1,
+            "total_spikes": 377600,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -70.0,
+          "apl_gain": 16.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-65.0,apl_gain=1.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 11,
+            "apl_spikes": 4,
+            "total_spikes": 369091,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 9,
+            "apl_spikes": 4,
+            "total_spikes": 371128,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.2204724409448819,
+            "kc_spikes": 2041,
+            "apl_spikes": 143,
+            "total_spikes": 497811,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 12,
+            "apl_spikes": 4,
+            "total_spikes": 375663,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.2204724409448819,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -65.0,
+          "apl_gain": 1.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-65.0,apl_gain=2.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 11,
+            "apl_spikes": 3,
+            "total_spikes": 376746,
+            "side": "SELL",
+            "difference_hz": -4.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 9,
+            "apl_spikes": 4,
+            "total_spikes": 359062,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 11,
+            "apl_spikes": 4,
+            "total_spikes": 376017,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.02214566929133858,
+            "kc_spikes": 144,
+            "apl_spikes": 96,
+            "total_spikes": 453875,
+            "side": "SELL",
+            "difference_hz": -2.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.02214566929133858,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -65.0,
+          "apl_gain": 2.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-65.0,apl_gain=4.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 12,
+            "apl_spikes": 2,
+            "total_spikes": 377511,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 9,
+            "apl_spikes": 6,
+            "total_spikes": 359228,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 12,
+            "apl_spikes": 3,
+            "total_spikes": 380925,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 12,
+            "apl_spikes": 3,
+            "total_spikes": 374794,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -65.0,
+          "apl_gain": 4.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-65.0,apl_gain=8.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 7,
+            "apl_spikes": 104,
+            "total_spikes": 466300,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 9,
+            "apl_spikes": 6,
+            "total_spikes": 358014,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 10,
+            "apl_spikes": 3,
+            "total_spikes": 380679,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 8,
+            "apl_spikes": 79,
+            "total_spikes": 440783,
+            "side": "BUY",
+            "difference_hz": 10.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -65.0,
+          "apl_gain": 8.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-65.0,apl_gain=16.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 10,
+            "apl_spikes": 2,
+            "total_spikes": 377732,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 9,
+            "apl_spikes": 5,
+            "total_spikes": 362961,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 11,
+            "apl_spikes": 2,
+            "total_spikes": 382277,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 6,
+            "apl_spikes": 99,
+            "total_spikes": 457488,
+            "side": "BUY",
+            "difference_hz": 10.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "in_band": false,
+        "distance_from_target": 0.049507874015748035,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -65.0,
+          "apl_gain": 16.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-60.0,apl_gain=1.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "apl_spikes": 9,
+            "total_spikes": 361443,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.3184055118110236,
+            "kc_spikes": 1830,
+            "apl_spikes": 47,
+            "total_spikes": 400437,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "apl_spikes": 4,
+            "total_spikes": 381499,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "apl_spikes": 3,
+            "total_spikes": 376025,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "kc_active_min": 0.000984251968503937,
+        "kc_active_max": 0.3184055118110236,
+        "kc_active_median": 0.000984251968503937,
+        "in_band": false,
+        "distance_from_target": 0.04901574803149607,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -60.0,
+          "apl_gain": 1.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-60.0,apl_gain=2.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 15,
+            "apl_spikes": 11,
+            "total_spikes": 357401,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.04699803149606299,
+            "kc_spikes": 249,
+            "apl_spikes": 53,
+            "total_spikes": 408374,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "apl_spikes": 10,
+            "total_spikes": 363386,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "apl_spikes": 6,
+            "total_spikes": 360760,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "kc_active_min": 0.0007381889763779527,
+        "kc_active_max": 0.04699803149606299,
+        "kc_active_median": 0.000984251968503937,
+        "in_band": false,
+        "distance_from_target": 0.04901574803149607,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -60.0,
+          "apl_gain": 2.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-60.0,apl_gain=4.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "apl_spikes": 7,
+            "total_spikes": 363689,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 14,
+            "apl_spikes": 45,
+            "total_spikes": 395957,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.007627952755905512,
+            "kc_spikes": 43,
+            "apl_spikes": 73,
+            "total_spikes": 440806,
+            "side": "SELL",
+            "difference_hz": -6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "apl_spikes": 4,
+            "total_spikes": 375018,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "kc_active_min": 0.000984251968503937,
+        "kc_active_max": 0.007627952755905512,
+        "kc_active_median": 0.000984251968503937,
+        "in_band": false,
+        "distance_from_target": 0.04901574803149607,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -60.0,
+          "apl_gain": 4.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-60.0,apl_gain=8.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "apl_spikes": 7,
+            "total_spikes": 364724,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 12,
+            "apl_spikes": 6,
+            "total_spikes": 370883,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 10,
+            "apl_spikes": 153,
+            "total_spikes": 512333,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.002952755905511811,
+            "kc_spikes": 19,
+            "apl_spikes": 115,
+            "total_spikes": 471013,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.002952755905511811,
+        "kc_active_median": 0.0011072834645669291,
+        "in_band": false,
+        "distance_from_target": 0.048892716535433076,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -60.0,
+          "apl_gain": 8.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-60.0,apl_gain=16.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 14,
+            "apl_spikes": 8,
+            "total_spikes": 359348,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 11,
+            "apl_spikes": 72,
+            "total_spikes": 425625,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 15,
+            "apl_spikes": 8,
+            "total_spikes": 369821,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 14,
+            "apl_spikes": 6,
+            "total_spikes": 360962,
+            "side": "BUY",
+            "difference_hz": 10.0
+          }
+        },
+        "kc_active_min": 0.0007381889763779527,
+        "kc_active_max": 0.000984251968503937,
+        "kc_active_median": 0.0008612204724409449,
+        "in_band": false,
+        "distance_from_target": 0.04913877952755906,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -60.0,
+          "apl_gain": 16.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-55.0,apl_gain=1.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 27,
+            "apl_spikes": 5,
+            "total_spikes": 375336,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 24,
+            "apl_spikes": 12,
+            "total_spikes": 359020,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 27,
+            "apl_spikes": 6,
+            "total_spikes": 390495,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 25,
+            "apl_spikes": 7,
+            "total_spikes": 370717,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        },
+        "kc_active_min": 0.0014763779527559055,
+        "kc_active_max": 0.0014763779527559055,
+        "kc_active_median": 0.0014763779527559055,
+        "in_band": false,
+        "distance_from_target": 0.0485236220472441,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -55.0,
+          "apl_gain": 1.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-55.0,apl_gain=2.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 24,
+            "apl_spikes": 8,
+            "total_spikes": 369864,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 24,
+            "apl_spikes": 8,
+            "total_spikes": 369178,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 26,
+            "apl_spikes": 10,
+            "total_spikes": 366880,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 27,
+            "apl_spikes": 7,
+            "total_spikes": 372245,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        },
+        "kc_active_min": 0.0014763779527559055,
+        "kc_active_max": 0.0014763779527559055,
+        "kc_active_median": 0.0014763779527559055,
+        "in_band": false,
+        "distance_from_target": 0.0485236220472441,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -55.0,
+          "apl_gain": 2.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-55.0,apl_gain=4.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 24,
+            "apl_spikes": 6,
+            "total_spikes": 374700,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 20,
+            "apl_spikes": 12,
+            "total_spikes": 357834,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 27,
+            "apl_spikes": 4,
+            "total_spikes": 380847,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 26,
+            "apl_spikes": 5,
+            "total_spikes": 379457,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        },
+        "kc_active_min": 0.0012303149606299212,
+        "kc_active_max": 0.0014763779527559055,
+        "kc_active_median": 0.0014763779527559055,
+        "in_band": false,
+        "distance_from_target": 0.0485236220472441,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -55.0,
+          "apl_gain": 4.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-55.0,apl_gain=8.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 23,
+            "apl_spikes": 4,
+            "total_spikes": 378986,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0063976377952755905,
+            "kc_spikes": 36,
+            "apl_spikes": 92,
+            "total_spikes": 444217,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.007627952755905512,
+            "kc_spikes": 40,
+            "apl_spikes": 116,
+            "total_spikes": 476930,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 24,
+            "apl_spikes": 5,
+            "total_spikes": 376575,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          }
+        },
+        "kc_active_min": 0.0014763779527559055,
+        "kc_active_max": 0.007627952755905512,
+        "kc_active_median": 0.003937007874015748,
+        "in_band": false,
+        "distance_from_target": 0.046062992125984255,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -55.0,
+          "apl_gain": 8.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-55.0,apl_gain=16.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 24,
+            "apl_spikes": 5,
+            "total_spikes": 376783,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.015748031496062992,
+            "kc_spikes": 75,
+            "apl_spikes": 75,
+            "total_spikes": 430394,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0034448818897637795,
+            "kc_spikes": 21,
+            "apl_spikes": 150,
+            "total_spikes": 500265,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 24,
+            "apl_spikes": 5,
+            "total_spikes": 377832,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "kc_active_min": 0.0014763779527559055,
+        "kc_active_max": 0.015748031496062992,
+        "kc_active_median": 0.0024606299212598425,
+        "in_band": false,
+        "distance_from_target": 0.04753937007874016,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -55.0,
+          "apl_gain": 16.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-50.0,apl_gain=1.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.7792814960629921,
+            "kc_spikes": 8406,
+            "apl_spikes": 103,
+            "total_spikes": 442505,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.36368110236220474,
+            "kc_spikes": 1789,
+            "apl_spikes": 18,
+            "total_spikes": 374337,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.005659448818897638,
+            "kc_spikes": 65,
+            "apl_spikes": 8,
+            "total_spikes": 382177,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.006643700787401575,
+            "kc_spikes": 69,
+            "apl_spikes": 10,
+            "total_spikes": 376903,
+            "side": "SELL",
+            "difference_hz": -2.0
+          }
+        },
+        "kc_active_min": 0.005659448818897638,
+        "kc_active_max": 0.7792814960629921,
+        "kc_active_median": 0.18516240157480315,
+        "in_band": false,
+        "distance_from_target": 0.13516240157480314,
+        "distinct_sides": 3,
+        "combination": {
+          "kc_rest": -50.0,
+          "apl_gain": 1.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-50.0,apl_gain=2.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.00812007874015748,
+            "kc_spikes": 75,
+            "apl_spikes": 11,
+            "total_spikes": 372401,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.004675196850393701,
+            "kc_spikes": 53,
+            "apl_spikes": 11,
+            "total_spikes": 370204,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0044291338582677165,
+            "kc_spikes": 59,
+            "apl_spikes": 9,
+            "total_spikes": 381680,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.006151574803149607,
+            "kc_spikes": 65,
+            "apl_spikes": 15,
+            "total_spikes": 365591,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        },
+        "kc_active_min": 0.0044291338582677165,
+        "kc_active_max": 0.00812007874015748,
+        "kc_active_median": 0.005413385826771654,
+        "in_band": false,
+        "distance_from_target": 0.044586614173228345,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -50.0,
+          "apl_gain": 2.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-50.0,apl_gain=4.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0036909448818897637,
+            "kc_spikes": 50,
+            "apl_spikes": 9,
+            "total_spikes": 378141,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0036909448818897637,
+            "kc_spikes": 46,
+            "apl_spikes": 9,
+            "total_spikes": 371613,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07012795275590551,
+            "kc_spikes": 330,
+            "apl_spikes": 160,
+            "total_spikes": 511828,
+            "side": "SELL",
+            "difference_hz": -8.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.006889763779527559,
+            "kc_spikes": 68,
+            "apl_spikes": 9,
+            "total_spikes": 375703,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          }
+        },
+        "kc_active_min": 0.0036909448818897637,
+        "kc_active_max": 0.07012795275590551,
+        "kc_active_median": 0.0052903543307086616,
+        "in_band": false,
+        "distance_from_target": 0.044709645669291344,
+        "distinct_sides": 3,
+        "combination": {
+          "kc_rest": -50.0,
+          "apl_gain": 4.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-50.0,apl_gain=8.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0034448818897637795,
+            "kc_spikes": 41,
+            "apl_spikes": 14,
+            "total_spikes": 361225,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0034448818897637795,
+            "kc_spikes": 40,
+            "apl_spikes": 11,
+            "total_spikes": 360428,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.003937007874015748,
+            "kc_spikes": 50,
+            "apl_spikes": 9,
+            "total_spikes": 373146,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.003937007874015748,
+            "kc_spikes": 48,
+            "apl_spikes": 10,
+            "total_spikes": 373168,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "kc_active_min": 0.0034448818897637795,
+        "kc_active_max": 0.003937007874015748,
+        "kc_active_median": 0.0036909448818897637,
+        "in_band": false,
+        "distance_from_target": 0.04630905511811024,
+        "distinct_sides": 1,
+        "combination": {
+          "kc_rest": -50.0,
+          "apl_gain": 8.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      },
+      "kc_rest=-50.0,apl_gain=16.0": {
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.09940944881889764,
+            "kc_spikes": 425,
+            "apl_spikes": 114,
+            "total_spikes": 470062,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0036909448818897637,
+            "kc_spikes": 42,
+            "apl_spikes": 8,
+            "total_spikes": 371343,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.003937007874015748,
+            "kc_spikes": 50,
+            "apl_spikes": 7,
+            "total_spikes": 380054,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0036909448818897637,
+            "kc_spikes": 41,
+            "apl_spikes": 11,
+            "total_spikes": 372190,
+            "side": "BUY",
+            "difference_hz": 2.0
+          }
+        },
+        "kc_active_min": 0.0036909448818897637,
+        "kc_active_max": 0.09940944881889764,
+        "kc_active_median": 0.003813976377952756,
+        "in_band": false,
+        "distance_from_target": 0.04618602362204725,
+        "distinct_sides": 2,
+        "combination": {
+          "kc_rest": -50.0,
+          "apl_gain": 16.0,
+          "adaptation_jump": 8.0,
+          "lamina_bias": 12.0
+        }
+      }
+    },
+    "bistability": {
+      "observations": 196,
+      "below_band_fraction": 0.8418367346938775,
+      "above_20_percent_fraction": 0.10204081632653061,
+      "inside_band_fraction": 0.05612244897959184,
+      "whole_brain_spikes_when_kc_silent": 382560.1575757576,
+      "whole_brain_spikes_when_kc_active": 418931.8,
+      "kc_vs_whole_brain_correlation": 0.26976342437153744
+    },
+    "decisions": {
+      "threshold_hz": 2.0,
+      "counts": {
+        "BUY": 158,
+        "SELL": 23,
+        "HOLD": 15
+      },
+      "margins": {
+        "BUY": {
+          "median_hz": 6.0,
+          "max_hz": 12.0,
+          "max_spikes_past_threshold": 6.0
+        },
+        "SELL": {
+          "median_hz": 2.0,
+          "max_hz": 8.0,
+          "max_spikes_past_threshold": 4.0
+        },
+        "HOLD": {
+          "median_hz": 0.0,
+          "max_hz": 0.0,
+          "max_spikes_past_threshold": 0.0
+        }
+      }
+    },
+    "confirmed": {},
+    "graph_restored": true,
+    "verdict": "no declared free parameter reaches the 1%-15% band: across the whole kc_rest x apl_gain grid the median Kenyon activity goes 0.05% to 18.52% without stopping in between, and over all 196 observations only 6% land inside the band against 84% near-silent and 10% above 20%. The population is bistable, so sparseness cannot be set by gain alone (strongest levers: adaptation_jump 0.10%-33.12%, kc_rest 0.05%-18.52%). Separately: 17 of 30 grid points produce more than one distinct decision and 23 of 196 observations propose SELL, where every input manipulation tested before produced none -- but the widest SELL margin is 4 spikes past the threshold against 6 for BUY, so this is the readout coming off its rail, not the fly changing its mind"
+  },
+  "olfaction": {
+    "scenes": [
+      "rally",
+      "crash",
+      "flat",
+      "chop",
+      "spike_up",
+      "spike_down",
+      "peak",
+      "valley"
+    ],
+    "receptor_neurons": 2635,
+    "glomeruli": 53,
+    "neutral_scene": "flat",
+    "assignment": {
+      "trend_fast": [
+        "ORN_D",
+        "ORN_DA1",
+        "ORN_DA2",
+        "ORN_DA3",
+        "ORN_DA4l",
+        "ORN_DA4m",
+        "ORN_DC1",
+        "ORN_DC2",
+        "ORN_DC3",
+        "ORN_DC4",
+        "ORN_DL1"
+      ],
+      "trend_slow": [
+        "ORN_DL2d",
+        "ORN_DL2v",
+        "ORN_DL3",
+        "ORN_DL4",
+        "ORN_DL5",
+        "ORN_DM1",
+        "ORN_DM2",
+        "ORN_DM3",
+        "ORN_DM4",
+        "ORN_DM5",
+        "ORN_DM6"
+      ],
+      "volatility": [
+        "ORN_DP1l",
+        "ORN_DP1m",
+        "ORN_V",
+        "ORN_VA1d",
+        "ORN_VA1v",
+        "ORN_VA2",
+        "ORN_VA3",
+        "ORN_VA4",
+        "ORN_VA5",
+        "ORN_VA6",
+        "ORN_VA7l"
+      ],
+      "range_position": [
+        "ORN_VA7m",
+        "ORN_VC1",
+        "ORN_VC2",
+        "ORN_VC3",
+        "ORN_VC4",
+        "ORN_VC5",
+        "ORN_VL1",
+        "ORN_VL2a",
+        "ORN_VL2p",
+        "ORN_VM1"
+      ],
+      "acceleration": [
+        "ORN_VM2",
+        "ORN_VM3",
+        "ORN_VM4",
+        "ORN_VM5d",
+        "ORN_VM5v",
+        "ORN_VM6l",
+        "ORN_VM6m",
+        "ORN_VM6v",
+        "ORN_VM7d",
+        "ORN_VM7v"
+      ]
+    },
+    "current_sweep": {
+      "1.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.000984251968503937,
+        "kc_active_max": 0.000984251968503937,
+        "kc_active_median": 0.000984251968503937,
+        "inside_band": 0,
+        "distinct_sides": 1,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        }
+      },
+      "2.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.000984251968503937,
+        "kc_active_max": 0.000984251968503937,
+        "kc_active_median": 0.000984251968503937,
+        "inside_band": 0,
+        "distinct_sides": 1,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        }
+      },
+      "5.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.000984251968503937,
+        "kc_active_max": 0.000984251968503937,
+        "kc_active_median": 0.000984251968503937,
+        "inside_band": 0,
+        "distinct_sides": 1,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 16,
+            "orn_spikes": 0,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        }
+      },
+      "10.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.9165184760134195,
+        "kc_active_min": 0.3708169291338583,
+        "kc_active_max": 0.39763779527559057,
+        "kc_active_median": 0.3795521653543307,
+        "inside_band": 0,
+        "distinct_sides": 1,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.37721456692913385,
+            "kc_spikes": 5910,
+            "orn_spikes": 16089,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.3732775590551181,
+            "kc_spikes": 5749,
+            "orn_spikes": 15277,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.38188976377952755,
+            "kc_spikes": 6135,
+            "orn_spikes": 17987,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.38779527559055116,
+            "kc_spikes": 6070,
+            "orn_spikes": 16619,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.37401574803149606,
+            "kc_spikes": 5792,
+            "orn_spikes": 18379,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.39763779527559057,
+            "kc_spikes": 6141,
+            "orn_spikes": 19039,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.39173228346456695,
+            "kc_spikes": 6080,
+            "orn_spikes": 15442,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.3708169291338583,
+            "kc_spikes": 5789,
+            "orn_spikes": 16248,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        }
+      },
+      "20.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.8917737687701209,
+        "kc_active_min": 0.4018208661417323,
+        "kc_active_max": 0.4256889763779528,
+        "kc_active_median": 0.40871062992125984,
+        "inside_band": 0,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.406003937007874,
+            "kc_spikes": 6736,
+            "orn_spikes": 25402,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.40575787401574803,
+            "kc_spikes": 6782,
+            "orn_spikes": 29571,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.4126476377952756,
+            "kc_spikes": 6902,
+            "orn_spikes": 27486,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.41018700787401574,
+            "kc_spikes": 6726,
+            "orn_spikes": 27614,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.4018208661417323,
+            "kc_spikes": 6572,
+            "orn_spikes": 35330,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.4256889763779528,
+            "kc_spikes": 7099,
+            "orn_spikes": 39151,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.4156003937007874,
+            "kc_spikes": 7010,
+            "orn_spikes": 25529,
+            "side": "BUY",
+            "difference_hz": 16.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.40723425196850394,
+            "kc_spikes": 6665,
+            "orn_spikes": 26591,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        }
+      },
+      "30.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.8832482388269398,
+        "kc_active_min": 0.41437007874015747,
+        "kc_active_max": 0.43380905511811024,
+        "kc_active_median": 0.4233513779527559,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.41437007874015747,
+            "kc_spikes": 6986,
+            "orn_spikes": 33377,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.421505905511811,
+            "kc_spikes": 7072,
+            "orn_spikes": 39500,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.4328248031496063,
+            "kc_spikes": 7229,
+            "orn_spikes": 37125,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.4237204724409449,
+            "kc_spikes": 7098,
+            "orn_spikes": 36384,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.42298228346456695,
+            "kc_spikes": 7158,
+            "orn_spikes": 48254,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.43380905511811024,
+            "kc_spikes": 7346,
+            "orn_spikes": 53597,
+            "side": "BUY",
+            "difference_hz": 16.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.4249507874015748,
+            "kc_spikes": 7078,
+            "orn_spikes": 34731,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.4202755905511811,
+            "kc_spikes": 6986,
+            "orn_spikes": 36574,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          }
+        }
+      }
+    },
+    "current_apl_grid": {
+      "current=8.0,apl_gain=1.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.9267734405616422,
+        "kc_active_min": 0.37303149606299213,
+        "kc_active_max": 0.3868110236220472,
+        "kc_active_median": 0.3775836614173228,
+        "inside_band": 0,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.38188976377952755,
+            "kc_spikes": 5892,
+            "orn_spikes": 14081,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.37303149606299213,
+            "kc_spikes": 5442,
+            "orn_spikes": 12869,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.3868110236220472,
+            "kc_spikes": 5987,
+            "orn_spikes": 15442,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.3796751968503937,
+            "kc_spikes": 5668,
+            "orn_spikes": 14464,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.37549212598425197,
+            "kc_spikes": 5591,
+            "orn_spikes": 14530,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.38016732283464566,
+            "kc_spikes": 5741,
+            "orn_spikes": 14465,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.374753937007874,
+            "kc_spikes": 5826,
+            "orn_spikes": 12901,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.37450787401574803,
+            "kc_spikes": 5695,
+            "orn_spikes": 13993,
+            "side": "SELL",
+            "difference_hz": -2.0
+          }
+        },
+        "odor_current": 8.0,
+        "apl_gain": 1.0,
+        "usable": false
+      },
+      "current=8.0,apl_gain=2.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.8754739568991575,
+        "kc_active_min": 0.06471456692913385,
+        "kc_active_max": 0.07431102362204725,
+        "kc_active_median": 0.0687746062992126,
+        "inside_band": 8,
+        "distinct_sides": 1,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.06914370078740158,
+            "kc_spikes": 714,
+            "orn_spikes": 14190,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.06496062992125984,
+            "kc_spikes": 635,
+            "orn_spikes": 12695,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07431102362204725,
+            "kc_spikes": 777,
+            "orn_spikes": 15774,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.06840551181102363,
+            "kc_spikes": 705,
+            "orn_spikes": 14259,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.07086614173228346,
+            "kc_spikes": 686,
+            "orn_spikes": 15017,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.06471456692913385,
+            "kc_spikes": 681,
+            "orn_spikes": 14230,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.07258858267716535,
+            "kc_spikes": 688,
+            "orn_spikes": 12710,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.06766732283464567,
+            "kc_spikes": 669,
+            "orn_spikes": 14115,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        },
+        "odor_current": 8.0,
+        "apl_gain": 2.0,
+        "usable": false
+      },
+      "current=8.0,apl_gain=4.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0012303149606299212,
+        "kc_active_max": 0.0012303149606299212,
+        "kc_active_median": 0.0012303149606299212,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 11,
+            "orn_spikes": 14109,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 11,
+            "orn_spikes": 12640,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 11,
+            "orn_spikes": 15306,
+            "side": "BUY",
+            "difference_hz": 18.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 10,
+            "orn_spikes": 14271,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 10,
+            "orn_spikes": 14898,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 10,
+            "orn_spikes": 14124,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 10,
+            "orn_spikes": 13117,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 10,
+            "orn_spikes": 14018,
+            "side": "SELL",
+            "difference_hz": -2.0
+          }
+        },
+        "odor_current": 8.0,
+        "apl_gain": 4.0,
+        "usable": false
+      },
+      "current=8.0,apl_gain=8.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "inside_band": 0,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 13736,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 12815,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15775,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 14468,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15188,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 14244,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 13012,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 13890,
+            "side": "BUY",
+            "difference_hz": 2.0
+          }
+        },
+        "odor_current": 8.0,
+        "apl_gain": 8.0,
+        "usable": false
+      },
+      "current=8.0,apl_gain=16.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "inside_band": 0,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 13736,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 12815,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15775,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 14468,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15188,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 14244,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 13012,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 13890,
+            "side": "BUY",
+            "difference_hz": 2.0
+          }
+        },
+        "odor_current": 8.0,
+        "apl_gain": 16.0,
+        "usable": false
+      },
+      "current=10.0,apl_gain=1.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.9165184760134195,
+        "kc_active_min": 0.3708169291338583,
+        "kc_active_max": 0.39763779527559057,
+        "kc_active_median": 0.3795521653543307,
+        "inside_band": 0,
+        "distinct_sides": 1,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.37721456692913385,
+            "kc_spikes": 5910,
+            "orn_spikes": 16089,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.3732775590551181,
+            "kc_spikes": 5749,
+            "orn_spikes": 15277,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.38188976377952755,
+            "kc_spikes": 6135,
+            "orn_spikes": 17987,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.38779527559055116,
+            "kc_spikes": 6070,
+            "orn_spikes": 16619,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.37401574803149606,
+            "kc_spikes": 5792,
+            "orn_spikes": 18379,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.39763779527559057,
+            "kc_spikes": 6141,
+            "orn_spikes": 19039,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.39173228346456695,
+            "kc_spikes": 6080,
+            "orn_spikes": 15442,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.3708169291338583,
+            "kc_spikes": 5789,
+            "orn_spikes": 16248,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "odor_current": 10.0,
+        "apl_gain": 1.0,
+        "usable": false
+      },
+      "current=10.0,apl_gain=2.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.859219534395639,
+        "kc_active_min": 0.06643700787401575,
+        "kc_active_max": 0.07554133858267717,
+        "kc_active_median": 0.06828248031496063,
+        "inside_band": 8,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.06791338582677166,
+            "kc_spikes": 711,
+            "orn_spikes": 15982,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.06988188976377953,
+            "kc_spikes": 728,
+            "orn_spikes": 15684,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07554133858267717,
+            "kc_spikes": 812,
+            "orn_spikes": 18367,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.06643700787401575,
+            "kc_spikes": 697,
+            "orn_spikes": 16536,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0703740157480315,
+            "kc_spikes": 752,
+            "orn_spikes": 18360,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.06815944881889764,
+            "kc_spikes": 705,
+            "orn_spikes": 19262,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.06791338582677166,
+            "kc_spikes": 702,
+            "orn_spikes": 15277,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.06840551181102363,
+            "kc_spikes": 724,
+            "orn_spikes": 16162,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        },
+        "odor_current": 10.0,
+        "apl_gain": 2.0,
+        "usable": false
+      },
+      "current=10.0,apl_gain=4.0": {
+        "kc_identical_pairs": 2,
+        "kc_mean_jaccard": 0.7859268707482991,
+        "kc_active_min": 0.0012303149606299212,
+        "kc_active_max": 0.0017224409448818897,
+        "kc_active_median": 0.0014763779527559055,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 13,
+            "orn_spikes": 16061,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0017224409448818897,
+            "kc_spikes": 12,
+            "orn_spikes": 15760,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0017224409448818897,
+            "kc_spikes": 15,
+            "orn_spikes": 18367,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 10,
+            "orn_spikes": 16500,
+            "side": "BUY",
+            "difference_hz": 18.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 11,
+            "orn_spikes": 18708,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 11,
+            "orn_spikes": 19487,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 13,
+            "orn_spikes": 15610,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 10,
+            "orn_spikes": 15831,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        },
+        "odor_current": 10.0,
+        "apl_gain": 4.0,
+        "usable": false
+      },
+      "current=10.0,apl_gain=8.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 16608,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15679,
+            "side": "SELL",
+            "difference_hz": -4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 18314,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 16835,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 18366,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 18676,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15695,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15969,
+            "side": "SELL",
+            "difference_hz": -4.0
+          }
+        },
+        "odor_current": 10.0,
+        "apl_gain": 8.0,
+        "usable": false
+      },
+      "current=10.0,apl_gain=16.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0004921259842519685,
+        "kc_active_median": 0.0004921259842519685,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 16608,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15679,
+            "side": "SELL",
+            "difference_hz": -4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 18314,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 16835,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 18366,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 18676,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15695,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 2,
+            "orn_spikes": 15969,
+            "side": "SELL",
+            "difference_hz": -4.0
+          }
+        },
+        "odor_current": 10.0,
+        "apl_gain": 16.0,
+        "usable": false
+      },
+      "current=15.0,apl_gain=1.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.9022922290203109,
+        "kc_active_min": 0.3885334645669291,
+        "kc_active_max": 0.40526574803149606,
+        "kc_active_median": 0.3968996062992126,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.39665354330708663,
+            "kc_spikes": 6456,
+            "orn_spikes": 20744,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.391240157480315,
+            "kc_spikes": 6215,
+            "orn_spikes": 23002,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.4003444881889764,
+            "kc_spikes": 6472,
+            "orn_spikes": 23120,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.40231299212598426,
+            "kc_spikes": 6516,
+            "orn_spikes": 21497,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.3927165354330709,
+            "kc_spikes": 6353,
+            "orn_spikes": 27240,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.40526574803149606,
+            "kc_spikes": 6497,
+            "orn_spikes": 30574,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.3971456692913386,
+            "kc_spikes": 6375,
+            "orn_spikes": 21102,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.3885334645669291,
+            "kc_spikes": 6187,
+            "orn_spikes": 20808,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "odor_current": 15.0,
+        "apl_gain": 1.0,
+        "usable": false
+      },
+      "current=15.0,apl_gain=2.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.8064779426215362,
+        "kc_active_min": 0.06274606299212598,
+        "kc_active_max": 0.07701771653543307,
+        "kc_active_median": 0.07111220472440945,
+        "inside_band": 8,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.06569881889763779,
+            "kc_spikes": 714,
+            "orn_spikes": 20736,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.07357283464566929,
+            "kc_spikes": 736,
+            "orn_spikes": 23378,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07701771653543307,
+            "kc_spikes": 839,
+            "orn_spikes": 23078,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.06914370078740158,
+            "kc_spikes": 736,
+            "orn_spikes": 21883,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.07012795275590551,
+            "kc_spikes": 764,
+            "orn_spikes": 27544,
+            "side": "SELL",
+            "difference_hz": -4.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.07209645669291338,
+            "kc_spikes": 762,
+            "orn_spikes": 31092,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.06274606299212598,
+            "kc_spikes": 676,
+            "orn_spikes": 21083,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.07308070866141732,
+            "kc_spikes": 803,
+            "orn_spikes": 20605,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "odor_current": 15.0,
+        "apl_gain": 2.0,
+        "usable": false
+      },
+      "current=15.0,apl_gain=4.0": {
+        "kc_identical_pairs": 6,
+        "kc_mean_jaccard": 0.7125,
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0012303149606299212,
+        "kc_active_median": 0.0008612204724409449,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 9,
+            "orn_spikes": 20504,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 9,
+            "orn_spikes": 23709,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 13,
+            "orn_spikes": 22960,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 8,
+            "orn_spikes": 21776,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0004921259842519685,
+            "kc_spikes": 7,
+            "orn_spikes": 27332,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 10,
+            "orn_spikes": 30619,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 10,
+            "orn_spikes": 21447,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 10,
+            "orn_spikes": 20956,
+            "side": "SELL",
+            "difference_hz": -4.0
+          }
+        },
+        "odor_current": 15.0,
+        "apl_gain": 4.0,
+        "usable": false
+      },
+      "current=15.0,apl_gain=8.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0,
+        "kc_active_max": 0.0,
+        "kc_active_median": 0.0,
+        "inside_band": 0,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 20574,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 23371,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 22938,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 21775,
+            "side": "SELL",
+            "difference_hz": -8.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 27273,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 30976,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 21267,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 21014,
+            "side": "SELL",
+            "difference_hz": -2.0
+          }
+        },
+        "odor_current": 15.0,
+        "apl_gain": 8.0,
+        "usable": false
+      },
+      "current=15.0,apl_gain=16.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0,
+        "kc_active_max": 0.0,
+        "kc_active_median": 0.0,
+        "inside_band": 0,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 20574,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 23371,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 22938,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 21775,
+            "side": "SELL",
+            "difference_hz": -8.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 27273,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 30976,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 21267,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 21014,
+            "side": "SELL",
+            "difference_hz": -2.0
+          }
+        },
+        "odor_current": 15.0,
+        "apl_gain": 16.0,
+        "usable": false
+      },
+      "current=20.0,apl_gain=1.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.8917737687701209,
+        "kc_active_min": 0.4018208661417323,
+        "kc_active_max": 0.4256889763779528,
+        "kc_active_median": 0.40871062992125984,
+        "inside_band": 0,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.406003937007874,
+            "kc_spikes": 6736,
+            "orn_spikes": 25402,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.40575787401574803,
+            "kc_spikes": 6782,
+            "orn_spikes": 29571,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.4126476377952756,
+            "kc_spikes": 6902,
+            "orn_spikes": 27486,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.41018700787401574,
+            "kc_spikes": 6726,
+            "orn_spikes": 27614,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.4018208661417323,
+            "kc_spikes": 6572,
+            "orn_spikes": 35330,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.4256889763779528,
+            "kc_spikes": 7099,
+            "orn_spikes": 39151,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.4156003937007874,
+            "kc_spikes": 7010,
+            "orn_spikes": 25529,
+            "side": "BUY",
+            "difference_hz": 16.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.40723425196850394,
+            "kc_spikes": 6665,
+            "orn_spikes": 26591,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "odor_current": 20.0,
+        "apl_gain": 1.0,
+        "usable": false
+      },
+      "current=20.0,apl_gain=2.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.8048615494863868,
+        "kc_active_min": 0.06692913385826772,
+        "kc_active_max": 0.07997047244094488,
+        "kc_active_median": 0.07234251968503937,
+        "inside_band": 8,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.06742125984251969,
+            "kc_spikes": 767,
+            "orn_spikes": 25313,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.06914370078740158,
+            "kc_spikes": 695,
+            "orn_spikes": 29257,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07997047244094488,
+            "kc_spikes": 941,
+            "orn_spikes": 27660,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.07406496062992125,
+            "kc_spikes": 820,
+            "orn_spikes": 27596,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.07529527559055119,
+            "kc_spikes": 809,
+            "orn_spikes": 35627,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.07308070866141732,
+            "kc_spikes": 771,
+            "orn_spikes": 39084,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.06692913385826772,
+            "kc_spikes": 734,
+            "orn_spikes": 25407,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.07160433070866142,
+            "kc_spikes": 814,
+            "orn_spikes": 26416,
+            "side": "BUY",
+            "difference_hz": 10.0
+          }
+        },
+        "odor_current": 20.0,
+        "apl_gain": 2.0,
+        "usable": false
+      },
+      "current=20.0,apl_gain=4.0": {
+        "kc_identical_pairs": 2,
+        "kc_mean_jaccard": 0.6700680272108844,
+        "kc_active_min": 0.0007381889763779527,
+        "kc_active_max": 0.0012303149606299212,
+        "kc_active_median": 0.000984251968503937,
+        "inside_band": 0,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 11,
+            "orn_spikes": 25391,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 8,
+            "orn_spikes": 29189,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 14,
+            "orn_spikes": 27541,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 8,
+            "orn_spikes": 27569,
+            "side": "SELL",
+            "difference_hz": -6.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 10,
+            "orn_spikes": 35393,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 13,
+            "orn_spikes": 39352,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 11,
+            "orn_spikes": 25535,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 11,
+            "orn_spikes": 26397,
+            "side": "SELL",
+            "difference_hz": -4.0
+          }
+        },
+        "odor_current": 20.0,
+        "apl_gain": 4.0,
+        "usable": false
+      },
+      "current=20.0,apl_gain=8.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0,
+        "kc_active_max": 0.0,
+        "kc_active_median": 0.0,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 25114,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 29239,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 27711,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 27584,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 35492,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 39046,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 25703,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 26411,
+            "side": "BUY",
+            "difference_hz": 10.0
+          }
+        },
+        "odor_current": 20.0,
+        "apl_gain": 8.0,
+        "usable": false
+      },
+      "current=20.0,apl_gain=16.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0,
+        "kc_active_max": 0.0,
+        "kc_active_median": 0.0,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 25114,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 29239,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 27711,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 27584,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 35492,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 39046,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 25703,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 26411,
+            "side": "BUY",
+            "difference_hz": 10.0
+          }
+        },
+        "odor_current": 20.0,
+        "apl_gain": 16.0,
+        "usable": false
+      },
+      "current=30.0,apl_gain=1.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.8832482388269398,
+        "kc_active_min": 0.41437007874015747,
+        "kc_active_max": 0.43380905511811024,
+        "kc_active_median": 0.4233513779527559,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.41437007874015747,
+            "kc_spikes": 6986,
+            "orn_spikes": 33377,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.421505905511811,
+            "kc_spikes": 7072,
+            "orn_spikes": 39500,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.4328248031496063,
+            "kc_spikes": 7229,
+            "orn_spikes": 37125,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.4237204724409449,
+            "kc_spikes": 7098,
+            "orn_spikes": 36384,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.42298228346456695,
+            "kc_spikes": 7158,
+            "orn_spikes": 48254,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.43380905511811024,
+            "kc_spikes": 7346,
+            "orn_spikes": 53597,
+            "side": "BUY",
+            "difference_hz": 16.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.4249507874015748,
+            "kc_spikes": 7078,
+            "orn_spikes": 34731,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.4202755905511811,
+            "kc_spikes": 6986,
+            "orn_spikes": 36574,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          }
+        },
+        "odor_current": 30.0,
+        "apl_gain": 1.0,
+        "usable": false
+      },
+      "current=30.0,apl_gain=2.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.773464101480659,
+        "kc_active_min": 0.07455708661417323,
+        "kc_active_max": 0.08661417322834646,
+        "kc_active_median": 0.08021653543307086,
+        "inside_band": 8,
+        "distinct_sides": 1,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.08070866141732283,
+            "kc_spikes": 866,
+            "orn_spikes": 33426,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.07455708661417323,
+            "kc_spikes": 834,
+            "orn_spikes": 39359,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.08661417322834646,
+            "kc_spikes": 1034,
+            "orn_spikes": 37082,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.07603346456692914,
+            "kc_spikes": 857,
+            "orn_spikes": 36348,
+            "side": "BUY",
+            "difference_hz": 20.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.08489173228346457,
+            "kc_spikes": 892,
+            "orn_spikes": 47934,
+            "side": "BUY",
+            "difference_hz": 18.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0797244094488189,
+            "kc_spikes": 855,
+            "orn_spikes": 53791,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.07627952755905512,
+            "kc_spikes": 876,
+            "orn_spikes": 34488,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.08661417322834646,
+            "kc_spikes": 985,
+            "orn_spikes": 35780,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "odor_current": 30.0,
+        "apl_gain": 2.0,
+        "usable": false
+      },
+      "current=30.0,apl_gain=4.0": {
+        "kc_identical_pairs": 4,
+        "kc_mean_jaccard": 0.7291666666666667,
+        "kc_active_min": 0.0007381889763779527,
+        "kc_active_max": 0.0012303149606299212,
+        "kc_active_median": 0.000984251968503937,
+        "inside_band": 0,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 10,
+            "orn_spikes": 33401,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 11,
+            "orn_spikes": 39807,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 15,
+            "orn_spikes": 37145,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 10,
+            "orn_spikes": 36545,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 11,
+            "orn_spikes": 48095,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 14,
+            "orn_spikes": 53654,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.000984251968503937,
+            "kc_spikes": 12,
+            "orn_spikes": 35120,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 9,
+            "orn_spikes": 35973,
+            "side": "BUY",
+            "difference_hz": 10.0
+          }
+        },
+        "odor_current": 30.0,
+        "apl_gain": 4.0,
+        "usable": false
+      },
+      "current=30.0,apl_gain=8.0": {
+        "kc_identical_pairs": 21,
+        "kc_mean_jaccard": 0.75,
+        "kc_active_min": 0.0,
+        "kc_active_max": 0.00024606299212598425,
+        "kc_active_median": 0.0,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 33492,
+            "side": "BUY",
+            "difference_hz": 16.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 39547,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 37174,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.00024606299212598425,
+            "kc_spikes": 1,
+            "orn_spikes": 36699,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 48101,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 53459,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 34271,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 36595,
+            "side": "BUY",
+            "difference_hz": 12.0
+          }
+        },
+        "odor_current": 30.0,
+        "apl_gain": 8.0,
+        "usable": false
+      },
+      "current=30.0,apl_gain=16.0": {
+        "kc_identical_pairs": 28,
+        "kc_mean_jaccard": 1.0,
+        "kc_active_min": 0.0,
+        "kc_active_max": 0.0,
+        "kc_active_median": 0.0,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 33492,
+            "side": "BUY",
+            "difference_hz": 16.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 39547,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 37174,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 36699,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 48101,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 53459,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 34271,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0,
+            "kc_spikes": 0,
+            "orn_spikes": 36595,
+            "side": "BUY",
+            "difference_hz": 12.0
+          }
+        },
+        "odor_current": 30.0,
+        "apl_gain": 16.0,
+        "usable": false
+      }
+    },
+    "graph_restored": true,
+    "selected_current": 30.0,
+    "selected_apl_gain": 2.0,
+    "default_current": 30.0,
+    "any_usable": false,
+    "chart_only": {
+      "kc_identical_pairs": 6,
+      "kc_mean_jaccard": 0.41491654868009176,
+      "kc_active_min": 0.0007381889763779527,
+      "kc_active_max": 0.05979330708661417,
+      "kc_active_median": 0.000984251968503937,
+      "inside_band": 3,
+      "distinct_sides": 2,
+      "scene_pairs": 28,
+      "per_scene": {
+        "rally": {
+          "kc_active_fraction": 0.0007381889763779527,
+          "kc_spikes": 15,
+          "orn_spikes": 0,
+          "side": "BUY",
+          "difference_hz": 8.0
+        },
+        "crash": {
+          "kc_active_fraction": 0.04699803149606299,
+          "kc_spikes": 249,
+          "orn_spikes": 1293,
+          "side": "BUY",
+          "difference_hz": 6.0
+        },
+        "flat": {
+          "kc_active_fraction": 0.000984251968503937,
+          "kc_spikes": 16,
+          "orn_spikes": 0,
+          "side": "BUY",
+          "difference_hz": 4.0
+        },
+        "chop": {
+          "kc_active_fraction": 0.000984251968503937,
+          "kc_spikes": 16,
+          "orn_spikes": 0,
+          "side": "BUY",
+          "difference_hz": 8.0
+        },
+        "spike_up": {
+          "kc_active_fraction": 0.000984251968503937,
+          "kc_spikes": 15,
+          "orn_spikes": 0,
+          "side": "BUY",
+          "difference_hz": 12.0
+        },
+        "spike_down": {
+          "kc_active_fraction": 0.05487204724409449,
+          "kc_spikes": 344,
+          "orn_spikes": 2356,
+          "side": "BUY",
+          "difference_hz": 8.0
+        },
+        "peak": {
+          "kc_active_fraction": 0.05979330708661417,
+          "kc_spikes": 345,
+          "orn_spikes": 2512,
+          "side": "SELL",
+          "difference_hz": -8.0
+        },
+        "valley": {
+          "kc_active_fraction": 0.000984251968503937,
+          "kc_spikes": 16,
+          "orn_spikes": 0,
+          "side": "BUY",
+          "difference_hz": 4.0
+        }
+      }
+    },
+    "odor_only": {
+      "kc_identical_pairs": 0,
+      "kc_mean_jaccard": 0.773464101480659,
+      "kc_active_min": 0.07455708661417323,
+      "kc_active_max": 0.08661417322834646,
+      "kc_active_median": 0.08021653543307086,
+      "inside_band": 8,
+      "distinct_sides": 1,
+      "scene_pairs": 28,
+      "per_scene": {
+        "rally": {
+          "kc_active_fraction": 0.08070866141732283,
+          "kc_spikes": 866,
+          "orn_spikes": 33426,
+          "side": "BUY",
+          "difference_hz": 6.0
+        },
+        "crash": {
+          "kc_active_fraction": 0.07455708661417323,
+          "kc_spikes": 834,
+          "orn_spikes": 39359,
+          "side": "BUY",
+          "difference_hz": 4.0
+        },
+        "flat": {
+          "kc_active_fraction": 0.08661417322834646,
+          "kc_spikes": 1034,
+          "orn_spikes": 37082,
+          "side": "BUY",
+          "difference_hz": 14.0
+        },
+        "chop": {
+          "kc_active_fraction": 0.07603346456692914,
+          "kc_spikes": 857,
+          "orn_spikes": 36348,
+          "side": "BUY",
+          "difference_hz": 20.0
+        },
+        "spike_up": {
+          "kc_active_fraction": 0.08489173228346457,
+          "kc_spikes": 892,
+          "orn_spikes": 47934,
+          "side": "BUY",
+          "difference_hz": 18.0
+        },
+        "spike_down": {
+          "kc_active_fraction": 0.0797244094488189,
+          "kc_spikes": 855,
+          "orn_spikes": 53791,
+          "side": "BUY",
+          "difference_hz": 6.0
+        },
+        "peak": {
+          "kc_active_fraction": 0.07627952755905512,
+          "kc_spikes": 876,
+          "orn_spikes": 34488,
+          "side": "BUY",
+          "difference_hz": 2.0
+        },
+        "valley": {
+          "kc_active_fraction": 0.08661417322834646,
+          "kc_spikes": 985,
+          "orn_spikes": 35780,
+          "side": "BUY",
+          "difference_hz": 8.0
+        }
+      },
+      "glomerular_identical_pairs": 0,
+      "glomerular_mean_jaccard": 0.3088346163224055
+    },
+    "both": {
+      "kc_identical_pairs": 0,
+      "kc_mean_jaccard": 0.7729144491662215,
+      "kc_active_min": 0.07258858267716535,
+      "kc_active_max": 0.08661417322834646,
+      "kc_active_median": 0.07923228346456693,
+      "inside_band": 8,
+      "distinct_sides": 2,
+      "scene_pairs": 28,
+      "per_scene": {
+        "rally": {
+          "kc_active_fraction": 0.07726377952755906,
+          "kc_spikes": 837,
+          "orn_spikes": 33359,
+          "side": "BUY",
+          "difference_hz": 4.0
+        },
+        "crash": {
+          "kc_active_fraction": 0.07258858267716535,
+          "kc_spikes": 797,
+          "orn_spikes": 39508,
+          "side": "BUY",
+          "difference_hz": 4.0
+        },
+        "flat": {
+          "kc_active_fraction": 0.08661417322834646,
+          "kc_spikes": 1034,
+          "orn_spikes": 37082,
+          "side": "BUY",
+          "difference_hz": 14.0
+        },
+        "chop": {
+          "kc_active_fraction": 0.07800196850393701,
+          "kc_spikes": 857,
+          "orn_spikes": 36376,
+          "side": "BUY",
+          "difference_hz": 6.0
+        },
+        "spike_up": {
+          "kc_active_fraction": 0.0812007874015748,
+          "kc_spikes": 906,
+          "orn_spikes": 47918,
+          "side": "BUY",
+          "difference_hz": 6.0
+        },
+        "spike_down": {
+          "kc_active_fraction": 0.08046259842519685,
+          "kc_spikes": 906,
+          "orn_spikes": 53545,
+          "side": "BUY",
+          "difference_hz": 6.0
+        },
+        "peak": {
+          "kc_active_fraction": 0.07627952755905512,
+          "kc_spikes": 847,
+          "orn_spikes": 34475,
+          "side": "SELL",
+          "difference_hz": -2.0
+        },
+        "valley": {
+          "kc_active_fraction": 0.08267716535433071,
+          "kc_spikes": 924,
+          "orn_spikes": 36344,
+          "side": "BUY",
+          "difference_hz": 18.0
+        }
+      },
+      "glomerular_identical_pairs": 0,
+      "glomerular_mean_jaccard": 0.3088346163224055
+    },
+    "verdict": "the odour reaches the mushroom body -- 0/28 identical glomerular codes and 0/28 identical Kenyon codes against 6/28 for the chart -- but the receptor population is itself a step: it emits no spike at all up to current 5 and saturates the Kenyon population immediately above it. At the best of 25 current x APL-gain points (current 30, APL x2) Kenyon activity is 7.46%-8.66% with 8/8 states in the 1%-15% band and mean overlap 0.77. No point in the grid is both sparse and separable (overlap at or below 0.5 with all 8 states in band), so the odour channel removes the collisions without removing the bistability -- the population still has two states and the input only chooses between them"
+  },
+  "kc_input": {
+    "kenyon_cells": 4064,
+    "input_edges": 830465,
+    "input_sum_min": 26.400000512599945,
+    "input_sum_max": 509.8500146865845,
+    "input_sum_median": 124.30000337958336,
+    "silent_kenyon_cells": 0,
+    "odor_current": 30.0,
+    "arms": {
+      "as_reconstructed,apl_gain=1.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.8841100061523679,
+        "kc_active_min": 0.41313976377952755,
+        "kc_active_max": 0.4657972440944882,
+        "kc_active_median": 0.43885334645669294,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.42765748031496065,
+            "kc_spikes": 7225,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.4613681102362205,
+            "kc_spikes": 7761,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.41313976377952755,
+            "kc_spikes": 6897,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.4431594488188976,
+            "kc_spikes": 7456,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.4345472440944882,
+            "kc_spikes": 7541,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.4657972440944882,
+            "kc_spikes": 8088,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.45743110236220474,
+            "kc_spikes": 8089,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.4330708661417323,
+            "kc_spikes": 7446,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          }
+        },
+        "normalised": false,
+        "apl_gain": 1.0,
+        "usable": false
+      },
+      "as_reconstructed,apl_gain=2.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.7616613308304457,
+        "kc_active_min": 0.07997047244094488,
+        "kc_active_max": 0.09448818897637795,
+        "kc_active_median": 0.08944389763779527,
+        "inside_band": 8,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.08981299212598425,
+            "kc_spikes": 1059,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.09005905511811024,
+            "kc_spikes": 1007,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07997047244094488,
+            "kc_spikes": 923,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.08710629921259842,
+            "kc_spikes": 1004,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.09325787401574803,
+            "kc_spikes": 1113,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.08464566929133858,
+            "kc_spikes": 1003,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.09448818897637795,
+            "kc_spikes": 1104,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0890748031496063,
+            "kc_spikes": 1065,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "normalised": false,
+        "apl_gain": 2.0,
+        "usable": false
+      },
+      "as_reconstructed,apl_gain=4.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.5307668521954236,
+        "kc_active_min": 0.0007381889763779527,
+        "kc_active_max": 0.0024606299212598425,
+        "kc_active_median": 0.0014763779527559055,
+        "inside_band": 0,
+        "distinct_sides": 1,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 19,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0024606299212598425,
+            "kc_spikes": 19,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 14,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0017224409448818897,
+            "kc_spikes": 16,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0007381889763779527,
+            "kc_spikes": 13,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 14,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0014763779527559055,
+            "kc_spikes": 17,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.001968503937007874,
+            "kc_spikes": 18,
+            "side": "BUY",
+            "difference_hz": 6.0
+          }
+        },
+        "normalised": false,
+        "apl_gain": 4.0,
+        "usable": false
+      },
+      "normalised,apl_gain=1.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.8920050650618773,
+        "kc_active_min": 0.4333169291338583,
+        "kc_active_max": 0.47883858267716534,
+        "kc_active_median": 0.4568159448818898,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.43848425196850394,
+            "kc_spikes": 7252,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.46653543307086615,
+            "kc_spikes": 7758,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.4333169291338583,
+            "kc_spikes": 6712,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.45447834645669294,
+            "kc_spikes": 7417,
+            "side": "SELL",
+            "difference_hz": -2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.45915354330708663,
+            "kc_spikes": 7549,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.47883858267716534,
+            "kc_spikes": 7822,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.4596456692913386,
+            "kc_spikes": 7691,
+            "side": "SELL",
+            "difference_hz": -4.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.453248031496063,
+            "kc_spikes": 7460,
+            "side": "BUY",
+            "difference_hz": 2.0
+          }
+        },
+        "normalised": true,
+        "apl_gain": 1.0,
+        "usable": false
+      },
+      "normalised,apl_gain=2.0": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.75990837217062,
+        "kc_active_min": 0.08243110236220473,
+        "kc_active_max": 0.09867125984251969,
+        "kc_active_median": 0.09399606299212598,
+        "inside_band": 8,
+        "distinct_sides": 1,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.09719488188976377,
+            "kc_spikes": 1188,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.09867125984251969,
+            "kc_spikes": 1227,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.08243110236220473,
+            "kc_spikes": 948,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.09350393700787402,
+            "kc_spikes": 1153,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.09719488188976377,
+            "kc_spikes": 1172,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.09178149606299213,
+            "kc_spikes": 1093,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.09448818897637795,
+            "kc_spikes": 1139,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0907972440944882,
+            "kc_spikes": 1161,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "normalised": true,
+        "apl_gain": 2.0,
+        "usable": false
+      },
+      "normalised,apl_gain=4.0": {
+        "kc_identical_pairs": 1,
+        "kc_mean_jaccard": 0.5967875378589663,
+        "kc_active_min": 0.0012303149606299212,
+        "kc_active_max": 0.0027066929133858267,
+        "kc_active_median": 0.002091535433070866,
+        "inside_band": 0,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.0024606299212598425,
+            "kc_spikes": 58,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0017224409448818897,
+            "kc_spikes": 53,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.001968503937007874,
+            "kc_spikes": 47,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.0022145669291338582,
+            "kc_spikes": 55,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.0022145669291338582,
+            "kc_spikes": 52,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.0012303149606299212,
+            "kc_spikes": 44,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.0027066929133858267,
+            "kc_spikes": 57,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.001968503937007874,
+            "kc_spikes": 55,
+            "side": "BUY",
+            "difference_hz": 4.0
+          }
+        },
+        "normalised": true,
+        "apl_gain": 4.0,
+        "usable": false
+      }
+    },
+    "graph_restored": true,
+    "verdict": "summed excitatory input onto a Kenyon cell spans 26.4 to 509.9 in the reconstruction, a factor of 19. Equalising it lowers the overlap at 0 of 3 gains but never far enough to be usable (sparse in all 8 states with overlap at or below 0.5): APL x1: overlap 0.88 -> 0.89, in band 0->0; APL x2: overlap 0.76 -> 0.76, in band 8->8; APL x4: overlap 0.53 -> 0.60, in band 0->0. The Kenyon population is not selecting on which glomeruli are active, so the loudest-cell hypothesis does not by itself explain the shared code"
+  },
+  "odor_tuning": {
+    "apl_gain": 2.0,
+    "shipped": [
+      0.9,
+      0.1
+    ],
+    "arms": {
+      "sigma=0.9,floor=0.1": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.7616613308304457,
+        "kc_active_min": 0.07997047244094488,
+        "kc_active_max": 0.09448818897637795,
+        "kc_active_median": 0.08944389763779527,
+        "inside_band": 8,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.08981299212598425,
+            "kc_spikes": 1059,
+            "glomeruli_active": 17,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.09005905511811024,
+            "kc_spikes": 1007,
+            "glomeruli_active": 17,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07997047244094488,
+            "kc_spikes": 923,
+            "glomeruli_active": 18,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.08710629921259842,
+            "kc_spikes": 1004,
+            "glomeruli_active": 17,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.09325787401574803,
+            "kc_spikes": 1113,
+            "glomeruli_active": 17,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.08464566929133858,
+            "kc_spikes": 1003,
+            "glomeruli_active": 18,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.09448818897637795,
+            "kc_spikes": 1104,
+            "glomeruli_active": 17,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.0890748031496063,
+            "kc_spikes": 1065,
+            "glomeruli_active": 17,
+            "side": "BUY",
+            "difference_hz": 8.0
+          }
+        },
+        "sigma": 0.9,
+        "floor": 0.1,
+        "glomerular_mean_jaccard": 0.43765195925758255,
+        "glomeruli_per_state": 17.25,
+        "usable": false
+      },
+      "sigma=0.6,floor=0.3": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.7830037048330819,
+        "kc_active_min": 0.07258858267716535,
+        "kc_active_max": 0.08661417322834646,
+        "kc_active_median": 0.07763287401574803,
+        "inside_band": 8,
+        "distinct_sides": 2,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.08267716535433071,
+            "kc_spikes": 952,
+            "glomeruli_active": 9,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.08464566929133858,
+            "kc_spikes": 933,
+            "glomeruli_active": 8,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07258858267716535,
+            "kc_spikes": 816,
+            "glomeruli_active": 7,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.07627952755905512,
+            "kc_spikes": 858,
+            "glomeruli_active": 9,
+            "side": "BUY",
+            "difference_hz": 2.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.07578740157480315,
+            "kc_spikes": 848,
+            "glomeruli_active": 8,
+            "side": "BUY",
+            "difference_hz": 12.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.07849409448818898,
+            "kc_spikes": 902,
+            "glomeruli_active": 9,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.08661417322834646,
+            "kc_spikes": 976,
+            "glomeruli_active": 9,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.07677165354330709,
+            "kc_spikes": 904,
+            "glomeruli_active": 9,
+            "side": "BUY",
+            "difference_hz": 12.0
+          }
+        },
+        "sigma": 0.6,
+        "floor": 0.3,
+        "glomerular_mean_jaccard": 0.34225536368393505,
+        "glomeruli_per_state": 8.5,
+        "usable": false
+      },
+      "sigma=0.5,floor=0.5": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.7923351277834652,
+        "kc_active_min": 0.07283464566929133,
+        "kc_active_max": 0.08169291338582677,
+        "kc_active_median": 0.07861712598425197,
+        "inside_band": 8,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.08169291338582677,
+            "kc_spikes": 891,
+            "glomeruli_active": 7,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.0797244094488189,
+            "kc_spikes": 881,
+            "glomeruli_active": 7,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07357283464566929,
+            "kc_spikes": 820,
+            "glomeruli_active": 7,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.07455708661417323,
+            "kc_spikes": 806,
+            "glomeruli_active": 7,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.07283464566929133,
+            "kc_spikes": 816,
+            "glomeruli_active": 7,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.08021653543307086,
+            "kc_spikes": 919,
+            "glomeruli_active": 7,
+            "side": "BUY",
+            "difference_hz": 8.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.07947834645669291,
+            "kc_spikes": 904,
+            "glomeruli_active": 8,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.07775590551181102,
+            "kc_spikes": 849,
+            "glomeruli_active": 8,
+            "side": "SELL",
+            "difference_hz": -10.0
+          }
+        },
+        "sigma": 0.5,
+        "floor": 0.5,
+        "glomerular_mean_jaccard": 0.34480935730935736,
+        "glomeruli_per_state": 7.25,
+        "usable": false
+      },
+      "sigma=0.3,floor=0.3": {
+        "kc_identical_pairs": 0,
+        "kc_mean_jaccard": 0.7915002884869907,
+        "kc_active_min": 0.06692913385826772,
+        "kc_active_max": 0.08415354330708662,
+        "kc_active_median": 0.07701771653543307,
+        "inside_band": 8,
+        "distinct_sides": 3,
+        "scene_pairs": 28,
+        "per_scene": {
+          "rally": {
+            "kc_active_fraction": 0.07357283464566929,
+            "kc_spikes": 868,
+            "glomeruli_active": 5,
+            "side": "BUY",
+            "difference_hz": 4.0
+          },
+          "crash": {
+            "kc_active_fraction": 0.07800196850393701,
+            "kc_spikes": 867,
+            "glomeruli_active": 5,
+            "side": "BUY",
+            "difference_hz": 14.0
+          },
+          "flat": {
+            "kc_active_fraction": 0.07431102362204725,
+            "kc_spikes": 829,
+            "glomeruli_active": 5,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "chop": {
+            "kc_active_fraction": 0.07800196850393701,
+            "kc_spikes": 877,
+            "glomeruli_active": 5,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_up": {
+            "kc_active_fraction": 0.08415354330708662,
+            "kc_spikes": 931,
+            "glomeruli_active": 5,
+            "side": "BUY",
+            "difference_hz": 6.0
+          },
+          "spike_down": {
+            "kc_active_fraction": 0.07603346456692914,
+            "kc_spikes": 864,
+            "glomeruli_active": 5,
+            "side": "BUY",
+            "difference_hz": 10.0
+          },
+          "peak": {
+            "kc_active_fraction": 0.07947834645669291,
+            "kc_spikes": 867,
+            "glomeruli_active": 4,
+            "side": "SELL",
+            "difference_hz": -6.0
+          },
+          "valley": {
+            "kc_active_fraction": 0.06692913385826772,
+            "kc_spikes": 755,
+            "glomeruli_active": 5,
+            "side": "HOLD",
+            "difference_hz": 0.0
+          }
+        },
+        "sigma": 0.3,
+        "floor": 0.3,
+        "glomerular_mean_jaccard": 0.1940901360544218,
+        "glomeruli_per_state": 4.875,
+        "usable": false
+      }
+    },
+    "graph_restored": true,
+    "verdict": "sharpening the tuning curve takes the input overlap from 0.44 to 0.19 and the Kenyon overlap from 0.76 to 0.79, a transfer of -0.12 (sigma 0.9/floor 0.1: 17.2 glomeruli, input overlap 0.44, Kenyon overlap 0.76, in band 8; sigma 0.6/floor 0.3: 8.5 glomeruli, input overlap 0.34, Kenyon overlap 0.78, in band 8; sigma 0.5/floor 0.5: 7.2 glomeruli, input overlap 0.34, Kenyon overlap 0.79, in band 8; sigma 0.3/floor 0.3: 4.9 glomeruli, input overlap 0.19, Kenyon overlap 0.79, in band 8). No width is both sparse in every state and below 0.5 overlap. A transfer well under 1 means the shared Kenyon code is made in the mushroom body, not inherited from the receptors, so sharpening the input further is the wrong lever"
+  },
+  "pathway": {
+    "apl_gain": 2.0,
+    "scenes": [
+      "rally",
+      "crash",
+      "flat",
+      "chop",
+      "spike_up",
+      "spike_down",
+      "peak",
+      "valley"
+    ],
+    "layers": {
+      "receptors": {
+        "cells": 2635,
+        "active_fraction_median": 0.43719165085388995,
+        "mean_jaccard": 0.6105276153060298,
+        "mean_correlation": 0.34594856905067145
+      },
+      "hop1": {
+        "cells": 1151,
+        "active_fraction_median": 0.9396177237185057,
+        "mean_jaccard": 0.9819096018067741,
+        "mean_correlation": 0.963559507719162
+      },
+      "hop2": {
+        "cells": 43438,
+        "active_fraction_median": 0.16627146737879275,
+        "mean_jaccard": 0.8695434967603696,
+        "mean_correlation": 0.9836501161016361
+      },
+      "kenyon": {
+        "cells": 4064,
+        "active_fraction_median": 0.08944389763779527,
+        "mean_jaccard": 0.7616613308304457,
+        "mean_correlation": 0.9330782711435557
+      }
+    },
+    "glomerular_mean_jaccard": 0.43765195925758255,
+    "graph_restored": true,
+    "verdict": "overlap along the path: glomerular code 0.44 -> receptors 0.61 -> hop1 0.98 -> hop2 0.87 -> kenyon 0.76. The convergence happens at receptors -> hop1, which adds +0.37 on its own. That synapse is where the market signal stops being a difference between states, and it is the only place worth changing"
+  },
+  "inhibition": {
+    "states": 8,
+    "inhibitory_edges": 9813608,
+    "inhibitory_fraction": 0.38359972572344897,
+    "odor_current": 30.0,
+    "arms": {
+      "1.0": {
+        "layers": {
+          "receptors": {
+            "cells": 2635,
+            "active_fraction_median": 0.43776091081593926,
+            "mean_jaccard": 0.6112586716018144,
+            "mean_correlation": 0.3449388024704582
+          },
+          "hop1": {
+            "cells": 1151,
+            "active_fraction_median": 0.9430929626411816,
+            "mean_jaccard": 0.979007944840596,
+            "mean_correlation": 0.9626839465976859
+          },
+          "hop2": {
+            "cells": 43438,
+            "active_fraction_median": 0.20869975597403195,
+            "mean_jaccard": 0.8641853122309362,
+            "mean_correlation": 0.9755562563044962
+          },
+          "kenyon": {
+            "cells": 4064,
+            "active_fraction_median": 0.43885334645669294,
+            "mean_jaccard": 0.8841100061523679,
+            "mean_correlation": 0.9631071132836438
+          }
+        },
+        "kc_active_min": 0.41313976377952755,
+        "kc_active_max": 0.4657972440944882,
+        "kc_active_median": 0.43885334645669294,
+        "inside_band": 0,
+        "whole_brain_spikes": 667429.5
+      },
+      "1.5": {
+        "layers": {
+          "receptors": {
+            "cells": 2635,
+            "active_fraction_median": 0.26982922201138515,
+            "mean_jaccard": 0.3563318435792867,
+            "mean_correlation": 0.2846960791378595
+          },
+          "hop1": {
+            "cells": 1151,
+            "active_fraction_median": 0.7893136403127715,
+            "mean_jaccard": 0.9308345623779888,
+            "mean_correlation": 0.9510972032580943
+          },
+          "hop2": {
+            "cells": 43438,
+            "active_fraction_median": 0.10706063815092776,
+            "mean_jaccard": 0.7712633834562087,
+            "mean_correlation": 0.9560308099768539
+          },
+          "kenyon": {
+            "cells": 4064,
+            "active_fraction_median": 0.10593011811023623,
+            "mean_jaccard": 0.6388565789968951,
+            "mean_correlation": 0.8645338165760775
+          }
+        },
+        "kc_active_min": 0.07898622047244094,
+        "kc_active_max": 0.11737204724409449,
+        "kc_active_median": 0.10593011811023623,
+        "inside_band": 8,
+        "whole_brain_spikes": 505565.125
+      },
+      "1.6": {
+        "layers": {
+          "receptors": {
+            "cells": 2635,
+            "active_fraction_median": 0.252561669829222,
+            "mean_jaccard": 0.3312516405900623,
+            "mean_correlation": 0.3048131850785524
+          },
+          "hop1": {
+            "cells": 1151,
+            "active_fraction_median": 0.7549956559513467,
+            "mean_jaccard": 0.9232810848107241,
+            "mean_correlation": 0.9608208895718494
+          },
+          "hop2": {
+            "cells": 43438,
+            "active_fraction_median": 0.09739168470003223,
+            "mean_jaccard": 0.7605757636212905,
+            "mean_correlation": 0.958980277489176
+          },
+          "kenyon": {
+            "cells": 4064,
+            "active_fraction_median": 0.06803641732283465,
+            "mean_jaccard": 0.599345431079836,
+            "mean_correlation": 0.8476871763325776
+          }
+        },
+        "kc_active_min": 0.05905511811023622,
+        "kc_active_max": 0.08415354330708662,
+        "kc_active_median": 0.06803641732283465,
+        "inside_band": 8,
+        "whole_brain_spikes": 483469.625
+      },
+      "1.7": {
+        "layers": {
+          "receptors": {
+            "cells": 2635,
+            "active_fraction_median": 0.24079696394686906,
+            "mean_jaccard": 0.3221433869347242,
+            "mean_correlation": 0.31949589937088124
+          },
+          "hop1": {
+            "cells": 1151,
+            "active_fraction_median": 0.7258905299739357,
+            "mean_jaccard": 0.9201701153635227,
+            "mean_correlation": 0.9618513786672415
+          },
+          "hop2": {
+            "cells": 43438,
+            "active_fraction_median": 0.08820617892168148,
+            "mean_jaccard": 0.7583672131166492,
+            "mean_correlation": 0.9617813578327855
+          },
+          "kenyon": {
+            "cells": 4064,
+            "active_fraction_median": 0.04822834645669291,
+            "mean_jaccard": 0.5743723511450541,
+            "mean_correlation": 0.8426802322205786
+          }
+        },
+        "kc_active_min": 0.036909448818897635,
+        "kc_active_max": 0.0531496062992126,
+        "kc_active_median": 0.04822834645669291,
+        "inside_band": 8,
+        "whole_brain_spikes": 466920.5
+      },
+      "1.8": {
+        "layers": {
+          "receptors": {
+            "cells": 2635,
+            "active_fraction_median": 0.23377609108159395,
+            "mean_jaccard": 0.3146380078498751,
+            "mean_correlation": 0.32263884331619536
+          },
+          "hop1": {
+            "cells": 1151,
+            "active_fraction_median": 0.7024326672458732,
+            "mean_jaccard": 0.9189675711961351,
+            "mean_correlation": 0.9606244028619445
+          },
+          "hop2": {
+            "cells": 43438,
+            "active_fraction_median": 0.08365946866798656,
+            "mean_jaccard": 0.7454065338079064,
+            "mean_correlation": 0.9634753932877788
+          },
+          "kenyon": {
+            "cells": 4064,
+            "active_fraction_median": 0.029773622047244094,
+            "mean_jaccard": 0.518910808903623,
+            "mean_correlation": 0.8050859790827138
+          }
+        },
+        "kc_active_min": 0.025098425196850394,
+        "kc_active_max": 0.048474409448818895,
+        "kc_active_median": 0.029773622047244094,
+        "inside_band": 8,
+        "whole_brain_spikes": 455210.875
+      },
+      "1.9": {
+        "layers": {
+          "receptors": {
+            "cells": 2635,
+            "active_fraction_median": 0.22846299810246679,
+            "mean_jaccard": 0.30961177853047583,
+            "mean_correlation": 0.3253213571852914
+          },
+          "hop1": {
+            "cells": 1151,
+            "active_fraction_median": 0.680278019113814,
+            "mean_jaccard": 0.9111699944397842,
+            "mean_correlation": 0.9596350426842462
+          },
+          "hop2": {
+            "cells": 43438,
+            "active_fraction_median": 0.07221787375109351,
+            "mean_jaccard": 0.7237370190378025,
+            "mean_correlation": 0.9622371951917544
+          },
+          "kenyon": {
+            "cells": 4064,
+            "active_fraction_median": 0.01968503937007874,
+            "mean_jaccard": 0.4975469832068213,
+            "mean_correlation": 0.7929567900368699
+          }
+        },
+        "kc_active_min": 0.015748031496062992,
+        "kc_active_max": 0.02386811023622047,
+        "kc_active_median": 0.01968503937007874,
+        "inside_band": 8,
+        "whole_brain_spikes": 442477.125
+      },
+      "2.0": {
+        "layers": {
+          "receptors": {
+            "cells": 2635,
+            "active_fraction_median": 0.22599620493358635,
+            "mean_jaccard": 0.3058374052822841,
+            "mean_correlation": 0.32673916701743266
+          },
+          "hop1": {
+            "cells": 1151,
+            "active_fraction_median": 0.663336229365769,
+            "mean_jaccard": 0.9040276806416747,
+            "mean_correlation": 0.9566792608881899
+          },
+          "hop2": {
+            "cells": 43438,
+            "active_fraction_median": 0.06840784566508587,
+            "mean_jaccard": 0.7165590579669983,
+            "mean_correlation": 0.947905972835389
+          },
+          "kenyon": {
+            "cells": 4064,
+            "active_fraction_median": 0.012549212598425197,
+            "mean_jaccard": 0.4862539914761535,
+            "mean_correlation": 0.7721942622838613
+          }
+        },
+        "kc_active_min": 0.009596456692913386,
+        "kc_active_max": 0.014025590551181102,
+        "kc_active_median": 0.012549212598425197,
+        "inside_band": 5,
+        "whole_brain_spikes": 435366.25
+      },
+      "2.5": {
+        "layers": {
+          "receptors": {
+            "cells": 2635,
+            "active_fraction_median": 0.21062618595825428,
+            "mean_jaccard": 0.301957850617054,
+            "mean_correlation": 0.3256217270986338
+          },
+          "hop1": {
+            "cells": 1151,
+            "active_fraction_median": 0.5799304952215465,
+            "mean_jaccard": 0.8685330198972421,
+            "mean_correlation": 0.95166614460451
+          },
+          "hop2": {
+            "cells": 43438,
+            "active_fraction_median": 0.05185551820986233,
+            "mean_jaccard": 0.6930178995935197,
+            "mean_correlation": 0.9391380104316276
+          },
+          "kenyon": {
+            "cells": 4064,
+            "active_fraction_median": 0.001968503937007874,
+            "mean_jaccard": 0.3196648214546221,
+            "mean_correlation": 0.7439093607062455
+          }
+        },
+        "kc_active_min": 0.000984251968503937,
+        "kc_active_max": 0.0044291338582677165,
+        "kc_active_median": 0.001968503937007874,
+        "inside_band": 0,
+        "whole_brain_spikes": 408370.375
+      },
+      "3.0": {
+        "layers": {
+          "receptors": {
+            "cells": 2635,
+            "active_fraction_median": 0.22732447817836812,
+            "mean_jaccard": 0.32430990569745893,
+            "mean_correlation": 0.3120683171463802
+          },
+          "hop1": {
+            "cells": 1151,
+            "active_fraction_median": 0.5269331016507386,
+            "mean_jaccard": 0.8350738942444529,
+            "mean_correlation": 0.944127796551147
+          },
+          "hop2": {
+            "cells": 43438,
+            "active_fraction_median": 0.04207145817026567,
+            "mean_jaccard": 0.6750990318431525,
+            "mean_correlation": 0.9337432590775032
+          },
+          "kenyon": {
+            "cells": 4064,
+            "active_fraction_median": 0.0004921259842519685,
+            "mean_jaccard": 0.31909013605442177,
+            "mean_correlation": 0.8085253435683091
+          }
+        },
+        "kc_active_min": 0.0004921259842519685,
+        "kc_active_max": 0.0017224409448818897,
+        "kc_active_median": 0.0004921259842519685,
+        "inside_band": 0,
+        "whole_brain_spikes": 398305.25
+      }
+    },
+    "graph_restored": true,
+    "verdict": "scaling all 9,813,608 inhibitory edges (38% of the graph): x1: antennal lobe 0.98, Kenyon 0.88, in band 0; x1.5: antennal lobe 0.93, Kenyon 0.64, in band 8; x1.6: antennal lobe 0.92, Kenyon 0.60, in band 8; x1.7: antennal lobe 0.92, Kenyon 0.57, in band 8; x1.8: antennal lobe 0.92, Kenyon 0.52, in band 8; x1.9: antennal lobe 0.91, Kenyon 0.50, in band 8; x2: antennal lobe 0.90, Kenyon 0.49, in band 5; x2.5: antennal lobe 0.87, Kenyon 0.32, in band 0; x3: antennal lobe 0.84, Kenyon 0.32, in band 0. x1.9 gives a Kenyon code that is sparse in every state and separable at overlap 0.50, against 0.88 as reconstructed"
+  },
+  "pulse": {
+    "reward_cells": 15,
+    "aversive_cells": 2,
+    "shipped_current": 20.0,
+    "balance_factor": 2.0,
+    "arms": {
+      "20.0": {
+        "reward": {
+          "spikes": 221,
+          "per_cell": 14.733333333333333,
+          "changed_edges": 56,
+          "kc_spikes": 135
+        },
+        "aversive": {
+          "spikes": 2,
+          "per_cell": 1.0,
+          "changed_edges": 73,
+          "kc_spikes": 135
+        },
+        "per_cell_ratio": 14.733333333333333,
+        "balanced": false
+      },
+      "30.0": {
+        "reward": {
+          "spikes": 372,
+          "per_cell": 24.8,
+          "changed_edges": 56,
+          "kc_spikes": 135
+        },
+        "aversive": {
+          "spikes": 4,
+          "per_cell": 2.0,
+          "changed_edges": 73,
+          "kc_spikes": 135
+        },
+        "per_cell_ratio": 12.4,
+        "balanced": false
+      },
+      "40.0": {
+        "reward": {
+          "spikes": 483,
+          "per_cell": 32.2,
+          "changed_edges": 56,
+          "kc_spikes": 135
+        },
+        "aversive": {
+          "spikes": 42,
+          "per_cell": 21.0,
+          "changed_edges": 73,
+          "kc_spikes": 135
+        },
+        "per_cell_ratio": 1.5333333333333334,
+        "balanced": true
+      },
+      "60.0": {
+        "reward": {
+          "spikes": 642,
+          "per_cell": 42.8,
+          "changed_edges": 56,
+          "kc_spikes": 135
+        },
+        "aversive": {
+          "spikes": 82,
+          "per_cell": 41.0,
+          "changed_edges": 73,
+          "kc_spikes": 135
+        },
+        "per_cell_ratio": 1.0439024390243903,
+        "balanced": true
+      },
+      "80.0": {
+        "reward": {
+          "spikes": 750,
+          "per_cell": 50.0,
+          "changed_edges": 56,
+          "kc_spikes": 135
+        },
+        "aversive": {
+          "spikes": 96,
+          "per_cell": 48.0,
+          "changed_edges": 73,
+          "kc_spikes": 135
+        },
+        "per_cell_ratio": 1.0416666666666667,
+        "balanced": true
+      },
+      "120.0": {
+        "reward": {
+          "spikes": 885,
+          "per_cell": 59.0,
+          "changed_edges": 56,
+          "kc_spikes": 135
+        },
+        "aversive": {
+          "spikes": 118,
+          "per_cell": 59.0,
+          "changed_edges": 73,
+          "kc_spikes": 135
+        },
+        "per_cell_ratio": 1.0,
+        "balanced": true
+      }
+    },
+    "verdict": "the same amplitude reaches 15 reward cells and 2 aversive ones, so per-cell drive is unequal: reward/aversive ratio by current -- 20: 14.7x; 30: 12.4x; 40: 1.5x; 60: 1.0x; 80: 1.0x; 120: 1.0x. At the shipped 20 the aversive compartment gets 1.0 spikes per cell against 14.7 for reward. 40 is the smallest amplitude that drives both within 2x (32.2 against 21.0 spikes per cell)"
+  },
+  "decoder": {
+    "bins": 10,
+    "threshold_hz": 2.0,
+    "populations": {
+      "dnp20_shipped": {
+        "left": 1,
+        "right": 1
+      },
+      "descending": {
+        "left": 656,
+        "right": 648
+      },
+      "descending_and_motor": {
+        "left": 1065,
+        "right": 1054
+      }
+    },
+    "across_states": {
+      "dnp20_shipped": {
+        "per_scene": {
+          "rally": {
+            "mean_hz": 0.0,
+            "consistency": 0.0,
+            "t_score": 0.0,
+            "spiking_bins": 2
+          },
+          "crash": {
+            "mean_hz": -6.0,
+            "consistency": 0.4,
+            "t_score": -1.405563856997455,
+            "spiking_bins": 5
+          },
+          "flat": {
+            "mean_hz": -4.0,
+            "consistency": 0.3,
+            "t_score": -0.6123724356957946,
+            "spiking_bins": 4
+          },
+          "chop": {
+            "mean_hz": -10.0,
+            "consistency": 0.4,
+            "t_score": -1.6269784336399216,
+            "spiking_bins": 5
+          },
+          "spike_up": {
+            "mean_hz": -10.0,
+            "consistency": 0.4,
+            "t_score": -1.4638501094227998,
+            "spiking_bins": 5
+          },
+          "spike_down": {
+            "mean_hz": -10.0,
+            "consistency": 0.4,
+            "t_score": -1.6269784336399216,
+            "spiking_bins": 5
+          },
+          "peak": {
+            "mean_hz": -6.0,
+            "consistency": 0.3,
+            "t_score": -0.8181818181818181,
+            "spiking_bins": 5
+          },
+          "valley": {
+            "mean_hz": -8.0,
+            "consistency": 0.5,
+            "t_score": -1.3093073414159544,
+            "spiking_bins": 7
+          }
+        },
+        "mean_hz_spread": 3.5355339059327378,
+        "consistency_spread": 0.15059406173077156,
+        "t_score_spread": 0.5796157115595683
+      },
+      "descending": {
+        "per_scene": {
+          "rally": {
+            "mean_hz": 0.3879479072568503,
+            "consistency": 0.8,
+            "t_score": 2.3715129050141135,
+            "spiking_bins": 10
+          },
+          "crash": {
+            "mean_hz": 0.40225082806383616,
+            "consistency": 1.0,
+            "t_score": 5.339360559686753,
+            "spiking_bins": 10
+          },
+          "flat": {
+            "mean_hz": 0.33815115928937056,
+            "consistency": 0.9,
+            "t_score": 2.4330758565271746,
+            "spiking_bins": 10
+          },
+          "chop": {
+            "mean_hz": 0.42332881662149946,
+            "consistency": 1.0,
+            "t_score": 6.892834624037,
+            "spiking_bins": 10
+          },
+          "spike_up": {
+            "mean_hz": 0.41542457091237583,
+            "consistency": 1.0,
+            "t_score": 4.562749961698323,
+            "spiking_bins": 10
+          },
+          "spike_down": {
+            "mean_hz": 0.34108702198133106,
+            "consistency": 1.0,
+            "t_score": 4.809797191271516,
+            "spiking_bins": 10
+          },
+          "peak": {
+            "mean_hz": 0.23878349894610054,
+            "consistency": 0.7,
+            "t_score": 2.606918225344213,
+            "spiking_bins": 10
+          },
+          "valley": {
+            "mean_hz": 0.11754742547425481,
+            "consistency": 0.9,
+            "t_score": 2.2549457470058427,
+            "spiking_bins": 10
+          }
+        },
+        "mean_hz_spread": 0.10566558843082455,
+        "consistency_spread": 0.11259916264596034,
+        "t_score_spread": 1.738700498722976
+      },
+      "descending_and_motor": {
+        "per_scene": {
+          "rally": {
+            "mean_hz": 0.20408192354633808,
+            "consistency": 0.6,
+            "t_score": 1.3098258700726013,
+            "spiking_bins": 10
+          },
+          "crash": {
+            "mean_hz": 0.2584564948196452,
+            "consistency": 0.9,
+            "t_score": 4.237633634703646,
+            "spiking_bins": 10
+          },
+          "flat": {
+            "mean_hz": 0.13531104399960786,
+            "consistency": 0.6,
+            "t_score": 1.1869166684486017,
+            "spiking_bins": 10
+          },
+          "chop": {
+            "mean_hz": 0.3002004436486089,
+            "consistency": 1.0,
+            "t_score": 5.764062236486733,
+            "spiking_bins": 10
+          },
+          "spike_up": {
+            "mean_hz": 0.45483069193147496,
+            "consistency": 0.9,
+            "t_score": 4.121562279303148,
+            "spiking_bins": 10
+          },
+          "spike_down": {
+            "mean_hz": 0.19270028774799342,
+            "consistency": 0.8,
+            "t_score": 3.293941341281185,
+            "spiking_bins": 10
+          },
+          "peak": {
+            "mean_hz": 0.0969505839591629,
+            "consistency": 0.8,
+            "t_score": 1.3985792936772723,
+            "spiking_bins": 10
+          },
+          "valley": {
+            "mean_hz": 0.19051233396584452,
+            "consistency": 0.8,
+            "t_score": 2.577535465663173,
+            "spiking_bins": 10
+          }
+        },
+        "mean_hz_spread": 0.11120836448755177,
+        "consistency_spread": 0.1414213562373095,
+        "t_score_spread": 1.6648274856461638
+      }
+    },
+    "under_ablation": {
+      "dnp20_shipped": {
+        "1%": {
+          "mean_hz_sd": 4.879500364742666,
+          "consistency_sd": 0.17728105208558367,
+          "t_score_sd": 1.046762129886678
+        },
+        "5%": {
+          "mean_hz_sd": 8.134582261642485,
+          "consistency_sd": 0.23360528369758368,
+          "t_score_sd": 2.4480342549593805
+        }
+      },
+      "descending": {
+        "1%": {
+          "mean_hz_sd": 0.08910201622308994,
+          "consistency_sd": 0.1407463101097994,
+          "t_score_sd": 1.3700832097620117
+        },
+        "5%": {
+          "mean_hz_sd": 0.18751211735495613,
+          "consistency_sd": 0.16242214252050854,
+          "t_score_sd": 2.639579510999696
+        }
+      },
+      "descending_and_motor": {
+        "1%": {
+          "mean_hz_sd": 0.08041707052796168,
+          "consistency_sd": 0.13201731488169055,
+          "t_score_sd": 1.0545931040741945
+        },
+        "5%": {
+          "mean_hz_sd": 0.19596307936006888,
+          "consistency_sd": 0.20998866182543782,
+          "t_score_sd": 2.6034898303283494
+        }
+      }
+    },
+    "graph_restored": true,
+    "signal_to_noise": {
+      "dnp20_shipped": {
+        "mean_hz": 0.4346300513308552,
+        "t_score": 0.23676781090188856
+      },
+      "descending": {
+        "mean_hz": 0.5635133874084629,
+        "t_score": 0.6587035895215267
+      },
+      "descending_and_motor": {
+        "mean_hz": 0.5674965143980716,
+        "t_score": 0.6394599534257438
+      }
+    },
+    "verdict": "signal-to-noise, spread across eight market states over the standard deviation under 5% ablation: descending 0.66; descending_and_motor 0.64; dnp20_shipped 0.43. Every candidate is below 1, so for all of them the market moves the readout less than silencing unrelated neurons does. Widening the readout does not fix that, and a decoder is not the missing piece yet"
   }
 }
