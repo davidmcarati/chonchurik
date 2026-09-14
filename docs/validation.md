@@ -20,6 +20,32 @@ The repeated BUY proposals are an important limitation. This run demonstrated ne
 
 Read-only measurements on the full retained graph, reproducible with `tools/diagnose.py`. These replace the earlier guess that "a fixed directional decoder can turn circuit bias into one-sided exposure" — measurement does not support the circuit-bias half of that sentence.
 
+### Graph structure: what is connected and what is idle
+
+Measured by breadth-first search over the retained graph.
+
+| Measurement | Result |
+| --- | --- |
+| Brain upstream of the two decoder cells, within 3 synapses | **96.8%** (99.3% within 5) |
+| MBON07/11 → DNpe017, the gate | hop 2 |
+| MBON07/11 → DNp20, the direction cells | hop 3 |
+| Motor neurons reachable from descending neurons | 815 / 815, within 2 hops |
+
+The brain is already connected to the decision — connectivity is not the missing piece. Learning also reaches the gate one synapse earlier than it reaches direction, so it influences *whether* to act more directly than *which way*.
+
+Populations present in the graph and currently unused by the runtime:
+
+| Population | Count | Currently |
+| --- | --- | --- |
+| visual-related (`ol_intrinsic`, `visual_projection`, `ol_sensory`, …) | 105,267 (**63.1% of the graph**) | fed a static chart |
+| descending neurons | 1,314 | 2 of them are read |
+| motor neurons (`vnc_motor` + `cb_motor`) | 815 | unused |
+| ascending neurons | 1,846 | unused |
+| olfactory receptor neurons | 2,635 | unused |
+| LB3c sugar gustatory | 23 | compiled into `graph.npz`, never driven |
+
+`prepare.py` already locates `DNa02`, `DNp09`, `MDN` and `MN9` and writes them to `manifest.json`; nothing reads that file.
+
 ### The laterality is in the reconstruction, not in this code
 
 | Population | Left | Right | Ratio |

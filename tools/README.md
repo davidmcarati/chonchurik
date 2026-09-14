@@ -23,8 +23,13 @@ leaves the machine usable.
 |---|---|---|
 | `baseline` | How much of the brain participates at all? | active fraction, participation ratio, superclass entropy, spread of `difference_hz` |
 | `laterality` | What produces the standing R>L drive behind the one-sided proposals? | four arms: baseline, mirrored, header repainted, per-side drive equalised |
-| `ablate` | How much of the brain actually changes the decision? | decision-flip rate vs fraction of neurons silenced |
-| `reinforce` | Does plasticity carry the reinforcement signal, or only its amount? | final plastic weights under ordered vs shuffled reinforcement |
+| `separation` | Can the fly tell one market state from another? | per-receptor input separation and Kenyon-code collisions across 8 market shapes and 3 candidate chart renderings |
+| `ablate` | How much of the brain actually changes the decision? | spread of `difference_hz` against the decision threshold, as neurons are silenced |
+| `reinforce` | Does plasticity carry the reinforcement signal, or only its amount? | plastic weights under three arms: ordered, shuffled, and no external reinforcement |
+
+`tools/scenes.py` holds the canonical market shapes and the candidate chart
+renderings. Prototype encodings live there rather than in
+`stonkfly/display.py` so they can be compared before the package changes.
 
 ## Measured before these tests were written
 
@@ -50,6 +55,20 @@ Two consequences shaped `laterality`:
   samples in the top half of the viewport and 27.6% inside the header rows,
   against 17.0% for the right. Repainting rows 0–27 in background colour
   collapses the per-cell gap from `+1.4423` to `−0.1406`.
+
+## Reading the results
+
+Three times now, the intuitive metric has pointed the wrong way and the
+magnitude metric has been right. Prefer spread and effect size over counts:
+
+| Test | Counting says | Magnitude says |
+|---|---|---|
+| `ablate` | decision survives 50% ablation, so it is robust | spread reaches 14x the decision threshold, so the label is held by a standing bias |
+| `reinforce` | the no-reward arm moves 97% as many edges, so reinforcement barely matters | reinforcement quadruples how far they move |
+| `separation` | a fixed price axis separates the input best | it also reintroduces six Kenyon-code collisions, which is what actually blocks learning |
+
+The verdict strings encode these rules, so read them rather than eyeballing
+the raw tables.
 
 ## Method notes
 
