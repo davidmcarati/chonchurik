@@ -768,6 +768,135 @@ traded at a profit. A faster search over a noisy objective finds an overfit
 champion sooner, which is what the held-out segments and the four baselines
 exist to catch.
 
+## What the search was actually selecting, 2026-09-15
+
+Three generations ran on real hourly candles with profit in excess of buying
+and holding as the objective. The curve looked like progress: best fitness
+-0.5171, then -0.2291, then -0.0680, converging on zero. It was not progress,
+and the reason took three measurements to reach.
+
+### Fitness was a function of how little a fly traded
+
+Across the 28 survivors of generation 2, fitness correlated **-0.97** with the
+number of sells proposed and **-0.97** with the number filled. Rank 0 sold 7
+times over 500 observations; rank 27 sold 99. The ranking was a ladder of
+trade counts.
+
+The champion proposed BUY at 94 to 100 of 100 observations at every one of its
+five starts, had 83 to 91 of those rejected for want of budget, and scored an
+excess of **exactly 0.0** at two starts -- because with no sells at all it was
+buy-and-hold, not a policy. `evaluate.degenerate` exists to catch that and
+did not: it is applied to the screening row only, where the same fly sat at
+0.88 one-sidedness against a bar of 0.90. Every one of the top three failed
+that bar at all five full-evaluation starts, and the maximum screening share
+across all 28 survivors was 0.88 -- the population had been pressed flat
+against the guard from underneath.
+
+A round trip costs the fee twice. At chance-level direction every trade loses,
+so the cost term in a money objective is much louder than the skill term, and
+the search optimises the loud one.
+
+### Underneath that, it was selecting the sign of a constant
+
+`difference_hz`, the readout the decoder thresholds, measured over 80
+observations:
+
+| genome | resting difference | spread | proposals |
+| --- | --- | --- | --- |
+| wild type | **-17.15 Hz** | 5.57 | 0 BUY / 80 SELL / 0 HOLD |
+| rank 0 (fittest) | **+9.05 Hz** | 5.77 | 64 / 0 / 16 |
+| rank 2 | +8.60 Hz | 4.76 | 76 / 1 / 3 |
+| rank 27 (least fit) | +4.42 Hz | 6.34 | 50 / 12 / 18 |
+
+The offset moved 26 Hz between the wild type and the fittest evolved genome.
+The spread did not move at all. Three generations changed the constant and
+never touched the variation, and the proposals follow the constant's sign
+exactly.
+
+`decoder_threshold_hz` is searched over 0.5 to 12 Hz. Against an offset of 17,
+thresholds of 0.5, 2.0 and 6.0 produce byte-identical behaviour -- 12 SELL out
+of 12 -- so a genome could choose between "always SELL" and "always HOLD", and
+**BUY was unreachable at any threshold in the declared range**. The one genome
+whose offset sat near zero, and therefore the only one making genuine
+three-way decisions, ranked last of the survivors.
+
+This also rewrites a stage-0 finding. "The decision is stable under 1%
+ablation" was read as the readout being robust. It was the offset being larger
+than the signal.
+
+### And there was no signal to select for anyway
+
+`tools/ic.py` grades a signal against the return some bars ahead, with the
+window's own drift demeaned away so a fly riding a rising market scores
+exactly zero, and against a null built by **circularly shifting** the signal
+rather than shuffling it -- proposals come in runs, and shuffling destroys
+that autocorrelation and yields a null far too narrow to fail against.
+
+Proposals carry nothing: the largest deviation over thirty tests was z 2.49,
+which is what thirty tests look like under a null. One genome's readout
+reached ic 0.2408 at z 3.18 on train and fell to **0.049 at z 0.55** on
+validation.
+
+`tools/features.py` then asks the same of the descriptors before any neuron
+sees them. The five close-derived ones score **0 of 30 tests under p 0.05 on
+10,446 hourly bars**, and the same on every other timeframe. Nothing was
+destroyed downstream because nothing was supplied upstream.
+
+### The arithmetic said it was unwinnable regardless
+
+Break-even information coefficient, from the per-bar volatility of each
+interval against the round-trip cost:
+
+| bars | held | Coinbase, 130 bp | Binance, 20 bp |
+| --- | --- | --- | --- |
+| ONE_MINUTE | 6 | 12.20 | 1.88 |
+| ONE_HOUR | 6 | **1.08** | 0.17 |
+| ONE_HOUR | 24 | 0.54 | 0.08 |
+| SIX_HOUR | 24 | 0.21 | **0.03** |
+| ONE_DAY | 24 | 0.08 | 0.01 |
+
+An information coefficient of 1.0 is perfect foresight. Hourly trading at
+Coinbase's fee needed **more than perfect foresight** to break even, so no
+brain could have won and the objective was unreachable before any of the above
+mattered. Real signals live between 0.02 and 0.05, which only the bottom right
+of that table admits.
+
+### What changed as a result
+
+- **Venue.** `tools/fetch_binance.py` fetches klines at 10 bp a side.
+  Execution is unchanged and still goes to Coinbase Advanced.
+- **Input.** Three whole-bar odour channels, `flow`, `flow_slow` and
+  `bar_position`. Measured before adoption: order flow and the bar's closing
+  position carry the same sign in all four panels -- both timeframes, train and
+  validation -- at about **-0.03** one bar out and gone by six. Small, and the
+  only effect any descriptor in this repository has shown. Volume, trade size
+  and bar range measured nothing and were left out; 53 glomeruli are a fixed
+  budget. Cost measured, not assumed: 32.5 of 53 glomeruli active against 33.3
+  before, and Kenyon activity 247 spikes an observation against 241, inside the
+  per-observation spread of 203 to 302.
+- **Decoder.** The threshold is read per observation, in both the CPU path and
+  the herd, where it comes from each fly's own genome. The decision is taken
+  against the fly's own resting difference -- the median of its last 60
+  readouts, appended after each decision and never before, so it is made only
+  of observations already past. It is a normalisation and not a policy: it
+  never sees a price, a return or a balance. Passing zero reproduces every
+  result recorded before it existed. At thresholds of 1, 3 and 8 Hz the wild
+  type now proposes 10/10/5, 6/7/12 and 3/2/20 BUY/SELL/HOLD, against 12 SELL
+  out of 12 at every threshold before.
+- **Objective.** Selection is the readout's information coefficient, median
+  over starts. It demeans the signal, so the constant the previous search was
+  really optimising contributes exactly nothing to it, and it carries no fee
+  term, so it cannot collapse into a trade count. The kill criterion is
+  unchanged and still grades absolute profit against the four baselines.
+- **Instrument.** The elites are re-scored on validation **every generation**
+  and both numbers are printed side by side. Together is an edge; apart is
+  luck being fitted. Both failures above took hours to surface and would have
+  shown in the second generation.
+
+None of this demonstrates that the fly can predict anything. It removes three
+reasons it could not have, and it makes the next negative result arrive in
+twenty minutes instead of eight hours.
+
 ## Reproduce
 
 ```sh

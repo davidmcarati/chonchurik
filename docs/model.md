@@ -42,15 +42,19 @@ By default each market observation advances **500 ms of neural time**, regardles
 
 ## How a neural spike becomes an order
 
-Over each observation, mean right DNp20 firing minus mean left DNp20 firing is decoded as follows:
+Over each observation, mean right DNp20 firing minus mean left DNp20 firing is taken, the fly's own resting difference is subtracted, and the remainder is decoded as follows:
 
 | Neural measurement | Proposal |
 | --- | --- |
-| Difference ≥ 2 Hz, with at least one DNpe017 spike | Buy |
-| Difference ≤ −2 Hz, with at least one DNpe017 spike | Sell |
+| Difference above resting by the threshold, with at least one DNpe017 spike | Buy |
+| Difference below resting by the threshold, with at least one DNpe017 spike | Sell |
 | Otherwise | Hold |
 
-This is an engineered interface, not a discovery of “buy neurons.” The mapping is fixed and reads only spike counts. Selected cell IDs appear in the local audit log. Persistent one-sided proposals can therefore be an artefact rather than market insight. They were later measured: the two DNp20 cells receive net drive within 1% of each other, so the cause is not a turning bias in the circuit but a 2 Hz threshold resolving a 2-spike margin on a quantity whose noise is larger than the margin. A rally and a crash also reach the retina as 98.5% the same image, so there is little directional content for the threshold to resolve. See [validation](validation.md).
+The threshold is a declared free parameter, searched over 0.5 to 12 Hz and 2 Hz in the wild type.
+
+**The resting difference** is the median of the fly's own last 60 readouts. It is appended after each decision and never before, so it is made only of observations already past, and it is a normalisation rather than a policy: it never sees a price, a return or a balance. It exists because the raw difference carries a large constant that varies by genome — measured at −17.15 Hz for the wild type against +9.05, +8.60 and +4.42 for three evolved genomes, while the spread stayed between 4.76 and 6.34 for all four. Against an absolute threshold declared over 0.5 to 12 Hz that constant decided every proposal and the market decided none: thresholds of 0.5, 2 and 6 Hz produced byte-identical behaviour, and Buy was unreachable at any of them. Supplying zero instead reproduces the earlier behaviour exactly, which is how every diagnostic recorded before this remains valid. See [validation](validation.md).
+
+This is an engineered interface, not a discovery of “buy neurons.” The mapping is fixed and reads only spike counts. Selected cell IDs appear in the local audit log. Persistent one-sided proposals can therefore be an artefact rather than market insight. They were later measured: the two DNp20 cells receive net drive within 1% of each other, so the cause is not a turning bias in the circuit but a threshold resolving a margin on a quantity whose constant offset, and whose noise, are both larger than it. A rally and a crash also reach the retina as 98.5% the same image, so there is little directional content for the threshold to resolve. See [validation](validation.md).
 
 The guard can reject a proposal for price, budget, inventory, timing or account-state reasons. It cannot replace the proposal or manufacture a profitable policy. AgentKit supplies the ActionProvider/Action interface; our custom provider bridges the separate [Coinbase Advanced exchange API](https://docs.cdp.coinbase.com/coinbase-app/advanced-trade-apis/rest-api). Built-in AgentKit on-chain wallet swaps are not used.
 
