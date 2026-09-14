@@ -12,6 +12,14 @@ from pathlib import Path
 
 from .config import D, Settings
 
+# Every compiled or interpreted source under stonkfly/ is hashed into
+# provenance, and a run refuses to continue if any of them changed. The list is
+# named rather than inlined because it is a correctness boundary: a kernel in a
+# suffix missing from here would be part of the model and invisible to the
+# gate. `.cu` is present for that reason -- before it was, a CUDA kernel could
+# have been swapped under a resumed run without the hash moving.
+SOURCE_SUFFIXES = (".py", ".cpp", ".cu", ".cuh", ".h", ".hpp")
+
 
 def claim(handle):
     """Exclusive, non-blocking lock on the run directory. POSIX advisory locks
@@ -203,7 +211,7 @@ def main():
                     path.read_bytes()
                 ).hexdigest()
                 for path in Path(__file__).parent.rglob("*")
-                if path.suffix in (".py", ".cpp")
+                if path.suffix in SOURCE_SUFFIXES
             },
         }
         signature = hashlib.sha256(

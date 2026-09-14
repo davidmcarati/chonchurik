@@ -319,3 +319,24 @@ def test_real_sdk_methods_exist():
         assert {"base_size", "limit_price", "side", "retail_portfolio_id"} <= set(
             params
         )
+
+
+def test_provenance_covers_every_source_suffix_present():
+    """A source file in a suffix the gate does not hash is invisible to it.
+
+    The gate exists so a resumed run refuses to continue against changed code.
+    A CUDA kernel is as much the model as kernel.cpp is, and before `.cu` was
+    listed it could have been swapped underneath a run without the provenance
+    hash moving. This asserts the list keeps up with what is actually there.
+    """
+    from pathlib import Path
+
+    from stonkfly.cli import SOURCE_SUFFIXES
+
+    root = Path(__file__).resolve().parent.parent / "stonkfly"
+    ignored = {".pyc", ".pyd", ".so", ".dll", ".json", ".npz", ".lib", ".exp",
+               ".obj", ".pdb", ".partial", ""}
+    present = {p.suffix for p in root.rglob("*")
+               if p.is_file() and "__pycache__" not in p.parts}
+    missed = present - set(SOURCE_SUFFIXES) - ignored
+    assert not missed, f"source suffixes not hashed into provenance: {missed}"
