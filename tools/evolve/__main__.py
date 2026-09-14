@@ -11,6 +11,7 @@ it is judged on halfway through.
 """
 
 import argparse
+import dataclasses
 import contextlib
 import json
 import random
@@ -24,23 +25,46 @@ from .evaluate import ceiling
 from .loop import (FULL_OBSERVATIONS, FULL_STARTS, evolve,
                    judge)
 from .pool import DEFAULT_WORKERS, PoolRunner, pool
-from .series import candle_series, fixture_series, split
+from .series import candle_series, fixture_series, klines, split
 
 
-def build_runner(a, settings):
+def build_runner(a, settings, bars=None):
     """The pool or the card, behind the one interface the loop knows about."""
+    train = None if bars is None else bars["train"]
     if a.device == "cpu":
         executor = pool(settings, a.workers)
-        return PoolRunner(executor, a.workers), executor
+        return PoolRunner(executor, a.workers, a.horizon, train), executor
     from .herd import HerdRunner
 
-    return HerdRunner(settings, a.batch, out=a.out), None
+    return HerdRunner(settings, a.batch, out=a.out, horizon=a.horizon,
+                      bars=train), None
 
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--source", choices=["fixture", "candles"], default="fixture")
+    p.add_argument("--source", choices=["fixture", "candles", "binance"],
+                   default="fixture",
+                   help="`binance` reads whole klines, which opens the three "
+                        "whole-bar odour channels -- order flow among them, "
+                        "the only descriptor in this repository measured to "
+                        "carry anything")
     p.add_argument("--candles", type=Path, default=Path("data/candles.json"))
+    p.add_argument("--symbol", default="BTCUSDT",
+                   help="binance only: the key inside the kline file")
+    p.add_argument("--fee", type=float, default=None,
+                   help="per-side fee for the search, overriding Settings. "
+                        "Binance spot charges 0.001 against Coinbase's 0.006, "
+                        "and the difference decides whether the objective is "
+                        "reachable at all: at 0.006 an hourly trade needs an "
+                        "information coefficient of 1.08 to break even, which "
+                        "is more than perfect foresight")
+    p.add_argument("--horizon", type=int, default=6,
+                   help="bars ahead the readout is graded against. The search "
+                        "is ranked on that information coefficient and not on "
+                        "money: money ranked the first run by how little each "
+                        "fly traded, correlation -0.97 with the number of "
+                        "sells, because at chance-level direction every trade "
+                        "loses its fee")
     # One minute is measured dead: perfect foresight makes exactly nothing on
     # every segment, because fifty bars span 0.15% and a round trip costs 1.2%.
     # Run `python -m tools.evolve.survey` before choosing this.
@@ -69,12 +93,26 @@ def main():
     p.add_argument("--resume", action="store_true")
     a = p.parse_args()
 
-    series = (
-        fixture_series(a.length) if a.source == "fixture"
-        else candle_series(a.candles, granularity=a.granularity)
-    )
+    bars = None
+    if a.source == "binance":
+        whole = klines(a.candles, a.symbol, a.granularity)
+        series = [b["close"] for b in whole]
+    else:
+        whole = None
+        series = (
+            fixture_series(a.length) if a.source == "fixture"
+            else candle_series(a.candles, granularity=a.granularity)
+        )
     segments = split(series)
-    if a.source == "candles":
+    if whole is not None:
+        # Sliced with the same offsets as the closes, which `klines`
+        # guarantees are index-aligned with them.
+        sizes = {k: len(v) for k, v in segments.items()}
+        cut, bars = 0, {}
+        for name in ["train", "validation", "test"]:
+            bars[name] = whole[cut:cut + sizes[name]]
+            cut += sizes[name]
+    if a.source in ("candles", "binance"):
         dead = [
             name for name, prices in segments.items()
             if ceiling(prices, 0, a.observations)["ceiling"] <= 0
@@ -99,7 +137,9 @@ def main():
           f"{len(segments['train'])} / validation {len(segments['validation'])} "
           f"/ test {len(segments['test'])}", flush=True)
     settings = Settings()
-    runner, executor = build_runner(a, settings)
+    if a.fee is not None:
+        settings = dataclasses.replace(settings, paper_fee=str(a.fee))
+    runner, executor = build_runner(a, settings, bars)
     print(f"{a.population} genomes x {a.generations} generations on "
           f"{runner.describe()}; {a.observations} observations x "
           f"{FULL_STARTS} starts per full evaluation", flush=True)
@@ -123,7 +163,7 @@ def main():
             stack.enter_context(executor)
         state = evolve(
             runner, segments, rng, a.generations, a.population, a.out, state,
-            a.observations,
+            a.observations, bars,
         )
         survivors = state["survivors"]
         champion = max(survivors, key=lambda i: i["fitness"])
@@ -132,7 +172,7 @@ def main():
               f"test once", flush=True)
         report = judge(
             runner, champion, survivors, segments, rng, a.out, a.seed, label,
-            a.observations,
+            a.observations, bars,
         )
     print(f"\n{report['verdict']}\n", flush=True)
     print(f"written {a.out / 'champion.json'} and {a.out / 'population.json'} "

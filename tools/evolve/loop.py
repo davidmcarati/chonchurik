@@ -57,19 +57,46 @@ def median(values):
 
 
 def fitness(rows):
-    """Profit over buying and holding, median over independent starts.
+    """The readout's information coefficient, median over independent starts.
 
     Selection only. The pre-declared kill criterion is unchanged and still
     compares absolute profit against the four baselines; see profit_fitness.
 
-    Absolute profit was the original objective and it was the wrong one. In a
-    window where price rises, the profit-maximising policy is maximum
-    exposure, so the search converges on being buy-and-hold minus fees -- and
-    the criterion then asks that same fly to beat buy-and-hold. Generation 0 on
-    real candles reached +0.1866 absolute and lost to the benchmark at
-    all five starts. Subtracting the benchmark takes the market's drift out of
-    what is selected and leaves the timing.
+    Two objectives were tried before this one and both selected something
+    nobody asked for.
+
+    Absolute profit came first. In a window where price rises the
+    profit-maximising policy is maximum exposure, so the search converged on
+    being buy-and-hold minus fees, and the criterion then asked that same fly
+    to beat buy-and-hold.
+
+    Excess over buy-and-hold came second, and it removed the drift but not the
+    fees. A round trip costs the fee twice, so at chance-level direction every
+    trade loses, and fitness became a function of how little a fly traded:
+    correlation -0.97 with the number of sells across the surviving
+    population, and a champion proposing BUY at 94 to 100 observations of 100
+    with two of its five starts scoring an excess of exactly zero, because it
+    had bought everything it could afford and was holding.
+
+    Underneath both was something neither could see. The readout carries a
+    constant that differs by genome -- -17.15 Hz for the wild type against
+    +9.05, +8.60 and +4.42 for three evolved ones, while the spread stayed
+    between 4.76 and 6.34 for every one of them. Three generations moved that
+    constant 26 Hz and left the variation untouched. The search was selecting
+    the sign of an offset.
+
+    An information coefficient demeans the signal, so a constant contributes
+    exactly nothing to it whatever its size or sign, and what is left is the
+    part that moves. It is also free of the fee, which is what made the money
+    objectives measure trade count instead of skill. Whether the thing it
+    selects can then pay for itself is a separate question, asked once, at the
+    end, on money, by the kill criterion.
     """
+    return median([r["readout_ic"] for r in rows])
+
+
+def excess_fitness(rows):
+    """Profit over buying and holding. Reported, no longer selected on."""
     return median([r["excess"] for r in rows])
 
 
@@ -80,6 +107,10 @@ def profit_fitness(rows):
 
 def median_row(rows):
     """The one evaluation sitting at the median of excess.
+
+    Excess and not fitness: this line exists so a reader can see a real start's
+    profit and benchmark subtract to the excess printed beside them, and the
+    fitness is now a correlation that does not subtract from anything.
 
     Reported instead of three separately-taken medians. Those are each correct
     and they do not subtract: on the first run of this, median profit was
@@ -96,20 +127,21 @@ def median_row(rows):
     return sorted(rows, key=lambda r: r["excess"])[len(rows) // 2]
 
 
-def evaluate_population(runner, population, prices, observations, count, window):
+def evaluate_population(runner, population, prices, observations, count,
+                        window, bars=None):
     """Every genome at every start. A runner is the pool or one GPU."""
     # The warm-up is consumed from the same segment, so a start that leaves
     # room only for the scored observations would silently score a short run.
     offsets = starts(prices, count, window, observations + WARMUP)
     return runner.evaluate([i["genome"] for i in population], prices, offsets,
-                           observations)
+                           observations, bars)
 
 
-def screen(runner, population, prices, window, observations):
+def screen(runner, population, prices, window, observations, bars=None):
     """Cheap pass that removes flies that cannot act before paying for them."""
     rows = evaluate_population(
         runner, population, prices, screen_length(observations),
-        SCREEN_STARTS, window,
+        SCREEN_STARTS, window, bars,
     )
     for individual, row in zip(population, rows):
         individual["screen"] = row[0]
@@ -129,13 +161,27 @@ def screen(runner, population, prices, window, observations):
             individual["screen_fitness"] = individual["screen"]["excess"]
         return alive, len(population)
     alive.sort(key=lambda i: -i["screen_fitness"])
-    return alive[:keep], len(population) - len(alive)
+    kept = alive[:keep]
+    # An elite has already been evaluated at every start and carried forward
+    # unchanged, so screening it again decides its fate on one start of a
+    # quarter the length -- the noisiest measurement in the run. On the first
+    # fixture run that dropped the previous generation's best and the reported
+    # fitness went backwards, which elitism exists to make impossible: a
+    # deterministic kernel re-scores an unchanged genome to the same number,
+    # so a fall can only mean the genome is gone.
+    # From the whole population, not from `alive`: the same short window
+    # can also call an elite degenerate, and a genome that filled no order
+    # over twenty observations is not the same claim as one that filled
+    # none over a hundred at five starts, which is what it already passed.
+    promoted = [i for i in population if i.get("elite") and i not in kept]
+    return kept + promoted, len(population) - len(alive)
 
 
 def next_generation(survivors, rng, size):
     """Elitism plus mutated crossover. Parents are chosen by rank, not by
     fitness value, so one enormous lucky profit cannot dominate the pool."""
-    children = [{"genome": dict(s["genome"])} for s in survivors[:ELITES]]
+    children = [{"genome": dict(s["genome"]), "elite": True}
+                for s in survivors[:ELITES]]
     while len(children) < size:
         a, b = rng.choice(survivors), rng.choice(survivors)
         children.append(
@@ -151,10 +197,35 @@ def save(path, state):
     temporary.replace(path)
 
 
+def holdout(runner, survivors, segments, observations, bars, window):
+    """The elites, re-scored on a segment the search never selects on.
+
+    The instrument against luck, and the reason it runs every generation
+    rather than once at the end. Twice now a number rose convincingly on train
+    and was nothing out of sample: a champion whose fitness climbed from
+    -0.5171 to -0.0680 over three generations and turned out to be
+    buy-and-hold, and a readout that reached an information coefficient of
+    0.2408 with z 3.18 on train and 0.049 with z 0.55 on validation. Both took
+    hours to find out. Two curves printed side by side say it in the second
+    generation: if they move together it is an edge, and if they separate it
+    is luck being fitted.
+
+    Only the elites, because it costs a wave and it is a diagnostic rather
+    than a selection -- nothing here changes who breeds.
+    """
+    if not survivors or "validation" not in segments:
+        return None
+    rows = evaluate_population(
+        runner, survivors[:ELITES], segments["validation"], observations,
+        FULL_STARTS, window, None if bars is None else bars["validation"],
+    )
+    return [fitness(row) for row in rows]
+
+
 def evolve(runner, segments, rng, generations, size, out, resume=None,
-           observations=FULL_OBSERVATIONS):
-    """Generations on the train segment only. Validation is looked at; test is
-    not opened here at all."""
+           observations=FULL_OBSERVATIONS, bars=None):
+    """Generations on the train segment only. Validation is looked at once a
+    generation and never selected on; test is not opened here at all."""
     window = 100
     state = resume or {"generation": 0, "history": [], "population": None}
     population = state["population"] or [
@@ -164,21 +235,25 @@ def evolve(runner, segments, rng, generations, size, out, resume=None,
         started = time.time()
         runner.announce(f"generation {generation} {DOT} screening")
         survivors, dropped = screen(
-            runner, population, segments["train"], window, observations
+            runner, population, segments["train"], window, observations,
+            None if bars is None else bars["train"],
         )
         runner.announce(f"generation {generation} {DOT} full evaluation")
         rows = evaluate_population(
             runner, survivors, segments["train"], observations,
-            FULL_STARTS, window,
+            FULL_STARTS, window, None if bars is None else bars["train"],
         )
         for individual, row in zip(survivors, rows):
             individual["starts"] = row
             individual["fitness"] = fitness(row)
+            individual["excess"] = excess_fitness(row)
             individual["profit"] = profit_fitness(row)
             individual["buy_and_hold"] = median([r["buy_and_hold"] for r in row])
             individual["median_start"] = median_row(row)
         survivors.sort(key=lambda i: -i["fitness"])
         best = survivors[0]
+        runner.announce(f"generation {generation} {DOT} validation")
+        held = holdout(runner, survivors, segments, observations, bars, window)
         state["history"].append({
             "generation": generation,
             "evaluated": len(population),
@@ -191,15 +266,21 @@ def evolve(runner, segments, rng, generations, size, out, resume=None,
                 for k in ["profit", "buy_and_hold", "excess"]
             },
             "best_id": G.identity(best["genome"]),
+            "best_excess": best["excess"],
             "median_fitness": median([i["fitness"] for i in survivors]),
+            # The same elites on a segment nothing here selects on. Read the
+            # two side by side: together is an edge, apart is luck.
+            "holdout_fitness": held,
             "seconds": round(time.time() - started, 1),
         })
         mid = best["median_start"]
+        out_of_sample = (f"{max(held):+.4f}" if held else "  --  ")
         print(f"  generation {generation:3}  {len(population)} evaluated, "
-              f"{dropped} degenerate, best {best['fitness']:+.4f} over "
-              f"benchmark (at that start: profit {mid['profit']:+.4f}, "
-              f"buy+hold {mid['buy_and_hold']:+.4f}), population median "
-              f"{state['history'][-1]['median_fitness']:+.4f}  "
+              f"{dropped} degenerate, best ic {best['fitness']:+.4f} train / "
+              f"{out_of_sample} holdout, population median "
+              f"{state['history'][-1]['median_fitness']:+.4f}, excess "
+              f"{best['excess']:+.4f} (at that start: profit "
+              f"{mid['profit']:+.4f}, buy+hold {mid['buy_and_hold']:+.4f})  "
               f"({state['history'][-1]['seconds']:.0f}s)", flush=True)
         population = next_generation(survivors, rng, size)
         state["generation"] = generation + 1
@@ -212,7 +293,7 @@ def evolve(runner, segments, rng, generations, size, out, resume=None,
 
 
 def judge(runner, champion, population, segments, rng, out, seed,
-          source="fixture", observations=FULL_OBSERVATIONS):
+          source="fixture", observations=FULL_OBSERVATIONS, bars=None):
     """The single pass over the test segment, and the pre-declared verdict."""
     window = 100
     results = {}
@@ -225,7 +306,8 @@ def judge(runner, champion, population, segments, rng, out, seed,
         offsets = starts(prices, FULL_STARTS, window, observations + WARMUP)
         runner.announce(f"{name} {DOT} the single pass")
         rows = evaluate_population(
-            runner, population, prices, observations, FULL_STARTS, window
+            runner, population, prices, observations, FULL_STARTS, window,
+            None if bars is None else bars[name],
         )
         runner.announce(f"{name} {DOT} baselines")
         collected = runner.baselines(prices, offsets, observations, seed)

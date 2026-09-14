@@ -80,11 +80,11 @@ def run_one(task):
     """Evaluate one genome at one chronological start, inside a worker."""
     from .evaluate import evaluate, graph_unchanged
 
-    genome, prices, start, observations = task
+    genome, prices, start, observations, horizon, bars = task
     controller = _STATE["controller"]
     row = evaluate(
         controller, _STATE["pristine"], genome, prices, start, observations,
-        _STATE["settings"],
+        _STATE["settings"], horizon, bars,
     )
     # A genome that leaked into the graph would quietly contaminate every
     # later genome this worker sees, and the contamination would look like
@@ -121,9 +121,14 @@ class PoolRunner:
     runners agree; this class is just the pool, unchanged, wearing the shape.
     """
 
-    def __init__(self, executor, workers=DEFAULT_WORKERS):
+    def __init__(self, executor, workers=DEFAULT_WORKERS, horizon=None,
+                 bars=None):
         self.executor = executor
         self.workers = workers
+        # Same two the card's runner carries: what the readout is graded
+        # against, and the whole bars the odour channels need.
+        self.horizon = horizon
+        self.bars = bars
 
     def describe(self):
         return f"{self.workers} worker processes at below-normal priority"
@@ -137,13 +142,15 @@ class PoolRunner:
         before either runner existed.
         """
 
-    def evaluate(self, genomes, prices, offsets, observations):
+    def evaluate(self, genomes, prices, offsets, observations, bars=None):
         """One (genome, start) task per future; the pool decides the packing."""
+        bars = self.bars if bars is None else bars
         futures = {}
         for index, individual in enumerate(genomes):
             for start in offsets:
                 futures[self.executor.submit(
-                    run_one, (individual, prices, start, observations)
+                    run_one, (individual, prices, start, observations,
+                              self.horizon, bars)
                 )] = index
         rows = [[] for _ in genomes]
         for future, index in futures.items():

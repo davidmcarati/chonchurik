@@ -194,22 +194,53 @@ def test_deprioritise_actually_lowers_priority():
 
 
 def test_selection_and_grading_use_different_numbers():
-    """Fitness ranks on excess; the criterion still grades on absolute profit.
+    """Fitness ranks on prediction; the criterion still grades on money.
 
     If these were the same quantity the kill criterion would be graded on the
     search's own objective and could not fail. They must stay apart.
     """
-    from tools.evolve.loop import fitness, profit_fitness
+    from tools.evolve.loop import excess_fitness, fitness, profit_fitness
 
     # A fly that made money only because the window rose, and less than simply
-    # holding would have. Positive profit, negative excess.
+    # holding would have. Positive profit, negative excess, and a readout that
+    # knew nothing either way.
     rows = [
-        {"profit": 4.68, "buy_and_hold": 5.40, "excess": 4.68 - 5.40},
-        {"profit": 1.37, "buy_and_hold": 2.17, "excess": 1.37 - 2.17},
-        {"profit": 0.19, "buy_and_hold": 1.11, "excess": 0.19 - 1.11},
+        {"profit": 4.68, "buy_and_hold": 5.40, "excess": 4.68 - 5.40,
+         "readout_ic": 0.01},
+        {"profit": 1.37, "buy_and_hold": 2.17, "excess": 1.37 - 2.17,
+         "readout_ic": -0.02},
+        {"profit": 0.19, "buy_and_hold": 1.11, "excess": 0.19 - 1.11,
+         "readout_ic": 0.00},
     ]
     assert profit_fitness(rows) > 0, "it did make money"
-    assert fitness(rows) < 0, "and it still lost to holding"
+    assert excess_fitness(rows) < 0, "and it still lost to holding"
+    assert abs(fitness(rows)) < 0.05, "and it predicted nothing"
+    assert fitness(rows) != profit_fitness(rows)
+
+
+def test_fitness_ignores_the_constant_the_old_objective_chased():
+    """The offset the first search actually optimised must score zero.
+
+    Measured: the wild type's readout rests at -17.15 Hz and three evolved
+    genomes at +9.05, +8.60 and +4.42, while the spread stayed between 4.76
+    and 6.34 for all four. Three generations moved the constant 26 Hz and left
+    the variation untouched, and money-based fitness rewarded them for it. The
+    objective has to be blind to that or the same thing happens again.
+    """
+    import random
+
+    from tools.evolve.information import readout_ic
+
+    rng = random.Random(4)
+    prices = [100.0]
+    for _ in range(200):
+        prices.append(prices[-1] * (1 + rng.gauss(0, 0.01)))
+    readouts = [rng.gauss(0, 5.5) for _ in range(150)]
+
+    plain = readout_ic(prices, readouts, 0, 6)
+    for offset in (-17.15, +9.05, +1000.0):
+        shifted = [x + offset for x in readouts]
+        assert abs(readout_ic(prices, shifted, 0, 6) - plain) < 1e-9
 
 
 def test_buy_and_hold_benchmark_obeys_the_same_account_rules():
@@ -230,7 +261,7 @@ def test_buy_and_hold_benchmark_obeys_the_same_account_rules():
 
 def test_median_row_subtracts_exactly():
     """Three separately-taken medians do not subtract; one real start does."""
-    from tools.evolve.loop import fitness, median_row, profit_fitness
+    from tools.evolve.loop import excess_fitness, median_row, profit_fitness
 
     rows = [
         {"profit": -3.4384, "buy_and_hold": -3.1171, "excess": -0.3213},
@@ -242,11 +273,11 @@ def test_median_row_subtracts_exactly():
     # The trap: these are each correct and their difference is not the fitness.
     assert round(profit_fitness(rows) - median([r["buy_and_hold"] for r in rows]),
                  4) == -1.2013
-    assert round(fitness(rows), 4) == -0.3503
+    assert round(excess_fitness(rows), 4) == -0.3503
     # The reported row is one real evaluation, and it does subtract.
     mid = median_row(rows)
     assert round(mid["profit"] - mid["buy_and_hold"], 4) == round(mid["excess"], 4)
-    assert round(mid["excess"], 4) == round(fitness(rows), 4)
+    assert round(mid["excess"], 4) == round(excess_fitness(rows), 4)
 
 
 def test_equivalence_comparator_catches_a_single_bit():
@@ -286,3 +317,56 @@ def test_equivalence_comparator_catches_a_single_bit():
     assert differences({"v": a["v"]}, {"v": a["v"].astype(np.float64)})
     assert differences({"v": a["v"]}, {"v": a["v"][:10]})
     assert differences({"v": a["v"]}, {})
+
+
+def test_an_elite_is_not_dropped_by_the_screen():
+    """Elitism is only elitism if the elite survives the cheap pass.
+
+    Screening ranks on one start of a quarter the length -- the noisiest
+    measurement in a run -- and it is applied to the whole new population,
+    elites included. On the first fixture run under the new objective that
+    dropped the previous generation's best and the reported fitness went
+    backwards from -0.1487 to -0.2011, which elitism exists to make
+    impossible: the kernel is deterministic, so an unchanged genome re-scores
+    to the same number and a fall can only mean the genome is gone.
+    """
+    from tools.evolve.loop import screen
+
+    class Runner:
+        """Rows in the order asked for. The elite is the worst on this pass."""
+
+        def evaluate(self, genomes, prices, offsets, observations, bars=None):
+            return [[{"readout_ic": ic, "observations": 10, "buy": 4,
+                      "sell": 3, "hold": 3, "kc_spikes": 10,
+                      "fills": {"BUY": 1, "SELL": 1}, "rejected": 0}]
+                    for ic in [-0.9, 0.5, 0.4, 0.3, 0.2, 0.1]]
+
+    population = [{"genome": {}, "elite": True}] + [{"genome": {}}
+                                                    for _ in range(5)]
+    survivors, dropped = screen(Runner(), population, [1.0] * 500, 100, 40)
+    assert dropped == 0
+    assert population[0] in survivors, "the elite ranked last and must stay"
+    # And it did not displace anyone the screen actually chose.
+    assert all(i in survivors for i in population[1:3])
+
+
+def test_a_degenerate_elite_is_still_not_dropped():
+    """The same short window can also call an elite degenerate."""
+    from tools.evolve.loop import screen
+
+    class Runner:
+        def evaluate(self, genomes, prices, offsets, observations, bars=None):
+            rows = [[{"readout_ic": ic, "observations": 10, "buy": 4,
+                      "sell": 3, "hold": 3, "kc_spikes": 10,
+                      "fills": {"BUY": 1, "SELL": 1}, "rejected": 0}]
+                    for ic in [0.5, 0.4, 0.3, 0.2, 0.1]]
+            # The elite filled nothing over this short window.
+            return [[{"readout_ic": 0.9, "observations": 10, "buy": 4,
+                      "sell": 3, "hold": 3, "kc_spikes": 10,
+                      "fills": {"BUY": 0, "SELL": 0}, "rejected": 10}]] + rows
+
+    population = [{"genome": {}, "elite": True}] + [{"genome": {}}
+                                                    for _ in range(5)]
+    survivors, dropped = screen(Runner(), population, [1.0] * 500, 100, 40)
+    assert dropped == 1, "it is still counted as dropped by the screen"
+    assert population[0] in survivors, "but it is carried anyway"

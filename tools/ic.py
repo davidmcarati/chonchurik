@@ -46,7 +46,6 @@ like.
 
 import argparse
 import json
-import math
 import random
 from pathlib import Path
 
@@ -54,102 +53,20 @@ from stonkfly.config import Settings
 from stonkfly.genome import WILD_TYPE
 from tools.evolve.evaluate import CHART_WINDOW, WARMUP, build
 from tools.evolve.herd import Herd, replay_herd
+from tools.evolve.information import (SIGN, aligned, coefficient, edge,
+                                      forward, normaliser, readout_ic,
+                                      shifted, test)
 from tools.evolve.series import candle_series, klines, split, starts
 
-SIGN = {"BUY": 1.0, "SELL": -1.0, "HOLD": 0.0}
+# The first scored observation sits this far past the fly's start.
+BASE = CHART_WINDOW + WARMUP
+
+# The statistic itself lives with the search now, in
+# `tools/evolve/information.py`, because selection uses it and a number that
+# decides what breeds cannot live in a tool that imports the thing it grades.
+# The names above are re-exported so this stays the place to read about them.
 HORIZONS = (1, 3, 6, 11, 24)
 DRAWS = 2000
-
-
-def forward(prices, index, horizon):
-    """Return over the next `horizon` bars, or None past the end of the data."""
-    if index + horizon >= len(prices):
-        return None
-    return prices[index + horizon] / prices[index] - 1.0
-
-
-def aligned(prices, values, start, horizon, centre=False):
-    """(signal, demeaned forward return) for one run at one horizon.
-
-    Returns are demeaned within the run. `start` is the offset the fly was
-    switched on at; the first scored observation sits `CHART_WINDOW + WARMUP`
-    bars later, and they run consecutively from there.
-
-    `centre` demeans the signal as well, which turns the `ic` below into an
-    ordinary Pearson correlation. That is right for the continuous readout,
-    whose resting offset is a property of the circuit and not a proposal.
-    It is deliberately wrong for the proposals themselves: leaving their mean
-    in is what makes a fly that says BUY at every observation score exactly
-    zero rather than score its own one-sidedness.
-    """
-    base = start + CHART_WINDOW + WARMUP
-    signal, ret = [], []
-    for i, value in enumerate(values):
-        r = forward(prices, base + i, horizon)
-        if r is None:
-            break
-        signal.append(SIGN[value] if isinstance(value, str) else float(value))
-        ret.append(r)
-    if not ret:
-        return [], []
-    mean = sum(ret) / len(ret)
-    if centre:
-        offset = sum(signal) / len(signal)
-        signal = [x - offset for x in signal]
-    return signal, [r - mean for r in ret]
-
-
-def edge(runs):
-    """mean(s * r) pooled over runs, each already demeaned inside itself."""
-    total = count = 0.0
-    for signal, ret in runs:
-        for s, r in zip(signal, ret):
-            total += s * r
-            count += 1
-    return total / count if count else 0.0
-
-
-def normaliser(runs):
-    """std(r) * rms(s), pooled. Turns the edge into a correlation."""
-    rs, ss = [], []
-    for signal, ret in runs:
-        rs.extend(ret)
-        ss.extend(signal)
-    if not rs:
-        return 0.0
-    var = sum(r * r for r in rs) / len(rs)
-    power = sum(s * s for s in ss) / len(ss)
-    return math.sqrt(var) * math.sqrt(power)
-
-
-def shifted(runs, rng):
-    """Every run's signal rolled by its own random amount. The null."""
-    out = []
-    for signal, ret in runs:
-        n = len(signal)
-        k = rng.randrange(1, n) if n > 1 else 0
-        out.append((signal[k:] + signal[:k], ret))
-    return out
-
-
-def test(runs, rng, draws=DRAWS):
-    observed = edge(runs)
-    null = [edge(shifted(runs, rng)) for _ in range(draws)]
-    spread = math.sqrt(sum(x * x for x in null) / len(null))
-    extreme = sum(1 for x in null if abs(x) >= abs(observed))
-    scale = normaliser(runs)
-    # A constant proposal shifts into itself, so every draw lands on the same
-    # (floating-point) zero the observation did. The ratio of two of those is
-    # a number with no meaning; `p` already says 1.0, and `z` should agree.
-    if spread <= 1e-9 * scale:
-        spread = 0.0
-    return {
-        "edge_bps": observed * 10000,
-        "ic": observed / scale if scale else 0.0,
-        "z": observed / spread if spread else 0.0,
-        "p": (extreme + 1) / (len(null) + 1),
-        "n": sum(len(r) for _, r in runs),
-    }
 
 
 def genomes_from(path, ranks):
@@ -246,7 +163,8 @@ def main():
         print(f"  {'horizon':>8}{'edge bps':>11}{'ic':>9}{'z':>8}{'p':>8}"
               f"{'n':>7}{'readout ic':>12}{'z':>8}{'p':>8}")
         for h in horizons:
-            runs = [aligned(prices, r["sides"], s, h) for r, s in mine]
+            runs = [aligned(prices, r["sides"], s + BASE, h)
+                    for r, s in mine]
             runs = [r for r in runs if r[1]]
             if not runs:
                 continue
@@ -255,8 +173,8 @@ def main():
             # The same test on the number the threshold was applied to. If the
             # proposals carry nothing but this does, the loss is in the
             # decoder and is repairable; if neither does, it is upstream.
-            raw = [aligned(prices, r["difference_hz"], s, h, centre=True)
-                   for r, s in mine]
+            raw = [aligned(prices, r["difference_hz"], s + BASE, h,
+                           centre=True) for r, s in mine]
             raw = [r for r in raw if r[1]]
             u = test(raw, random.Random(a.seed + 7 + 1000 * g + h), a.draws)
             print(f"  {h:>8}{t['edge_bps']:>11.2f}{t['ic']:>9.4f}"
