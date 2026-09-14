@@ -70,11 +70,16 @@ def msvc_environment():
                 capture_output=True,
                 text=True,
             ).stdout
-            env = dict(os.environ)
+            # Windows environment names are case-insensitive, and `set`
+            # prints them in their stored casing ("Path") while os.environ
+            # upper-cases its keys. Merging the two verbatim leaves the stale
+            # "PATH" sitting next to the compiler's "Path", so fold both onto
+            # the upper-cased name.
+            env = {key.upper(): value for key, value in os.environ.items()}
             for line in out.split(marker, 1)[-1].splitlines():
                 key, sep, value = line.partition("=")
                 if sep:
-                    env[key] = value
+                    env[key.upper()] = value
             return env
     raise RuntimeError(
         "No C++ compiler found. Install Visual Studio Build Tools with the "
