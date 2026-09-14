@@ -1,8 +1,11 @@
-![Stonkfly: a pixel fly beside a candlestick chart](assets/stonkfly.png)
+<p align="center">
+  <img src="assets/johnny-silverfly.jpg" width="440"
+       alt="Johnny Silverfly: a cyberpunk fly in a leather jacket on a neon rooftop">
+</p>
 
 # Stonkfly
 
-A fly-connectome simulation that can operate a crypto trading account. Actual neural output, actual Coinbase integration. Profitable learning has not been demonstrated.
+A fly-connectome simulation that can operate a crypto trading account. Actual neural output, actual Coinbase integration. Profitable learning has not been demonstrated. Every ticker on that billboard is invented; what the flies actually returned is [below](#what-the-measurements-say).
 
 **How it works:** Public Coinbase prices become an RGB chart, stimulating 3,335 brightness inputs and 811 R8 color inputs in the retained **MaleCNS v1.0 graph: 166,700 neurons, 25.6 million connections**. Descriptors of the same prices, plus the fly's own last filled trade, reach 2,635 olfactory receptor neurons; account equity reaches 23 sugar gustatory cells. A fixed neural readout proposes buy, sell or hold. A custom **Coinbase AgentKit ActionProvider** checks limits and places spot orders through Coinbase Advanced.
 
@@ -60,8 +63,9 @@ python -m pytest -q
 
 The repo does not come funded or connected to anyone’s account. Live execution needs your local credentials and explicit opt-in.
 
-## Johnny Silverfly
+## Artwork
 
-![Johnny Silverfly: a cyberpunk fly in a leather jacket on a neon rooftop](assets/johnny-silverfly.jpg)
+![Stonkfly: a pixel fly beside a candlestick chart](assets/stonkfly.png)
 
-The mascot. Concept art, and the only place in this repository where a number was invented: **every ticker on that billboard is fiction.** What the flies have actually returned is in [validation](docs/validation.md#profit-selected-parameter-search), and it is not +69.420%.
+Both images are decorative concept art. Prompts and provenance in
+[assets/image-generation.md](assets/image-generation.md).
