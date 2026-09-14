@@ -100,7 +100,7 @@ def test_degenerate_rejects_a_fly_that_cannot_act():
 def test_degenerate_rejects_the_champion_that_the_old_test_let_through():
     """The measured failure, as a regression.
 
-    Generation 0 on real five-minute candles produced this shape: 289 BUY of
+    Generation 0 on real candles produced this shape: 289 BUY of
     300, 4 SELL, 7 HOLD, 276 of the proposals rejected for want of budget. It
     had bought everything it could afford and was holding, which is a baseline
     rather than a policy -- and it scored the first positive fitness in the

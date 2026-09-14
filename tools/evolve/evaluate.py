@@ -5,7 +5,7 @@ computed from the network's own proposals: nothing here overrides, replaces or
 second-guesses a BUY, a SELL or a HOLD. What this module does is fill them.
 
 The benchmark is subtracted because absolute profit does not measure trading.
-The first generation on real five-minute candles produced a champion at
+The first generation on real candles produced a champion at
 +0.1866, the first positive number in the project -- which proposed BUY at 282
 to 289 of 300 observations, had 264 to 276 of those rejected for want of
 budget, and lost to buying and holding at five starts out of five. Maximum

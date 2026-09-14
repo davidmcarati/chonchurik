@@ -3,11 +3,12 @@
     python tools\\watch.py
     python tools\\watch.py --out runs/evolution-5min --log evolution.log
 
-A generation at five-minute candles takes about ninety minutes, and nothing is
-written to disk until one ends. A plain `tail` on the log is therefore
-indistinguishable from a crashed run for an hour and a half, which is what this
-is for: the worker panel reads CPU from the scheduler, so the view can say the
-run is alive while it has nothing new to report.
+A generation takes tens of minutes -- measured, half an hour for eighty-four
+genomes on the card and an hour and a half for twenty-four on the pool -- and
+nothing is written to disk until one ends. A plain `tail` on the log is
+therefore indistinguishable from a crashed run for that whole time, which is
+what this is for: the worker panel reads CPU from the scheduler, so the view
+can say the run is alive while it has nothing new to report.
 
 It never writes to the run directory, never imports the model and holds no file
 open, so it cannot disturb the run it watches or lose a race with the atomic

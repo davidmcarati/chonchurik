@@ -496,8 +496,9 @@ evolution machinery works end to end, and nothing about trading.
 
 ### The objective was wrong, and generation 0 showed it
 
-The first generation on real five-minute candles produced the first positive
-number in the project, and it was worth nothing.
+The first generation on real candles produced the first positive number in
+the project, and it was worth nothing. (On *which* candles is no longer
+knowable; see the note at the end of this section.)
 
 | Start | Champion | Buy-and-hold | Ceiling |
 | --- | --- | --- | --- |
@@ -552,8 +553,8 @@ it had accidentally reproduced. The two protections overlap on purpose.
 
 ### What the money says about the readout
 
-Generation 0 of the second five-minute run reproduced the first run's initial
-population exactly -- same seed, same twenty-four random genomes -- and ranked
+Generation 0 of the second run reproduced the first run's initial population
+exactly -- same seed, same twenty-four random genomes -- and ranked
 it on the new objective. The same fly that scored **+0.1866** on absolute
 profit scored **-0.8029** on excess. Its five profits are identical to the
 cent; only the ruler changed.
@@ -634,6 +635,36 @@ held-out segments exist to show.
 segment and all-cash makes exactly zero, because a 0.6% fee on a 10 unit order
 needs a 1.2% round trip to break even. Beating all four baselines means being
 strictly profitable after fees, which is a hard bar and the right one.
+
+### The first run's candles are gone, and its label was never right
+
+`runs/evolution-5min` was named by hand, and the name cannot be true: no
+candles file in this repository contains a `FIVE_MINUTE` series, and
+`data/candles.json` -- fetched four hours *before* that run started -- holds
+`ONE_MINUTE`, `FIFTEEN_MINUTE`, `ONE_HOUR`, `SIX_HOUR` and `ONE_DAY` only.
+
+Nor is the interval recoverable from the run itself. Every evaluation records
+its buy-and-hold benchmark exactly, so the five recorded values are a
+fingerprint of the price series and the window; searching all five
+granularities, all three segments and every evaluation length from 20 to 400
+observations reproduces none of them. Whatever file that run read is not in
+the repository.
+
+What survives is what the run wrote down: a champion at **+0.1866** absolute
+that proposed BUY at 96% of observations, had most of those rejected for want
+of budget, and lost to buying and holding at five starts out of five. Those
+numbers are still in the run's own `population.json` and they are still what
+motivated changing the objective -- the argument is that maximum exposure
+maximises profit in a rising window, which does not depend on the bar length.
+The directory is kept as `runs/evolution-mislabelled` so nothing cites it as
+reproducible, because it is not.
+
+The run that replaced it is on `ONE_HOUR`, chosen by `tools.evolve.survey`:
+`ONE_MINUTE` is untradeable on all three segments, and `FIFTEEN_MINUTE` is
+tradeable on train while validation needs a 111-bar hold and test pays more for
+holding than for trading -- which would produce a noise verdict for structural
+reasons rather than anything about the fly. `ONE_HOUR` is tradeable on all
+three, with holds of 11 to 14 bars inside a 100-observation evaluation.
 
 ## The GPU path, and what makes it the same animal
 

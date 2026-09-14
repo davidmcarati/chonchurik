@@ -33,9 +33,10 @@ def screen_length(observations):
     """Long enough to be a filter, short enough to be worth skipping ahead.
 
     A quarter of the full evaluation. Screening a hold-based fly over twenty
-    observations would rank the survivors on noise, because at five-minute
-    bars twenty observations is under two hours and the shortest profitable
-    hold is about eight.
+    observations would rank the survivors on noise: `tools.evolve.survey`
+    reports the median number of bars before price moves far enough to cover
+    the round trip, and an evaluation shorter than that has no room for a
+    single trade whatever the sampling interval.
     """
     return max(20, observations // 4)
 SURVIVOR_FRACTION = 1 / 3
@@ -64,7 +65,7 @@ def fitness(rows):
     window where price rises, the profit-maximising policy is maximum
     exposure, so the search converges on being buy-and-hold minus fees -- and
     the criterion then asks that same fly to beat buy-and-hold. Generation 0 on
-    five-minute candles reached +0.1866 absolute and lost to the benchmark at
+    real candles reached +0.1866 absolute and lost to the benchmark at
     all five starts. Subtracting the benchmark takes the market's drift out of
     what is selected and leaves the timing.
     """
@@ -292,7 +293,8 @@ def judge(runner, champion, population, segments, rng, out, seed,
                        "against the four baselines. These are deliberately "
                        "different quantities; grading on the selected quantity "
                        "would make the criterion unfalsifiable.",
-            "fitness_changed": "Generation 0 of the first five-minute run "
+            "fitness_changed": "Generation 0 of the first run on real "
+                               "candles "
                                "selected on absolute profit and produced a "
                                "champion at +0.1866 that proposed BUY at 96% "
                                "of observations and lost to buy-and-hold at "

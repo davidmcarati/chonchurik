@@ -164,9 +164,9 @@ zero, the median start behind the headline number, how many genomes the screen
 killed, the remaining time from the measured pace, and the verdict once there
 is one.
 
-The worker line is the point of it. A generation at five-minute candles takes
-about ninety minutes and writes nothing until it ends, so a log tail is
-indistinguishable from a crash for an hour and a half. This asks the scheduler
+The worker line is the point of it. A generation takes tens of minutes and
+writes nothing until it ends, so a log tail is indistinguishable from a crash
+for that whole time. This asks the scheduler
 instead: how many processes are burning CPU, how much memory they hold, and
 what priority they are *actually* at -- which is how the pool's silent failure
 to lower its priority would have been visible.
