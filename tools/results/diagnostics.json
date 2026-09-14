@@ -1,0 +1,235 @@
+{
+  "neurons": 166700,
+  "edges": 25582938,
+  "decoder_cells": {
+    "left": [
+      "10162"
+    ],
+    "right": [
+      "10059"
+    ],
+    "gate": [
+      "10527",
+      "555871"
+    ]
+  },
+  "seed": 20260914,
+  "baseline": {
+    "frames": 6,
+    "active_fraction_mean": 0.11223255348930215,
+    "effective_population_mean": 8831.878202039306,
+    "superclass_entropy_mean": 1.4718824323066182,
+    "total_spikes_mean": 404335.6666666667,
+    "KC_spikes_mean": 1082.8333333333333,
+    "difference_hz_std": 4.268749491621899,
+    "difference_hz_distinct": 4,
+    "per_frame": [
+      {
+        "active_neurons": 16379,
+        "active_fraction": 0.09825434913017396,
+        "total_spikes": 374843,
+        "superclass_entropy_bits": 1.3325243264865207,
+        "effective_population": 7900.68407660489,
+        "side": "BUY",
+        "difference_hz": 6.0,
+        "KC_spikes": 16
+      },
+      {
+        "active_neurons": 24515,
+        "active_fraction": 0.14706058788242352,
+        "total_spikes": 476558,
+        "superclass_entropy_bits": 1.8422728913495228,
+        "effective_population": 11125.951460910013,
+        "side": "HOLD",
+        "difference_hz": 0.0,
+        "KC_spikes": 3303
+      },
+      {
+        "active_neurons": 16322,
+        "active_fraction": 0.0979124175164967,
+        "total_spikes": 373886,
+        "superclass_entropy_bits": 1.3222129687975706,
+        "effective_population": 7877.593085787712,
+        "side": "HOLD",
+        "difference_hz": 0.0,
+        "KC_spikes": 16
+      },
+      {
+        "active_neurons": 23744,
+        "active_fraction": 0.1424355128974205,
+        "total_spikes": 458684,
+        "superclass_entropy_bits": 1.7765380518429743,
+        "effective_population": 10596.964598279814,
+        "side": "BUY",
+        "difference_hz": 10.0,
+        "KC_spikes": 3130
+      },
+      {
+        "active_neurons": 16497,
+        "active_fraction": 0.09896220755848831,
+        "total_spikes": 377782,
+        "superclass_entropy_bits": 1.3579917437639435,
+        "effective_population": 7974.482833370304,
+        "side": "BUY",
+        "difference_hz": 10.0,
+        "KC_spikes": 16
+      },
+      {
+        "active_neurons": 14798,
+        "active_fraction": 0.08877024595080983,
+        "total_spikes": 364261,
+        "superclass_entropy_bits": 1.1997546115991795,
+        "effective_population": 7515.593157283093,
+        "side": "BUY",
+        "difference_hz": 2.0,
+        "KC_spikes": 16
+      }
+    ],
+    "verdict": "decoder output varies with input"
+  },
+  "laterality": {
+    "mapped_retina": {
+      "left": 1107,
+      "right": 2228,
+      "ratio": 2.012646793134598
+    },
+    "A0_baseline": {
+      "sides": {
+        "BUY": 4,
+        "SELL": 0,
+        "HOLD": 2
+      },
+      "mean_difference_hz": 4.666666666666667,
+      "mean_drive_ratio": 2.124303181966146,
+      "difference_hz": [
+        6.0,
+        0.0,
+        0.0,
+        10.0,
+        10.0,
+        2.0
+      ]
+    },
+    "A1_mirrored": {
+      "sides": {
+        "BUY": 5,
+        "SELL": 0,
+        "HOLD": 1
+      },
+      "mean_difference_hz": 5.333333333333333,
+      "mean_drive_ratio": 2.1398460467656455,
+      "difference_hz": [
+        4.0,
+        8.0,
+        6.0,
+        6.0,
+        8.0,
+        0.0
+      ]
+    },
+    "A3_header_repainted": {
+      "sides": {
+        "BUY": 5,
+        "SELL": 0,
+        "HOLD": 1
+      },
+      "mean_difference_hz": 6.0,
+      "mean_drive_ratio": 1.9996742606163025,
+      "difference_hz": [
+        4.0,
+        12.0,
+        6.0,
+        0.0,
+        6.0,
+        8.0
+      ]
+    },
+    "A4_drive_equalised": {
+      "sides": {
+        "BUY": 4,
+        "SELL": 0,
+        "HOLD": 2
+      },
+      "mean_difference_hz": 3.3333333333333335,
+      "mean_drive_ratio": 2.124303181966146,
+      "difference_hz": [
+        2.0,
+        0.0,
+        10.0,
+        4.0,
+        4.0,
+        0.0
+      ],
+      "tonic_added_to_left": 28.366619110107422
+    },
+    "verdict": "bias survives drive equalisation: it is intrinsic to network dynamics, not input -> stop fixing the input, go to stage 2"
+  },
+  "ablate": {
+    "intact": {
+      "side": "BUY",
+      "difference_hz": 6.0
+    },
+    "dead_cell_control_passed": true,
+    "graph_unchanged": true,
+    "levels": [
+      {
+        "ablated_percent": 1.0,
+        "decisions_changed": 0,
+        "trials": 5,
+        "changed_fraction": 0.0,
+        "mean_difference_hz": 6.4,
+        "std_difference_hz": 2.939387691339814
+      },
+      {
+        "ablated_percent": 5.0,
+        "decisions_changed": 1,
+        "trials": 5,
+        "changed_fraction": 0.2,
+        "mean_difference_hz": 4.0,
+        "std_difference_hz": 9.549869109050658
+      },
+      {
+        "ablated_percent": 20.0,
+        "decisions_changed": 2,
+        "trials": 5,
+        "changed_fraction": 0.4,
+        "mean_difference_hz": 1.6,
+        "std_difference_hz": 27.170572316386714
+      },
+      {
+        "ablated_percent": 50.0,
+        "decisions_changed": 1,
+        "trials": 5,
+        "changed_fraction": 0.2,
+        "mean_difference_hz": 24.0,
+        "std_difference_hz": 13.740451229854134
+      }
+    ],
+    "verdict": "readout is knife-edge: perturbing 1.0% of neurons already moves difference_hz by sd 2.94 Hz against a 2 Hz threshold, and spread reaches 14x the threshold under ablation. The label is held by a standing bias, not by the signal -> the decoder needs to INTEGRATE over the window, not just widen to more cells"
+  },
+  "reinforce": {
+    "observations": 6,
+    "labels_ordered": [
+      "reward",
+      "aversive",
+      "none",
+      "reward",
+      "aversive",
+      "none"
+    ],
+    "labels_shuffled": [
+      "aversive",
+      "none",
+      "aversive",
+      "none",
+      "reward",
+      "reward"
+    ],
+    "max_abs_weight_difference": 3.508016586303711,
+    "relative_l1_difference": 0.0003562031197361648,
+    "ordered_changed_edges": 5,
+    "shuffled_changed_edges": 5,
+    "verdict": "timing does matter, but only 5 of 7,835 edges differ: the signal is carried on a sliver of the memory. Re-run with far more observations before trusting it, and do not treat this as a green light for the GA yet"
+  },
+  "wall_seconds": 71.0
+}
