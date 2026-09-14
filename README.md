@@ -3,7 +3,9 @@
        alt="Johnny Silverfly: a cyberpunk fly in a leather jacket on a neon rooftop">
 </p>
 
-# Stonkfly
+# Johnny Silverfly
+
+*Son of Stonkfly.*
 
 A fly-connectome simulation that can operate a crypto trading account. Actual neural output, actual Coinbase integration. Profitable learning has not been demonstrated. Every ticker on that billboard is invented; what the flies actually returned is [below](#what-the-measurements-say).
 
@@ -25,7 +27,7 @@ Every number here comes from a read-only probe in `tools/diagnose.py`, including
 
 | Path | What it is |
 | --- | --- |
-| `stonkfly/` | the model, the sensory channels and the live worker |
+| `stonkfly/` | the model, the sensory channels and the live worker; the package keeps the old name, and so do `python -m stonkfly` and the `STONKFLY_*` variables |
 | `tools/diagnose.py` | read-only probes; never modifies the graph and asserts so |
 | `tools/evolve/` | disclosed profit-selected search over declared free parameters |
 | `tools/fetch_candles.py` | the only thing outside `stonkfly/` that opens a socket |
@@ -62,10 +64,3 @@ python -m pytest -q
 ```
 
 The repo does not come funded or connected to anyone’s account. Live execution needs your local credentials and explicit opt-in.
-
-## Artwork
-
-![Stonkfly: a pixel fly beside a candlestick chart](assets/stonkfly.png)
-
-Both images are decorative concept art. Prompts and provenance in
-[assets/image-generation.md](assets/image-generation.md).

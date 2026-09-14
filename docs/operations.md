@@ -1,12 +1,12 @@
-# Running and stopping Stonkfly
+# Running and stopping Johnny Silverfly
 
-Use a dedicated account portfolio. Stonkfly is an experiment capable of losing its entire allocated balance. The funding cap is **100 USDC at initialization**, not an assertion that USDC always equals one dollar.
+Use a dedicated account portfolio. Johnny Silverfly is an experiment capable of losing its entire allocated balance. The funding cap is **100 USDC at initialization**, not an assertion that USDC always equals one dollar.
 
 ## Installation and data
 
 Use Python 3.11 or newer and a C++17 compiler (`clang++`/`c++` on macOS, GCC or Clang on Linux, MSVC from the Visual Studio Build Tools C++ workload on Windows; `STONKFLY_CXX` overrides the compiler where a POSIX driver is available). `python -m stonkfly prepare` downloads about 1.1 GB of upstream data, verifies it, and builds the full graph. Allow several additional GB for dependencies, derived data and two checkpoints. `python -m stonkfly verify` independently checks prepared inputs. Set `STONKFLY_DATA` to use another data location.
 
-Existing DOOMFLY researchers can reuse verified local files with `python -m stonkfly prepare --reuse-doomfly /path/to/working-copy`. Stonkfly copies only the three required data artifacts, then checks the same locks. It does not import a Doom environment, run its website, or depend on that checkout afterward.
+Existing DOOMFLY researchers can reuse verified local files with `python -m stonkfly prepare --reuse-doomfly /path/to/working-copy`. It copies only the three required data artifacts, then checks the same locks. It does not import a Doom environment, run its website, or depend on that checkout afterward.
 
 ## Paper modes
 
@@ -25,7 +25,7 @@ python -m stonkfly run --fixture --fast --frozen --steps 10 --out runs/frozen
 
 ## Coinbase setup, performed by you
 
-1. Create a separate Coinbase Advanced portfolio and put up to 100 USDC in it. Start without other assets or open orders. Do not mix other bots, manual trades or deposits into that portfolio while Stonkfly runs.
+1. Create a separate Coinbase Advanced portfolio and put up to 100 USDC in it. Start without other assets or open orders. Do not mix other bots, manual trades or deposits into that portfolio while the worker runs.
 2. Create a [Coinbase App API key](https://docs.cdp.coinbase.com/coinbase-app/authentication-authorization/api-key-authentication) with ECDSA, **View and Trade**, **Transfer disabled**, scoped only to that portfolio. The program checks permissions and portfolio scope; an account-wide key is rejected.
 3. Save the downloaded key JSON locally as `coinbase-key.json` and restrict its file permissions (`chmod 600 coinbase-key.json`; on Windows remove inherited access with `icacls`). It typically contains `name` and `privateKey`. Never paste the key into a commit or README.
 4. Copy `.env.example` to `.env`, set the key path and `COINBASE_PORTFOLIO_ID`, then set `STONKFLY_LIVE=I_ACCEPT_REAL_TRADES`. The CLI also requires `--live`; paper mode never submits an order even if the environment variable is present.

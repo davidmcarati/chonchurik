@@ -1,4 +1,4 @@
-# Stonkfly
+# Johnny Silverfly
 
 - Preserve the full retained MaleCNS v1.0 graph. No pruning, scripted trades presented as neural output, LLM trading policy, or hidden profit-based action selection.
 - Separate market observations, sensory proxies, neural propagation, plasticity, fixed decoding, and execution limits. The risk guard may reject an order; it must never choose a replacement trade.
