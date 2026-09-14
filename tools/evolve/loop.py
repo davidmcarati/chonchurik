@@ -317,6 +317,12 @@ def judge(runner, champion, population, segments, rng, out, seed,
         "verdict": verdict,
     }
     save(out / "champion.json", report)
+    # The report describes the champion; this *is* the champion. Fourteen
+    # numbers, nothing else, the shape `stonkfly.genome.load` takes -- so the
+    # thing twelve generations were spent finding can be run:
+    #     python -m stonkfly run --genome runs/<run>/champion-genome.json
+    save(out / "champion-genome.json",
+         {k: champion["genome"][k] for k in sorted(G.SPACE)})
     return report
 
 

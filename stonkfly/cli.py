@@ -77,6 +77,15 @@ def main():
         choices=["BTC-USDC", "ETH-USDC", "SOL-USDC"],
     )
     run.add_argument("--neural-ms", type=float, default=500)
+    run.add_argument(
+        "--genome",
+        type=Path,
+        help="a champion's fourteen declared parameters, as written to "
+             "runs/<run>/champion-genome.json by an evolution. Without it the "
+             "fly is wild type. The genome changes the configuration "
+             "signature, so a checkpoint from a differently-configured run is "
+             "refused rather than silently loaded",
+    )
     status = sub.add_parser("status")
     status.add_argument("--out", type=Path, default=Path("runs/paper"))
     a = p.parse_args()
@@ -119,11 +128,20 @@ def main():
         p.error("Live mode forbids fixtures and fast replay")
     if a.steps < 0:
         p.error("steps cannot be negative")
+    genome = None
+    if getattr(a, "genome", None):
+        from .genome import load as load_genome
+
+        genome = load_genome(a.genome)
     settings = Settings(
         products=tuple(a.products),
         learning=not a.frozen,
         neural_ms=a.neural_ms,
         pulse_ms=min(200, a.neural_ms),
+        # The reinforcement current is the one evolved parameter that lives in
+        # Settings rather than on the brain, so it has to be put here, before
+        # the ledger takes the signature that guards the run directory.
+        **({"pulse_current": genome["pulse_current"]} if genome else {}),
     )
     out = a.out or Path("runs/live" if a.live else "runs/paper")
     out.mkdir(parents=True, exist_ok=True)
@@ -182,6 +200,20 @@ def main():
             if a.fixture:
                 market.tick = previous["fixture_tick"]
         controller = FlyController(settings)
+        genome_report = None
+        if genome:
+            from .genome import apply as apply_genome
+
+            # Before the checkpoint, so a checkpoint taken from a differently
+            # configured fly fails its signature check instead of overwriting
+            # the genome that was just asked for.
+            genome_report = {
+                "source": str(a.genome),
+                "sha256": hashlib.sha256(
+                    a.genome.read_bytes()).hexdigest(),
+                "values": genome,
+                **apply_genome(controller, genome),
+            }
         cp = ledger.get("checkpoint")
         if cp:
             path = out / cp["file"]
@@ -189,6 +221,7 @@ def main():
                 raise RuntimeError("Checkpoint integrity mismatch")
             controller.restore(path)
         provenance = {
+            "genome": genome_report,
             "settings": dataclasses.asdict(settings),
             "dataset": verified,
             "circuit": controller.brain.circuit["report"],

@@ -28,6 +28,8 @@ import dataclasses
 import numpy as np
 
 from stonkfly.config import Settings
+from stonkfly.genome import apply as apply_genome
+from stonkfly.genome import pristine_inhibitory
 from stonkfly.display import market_frame
 from stonkfly.neural.controller import FlyController
 from stonkfly.reinforcement import reinforcement
@@ -75,24 +77,11 @@ def configured(controller, genome, pristine_inhibitory):
         "taste": (controller.gustation.floor, controller.gustation.span),
     }
     try:
-        brain.rest[kc] = genome["kc_rest"]
-        brain.initial["v"][kc] = genome["kc_rest"]
-        brain.adaptation_jump = genome["adaptation_jump"]
-        brain.adaptation_tau = genome["adaptation_tau"]
-        brain.eta = genome["eta"]
-        brain.dan_baseline_hz[:] = genome["dan_baseline_hz"]
-        # drive[lamina] = 12, then drive += tonic, so an offset is exactly an
-        # altered bias without reaching into the step signature.
-        brain.tonic[brain.lamina] = genome["lamina_bias"] - WILD_TYPE["lamina_bias"]
-        brain.inhibitory_gain = genome["inhibitory_gain"]
-        brain.weight[brain.inhibitory_edges] = (
-            pristine_inhibitory * genome["inhibitory_gain"]
-        )
-        controller.olfaction.current = genome["odor_current"]
-        controller.olfaction.sigma = genome["odor_sigma"]
-        controller.olfaction.floor = genome["odor_floor"]
-        controller.gustation.floor = genome["satiety_floor"]
-        controller.gustation.span = genome["satiety_span"]
+        # One implementation, in the model. A champion loaded by
+        # `python -m stonkfly run --genome` has to be the fly the search
+        # scored, and two copies of these assignments would drift apart
+        # exactly where nobody would look.
+        apply_genome(controller, genome, pristine_inhibitory)
         # replace(), not a fresh Settings: capital, order size, fee and
         # learning belong to the experiment, not to the genome.
         controller.s = dataclasses.replace(
@@ -318,11 +307,6 @@ def baselines(controller, pristine, prices, start, observations, settings, rng):
         controller, pristine, WILD_TYPE, prices, start, observations, settings
     )
     return out
-
-
-def pristine_inhibitory(brain):
-    """The inhibitory weights before any gain, so a genome can set its own."""
-    return (brain.weight[brain.inhibitory_edges] / brain.inhibitory_gain).copy()
 
 
 def build(settings=None):

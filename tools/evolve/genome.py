@@ -14,42 +14,11 @@ import hashlib
 import json
 import math
 
-# name -> (low, high, kind). "log" samples multiplicatively, which is right for
-# a gain that can plausibly be half or double, and wrong for a voltage.
-SPACE = {
-    # The single parameter measured to move the whole chain in and out of
-    # saturation. Bounded to the range where a graded regime exists at all.
-    "inhibitory_gain": (1.3, 2.4, "linear"),
-    "kc_rest": (-75.0, -50.0, "linear"),
-    "adaptation_jump": (0.0, 40.0, "linear"),
-    "adaptation_tau": (50.0, 600.0, "log"),
-    "lamina_bias": (2.0, 24.0, "linear"),
-    "eta": (0.0002, 0.005, "log"),
-    "dan_baseline_hz": (0.0, 20.0, "linear"),
-    "odor_current": (8.0, 60.0, "log"),
-    "odor_sigma": (0.3, 1.6, "log"),
-    "odor_floor": (0.05, 0.6, "log"),
-    "satiety_floor": (0.0, 16.0, "linear"),
-    "satiety_span": (4.0, 48.0, "log"),
-    "pulse_current": (10.0, 120.0, "log"),
-    "decoder_threshold_hz": (0.5, 12.0, "log"),
-}
-WILD_TYPE = {
-    "inhibitory_gain": 1.9,
-    "kc_rest": -60.0,
-    "adaptation_jump": 8.0,
-    "adaptation_tau": 200.0,
-    "lamina_bias": 12.0,
-    "eta": 0.001,
-    "dan_baseline_hz": 0.0,
-    "odor_current": 30.0,
-    "odor_sigma": 0.9,
-    "odor_floor": 0.1,
-    "satiety_floor": 8.0,
-    "satiety_span": 24.0,
-    "pulse_current": 40.0,
-    "decoder_threshold_hz": 2.0,
-}
+# Declared in the model, not here: these fourteen numbers are a statement
+# about the animal, and a live run has to be able to become one of them. This
+# module keeps only what a *search* adds -- sampling, mutation, crossover and
+# the identity of a genome in a report.
+from stonkfly.genome import SPACE, WILD_TYPE  # noqa: F401
 
 
 def clamp(name, value):
