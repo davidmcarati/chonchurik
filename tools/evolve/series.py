@@ -29,15 +29,21 @@ def fixture_series(length, product="BTC-USDC"):
     return [base * (1 + 0.025 * math.sin(i * 0.6)) for i in range(length)]
 
 
-def candle_series(path, product="BTC-USDC"):
+def candle_series(path, product="BTC-USDC", granularity="ONE_HOUR"):
     """Closes from a local candle file, oldest first.
 
-    The file is produced by a separate, deliberate fetch. This function never
-    opens a socket, so an evolution run cannot quietly acquire new data or
-    change the segment it is judged on halfway through.
+    The file is produced by a separate, deliberate fetch (tools/fetch_candles.py).
+    This function never opens a socket, so an evolution run cannot quietly
+    acquire new data or change the segment it is judged on halfway through.
     """
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     rows = data[product] if isinstance(data, dict) else data
+    if isinstance(rows, dict):
+        if granularity not in rows:
+            raise ValueError(
+                f"{granularity} not in {path}; have {sorted(rows)}"
+            )
+        rows = rows[granularity]
     closes = [float(r["close"] if isinstance(r, dict) else r) for r in rows]
     if len(closes) < 200 or not all(math.isfinite(c) and c > 0 for c in closes):
         raise ValueError("Candle file needs at least 200 finite positive closes")

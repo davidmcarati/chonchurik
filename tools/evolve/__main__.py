@@ -19,7 +19,9 @@ from pathlib import Path
 from stonkfly.config import Settings
 
 from . import genome as G
-from .loop import FULL_OBSERVATIONS, FULL_STARTS, evolve, judge
+from .evaluate import ceiling
+from .loop import (FULL_OBSERVATIONS, FULL_STARTS, evolve,
+                   judge)
 from .pool import DEFAULT_WORKERS, pool
 from .series import candle_series, fixture_series, split
 
@@ -28,6 +30,10 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--source", choices=["fixture", "candles"], default="fixture")
     p.add_argument("--candles", type=Path, default=Path("data/candles.json"))
+    # One minute is measured dead: perfect foresight makes exactly nothing on
+    # every segment, because fifty bars span 0.15% and a round trip costs 1.2%.
+    # Run `python -m tools.evolve.survey` before choosing this.
+    p.add_argument("--granularity", default="ONE_HOUR")
     p.add_argument("--length", type=int, default=1200,
                    help="fixture only: observations to synthesise")
     p.add_argument("--generations", type=int, default=10)
@@ -41,9 +47,21 @@ def main():
 
     series = (
         fixture_series(a.length) if a.source == "fixture"
-        else candle_series(a.candles)
+        else candle_series(a.candles, granularity=a.granularity)
     )
     segments = split(series)
+    if a.source == "candles":
+        dead = [
+            name for name, prices in segments.items()
+            if ceiling(prices, 0, FULL_OBSERVATIONS)["ceiling"] <= 0
+        ]
+        if dead:
+            raise SystemExit(
+                f"nothing to take on {', '.join(dead)} at {a.granularity}: a "
+                f"trader with perfect foresight makes zero there, so no policy "
+                f"can profit and evolution would select noise. Run "
+                f"`python -m tools.evolve.survey` and pick a coarser interval."
+            )
     rng = random.Random(a.seed)
     state = None
     if a.resume:
@@ -52,7 +70,8 @@ def main():
             state = json.loads(path.read_text(encoding="utf-8"))
             print(f"resuming at generation {state['generation']}", flush=True)
 
-    print(f"source {a.source}: {len(series)} observations, train "
+    label = a.source if a.source == "fixture" else f"{a.source} {a.granularity}"
+    print(f"source {label}: {len(series)} observations, train "
           f"{len(segments['train'])} / validation {len(segments['validation'])} "
           f"/ test {len(segments['test'])}", flush=True)
     print(f"{a.population} genomes x {a.generations} generations on "
