@@ -85,7 +85,7 @@ def test_degenerate_rejects_a_fly_that_cannot_act():
     traded = {"BUY": 3, "SELL": 2}
     row = {"observations": 20, "buy": 20, "sell": 0, "hold": 0, "kc_spikes": 99,
            "fills": traded}
-    assert degenerate(row) == "one proposal for every observation"
+    assert degenerate(row) == "one proposal for 100% of observations"
     assert degenerate({**row, "buy": 10, "hold": 10, "kc_spikes": 0}) == (
         "silent mushroom body"
     )
@@ -95,6 +95,25 @@ def test_degenerate_rejects_a_fly_that_cannot_act():
     assert degenerate({**row, "buy": 9, "sell": 5, "hold": 6,
                        "fills": {"BUY": 0, "SELL": 0}}) == "never filled an order"
     assert degenerate({**row, "buy": 9, "sell": 5, "hold": 6}) is None
+
+
+def test_degenerate_rejects_the_champion_that_the_old_test_let_through():
+    """The measured failure, as a regression.
+
+    Generation 0 on real five-minute candles produced this shape: 289 BUY of
+    300, 4 SELL, 7 HOLD, 276 of the proposals rejected for want of budget. It
+    had bought everything it could afford and was holding, which is a baseline
+    rather than a policy -- and it scored the first positive fitness in the
+    project. The exact-100% test passed it, because 289 is not 300.
+    """
+    row = {"observations": 300, "buy": 289, "sell": 4, "hold": 7,
+           "kc_spikes": 210332, "fills": {"BUY": 13, "SELL": 4}}
+    assert degenerate(row) == "one proposal for 96% of observations"
+    # Still one-sided at the declared line, and allowed just below it.
+    assert degenerate({**row, "buy": 270, "sell": 20, "hold": 10}) == (
+        "one proposal for 90% of observations"
+    )
+    assert degenerate({**row, "buy": 260, "sell": 25, "hold": 15}) is None
 
 
 def test_median_is_the_middle_not_the_mean():
@@ -172,3 +191,38 @@ def test_deprioritise_actually_lowers_priority():
         assert after == 0x4000, f"expected BELOW_NORMAL, got {after:#x}"
     else:
         assert after > before
+
+
+def test_selection_and_grading_use_different_numbers():
+    """Fitness ranks on excess; the criterion still grades on absolute profit.
+
+    If these were the same quantity the kill criterion would be graded on the
+    search's own objective and could not fail. They must stay apart.
+    """
+    from tools.evolve.loop import fitness, profit_fitness
+
+    # A fly that made money only because the window rose, and less than simply
+    # holding would have. Positive profit, negative excess.
+    rows = [
+        {"profit": 4.68, "buy_and_hold": 5.40, "excess": 4.68 - 5.40},
+        {"profit": 1.37, "buy_and_hold": 2.17, "excess": 1.37 - 2.17},
+        {"profit": 0.19, "buy_and_hold": 1.11, "excess": 0.19 - 1.11},
+    ]
+    assert profit_fitness(rows) > 0, "it did make money"
+    assert fitness(rows) < 0, "and it still lost to holding"
+
+
+def test_buy_and_hold_benchmark_obeys_the_same_account_rules():
+    from stonkfly.config import Settings
+
+    from tools.evolve.evaluate import CHART_WINDOW, WARMUP, buy_and_hold
+
+    s = Settings()
+    flat = [100.0] * (CHART_WINDOW + WARMUP + 60)
+    # A flat market cannot pay the fee, so holding through it must lose.
+    assert buy_and_hold(flat, 0, 50, s) < 0
+    rising = [100.0 * (1.01 ** i) for i in range(CHART_WINDOW + WARMUP + 60)]
+    assert buy_and_hold(rising, 0, 50, s) > 0
+    # Never more than the capital it is allowed to deploy.
+    assert buy_and_hold(rising, 0, 50, s) < float(s.capital)
+    assert buy_and_hold(flat, 0, 0, s) == 0.0

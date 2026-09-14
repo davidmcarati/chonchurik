@@ -436,9 +436,13 @@ before any evolution existed, each with bounds declared in `genome.py` and not
 widened after seeing results. A worker asserts the graph unchanged after every
 genome it evaluates; a leak would look exactly like evolution working.
 
-**What is selected on.** Profit, and only profit, on the network's own
-proposals. Nothing overrides, replaces or second-guesses a BUY, a SELL or a
-HOLD; the harness fills them.
+**What is selected on.** Profit in excess of buying and holding the same
+window, on the network's own proposals. Nothing overrides, replaces or
+second-guesses a BUY, a SELL or a HOLD; the harness fills them. Selection and
+grading are deliberately different numbers: the kill criterion below still
+compares **absolute** profit against the four baselines. Grading a search on
+its own objective would make the criterion unfalsifiable. The objective was
+absolute profit until 2026-09-14; what changed it is recorded below.
 
 **Protocol, fixed before the first run.**
 
@@ -446,7 +450,8 @@ HOLD; the harness fills them.
 | --- | --- |
 | Split | chronological 60 / 20 / 20, never shuffled |
 | Test segment | opened exactly once, at the end |
-| Fitness | median profit over independent chronological starts |
+| Fitness (selection) | median of profit − buy-and-hold on the same window, over independent chronological starts |
+| Fitness (grading) | median absolute profit, against the baselines |
 | Screening | 20 observations × 1 start; top third proceed |
 | Full evaluation | 50 observations × 5 starts |
 | Warm-up | 15 observations, run but not traded |
@@ -488,6 +493,50 @@ evolution could only tune how much dopamine arrived — no longer holds.
 **On a sine wave.** The offline `fixture` source replays this repository's own
 deterministic sine. A sine is not a market. Profit there would show that the
 evolution machinery works end to end, and nothing about trading.
+
+### The objective was wrong, and generation 0 showed it
+
+The first generation on real five-minute candles produced the first positive
+number in the project, and it was worth nothing.
+
+| Start | Champion | Buy-and-hold | Ceiling |
+| --- | --- | --- | --- |
+| 0 | −2.0768 | −0.9541 | 0.965 |
+| 15,642 | −1.8165 | −1.2644 | 0.684 |
+| 31,284 | +1.3669 | +2.1698 | 39.684 |
+| 46,925 | +4.6802 | +5.3981 | 70.559 |
+| 62,567 | +0.1866 | +1.1100 | 10.156 |
+| **median** | **+0.1866** | **+1.1100** | **10.156** |
+
+Fitness **+0.1866**, and it **lost to buy-and-hold at five starts out of
+five**, every time by roughly the fees it paid. Its behaviour says why: 282 to
+289 BUY proposals out of 300 observations, 4 to 9 SELL, and 264 to 276 of the
+proposals rejected for want of budget. It bought everything it could afford
+and then held. That is not a policy, it is a baseline with a fee drag.
+
+This is not the fly failing. It is the objective being wrong. In a window where
+price rises, the profit-maximising policy is maximum exposure, so selecting on
+absolute profit pushes the population towards buy-and-hold — while the kill
+criterion asks the champion to *beat* buy-and-hold. The search was being driven
+towards the thing it would be failed for becoming.
+
+Two changes, and the distinction between them matters:
+
+- **The objective moved.** Fitness is now median *excess* over buy-and-hold on
+  the same window, which removes the market's own drift from what is selected
+  and leaves the timing.
+- **The criterion did not move.** It still grades absolute profit against all
+  four baselines, out of sample, once. Moving the criterion after seeing a
+  result is the failure mode this whole document exists to prevent; moving the
+  objective so that it points at the criterion is a fix.
+
+The degeneracy screen also let this fly through, because it tested for one
+proposal at *every* observation and the fly sat at 96%. It now rejects any
+genome proposing one side at 90% or more of observations, with the measured
+289-of-300 shape kept as a regression test.
+
+Generation 0 also cost **5,600 seconds**, not the ~2,900 estimated, putting a
+twelve-generation run at 18.7 hours rather than 10.
 
 ### First run, 2026-09-14: the criterion fired
 

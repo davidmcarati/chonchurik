@@ -1,8 +1,19 @@
 """Replay a price segment through one fly and report what the account did.
 
-Fitness is profit. That is the only thing selected on, and it is selected on
-the network's own proposals: nothing here overrides, replaces or second-
-guesses a BUY, a SELL or a HOLD. What this module does is fill them.
+Fitness is profit *in excess of buying and holding the same window*, and it is
+computed from the network's own proposals: nothing here overrides, replaces or
+second-guesses a BUY, a SELL or a HOLD. What this module does is fill them.
+
+The benchmark is subtracted because absolute profit does not measure trading.
+The first generation on real five-minute candles produced a champion at
++0.1866, the first positive number in the project -- which proposed BUY at 282
+to 289 of 300 observations, had 264 to 276 of those rejected for want of
+budget, and lost to buying and holding at five starts out of five. Maximum
+exposure is the profit-maximising policy in a window that rises, so profit
+fitness selects for it, and the kill criterion then requires beating the very
+thing that fitness was pushing the population towards. Subtracting the
+benchmark removes the market's own drift from the objective and leaves the
+timing, which is the thing being searched for.
 
 Execution here is a deliberately explicit paper simulator, NOT the production
 path. It applies budget, inventory, order size and the same fee rate, and it
@@ -204,14 +215,45 @@ def neural_proposal(controller):
     return propose
 
 
+def buy_and_hold(prices, start, observations, settings):
+    """Deploy the whole budget as fast as the order size allows, then hold.
+
+    Bound by the same account rules as every fly -- same capital, same order
+    limit, same fee, same window -- so it is a fair benchmark rather than an
+    idealised index. It takes no brain and no rendered chart, so it is cheap
+    enough to recompute per evaluation instead of being cached and mismatched.
+    """
+    account = Account(settings.capital, settings.order_limit, settings.paper_fee)
+    window = prices[start + CHART_WINDOW + WARMUP:][:observations]
+    if not window:
+        return 0.0
+    for price in window:
+        bid, ask = quotes(price)
+        account.apply("BUY", bid, ask)
+    return float(account.equity(quotes(window[-1])[0]) - account.start)
+
+
 def evaluate(controller, pristine, genome, prices, start, observations, settings):
-    """One genome, one chronological start. Profit in quote currency."""
+    """One genome, one chronological start. Profit, and profit over benchmark."""
     with configured(controller, genome, pristine):
         account = Account(settings.capital, settings.order_limit, settings.paper_fee)
-        return replay(
+        row = replay(
             controller, prices, start, observations,
             neural_proposal(controller), account,
         )
+    # Both are reported. `profit` is what the kill criterion compares against
+    # the baselines; `excess` is what the search is actually ranked on, and the
+    # gap between them is how much of a result was the market rather than the
+    # fly.
+    row["buy_and_hold"] = buy_and_hold(prices, start, observations, settings)
+    row["excess"] = row["profit"] - row["buy_and_hold"]
+    return row
+
+
+# A fly proposing one side at or above this fraction of observations is not
+# deciding; the risk guard is. Declared as a fraction rather than "all of
+# them" because the measured failure sat at 96%: the exact-100% test passed it.
+ONE_SIDED = 0.9
 
 
 def degenerate(row):
@@ -226,11 +268,18 @@ def degenerate(row):
     collapsed the whole population onto exactly that. Sitting in cash is a
     legitimate strategy and it is already represented -- by the baseline. What
     is being searched for here is a fly that trades.
+
+    Near-total one-sidedness counts as not acting. The first champion on real
+    candles proposed BUY at 96% of observations and spent the rest of each run
+    having those rejected for want of budget: it had bought everything it could
+    afford and was holding, which is a baseline, not a policy. The original
+    test asked for one proposal at *every* observation and let that through.
     """
     if row["observations"] == 0:
         return "no observations"
-    if max(row["buy"], row["sell"], row["hold"]) == row["observations"]:
-        return "one proposal for every observation"
+    share = max(row["buy"], row["sell"], row["hold"]) / row["observations"]
+    if share >= ONE_SIDED:
+        return f"one proposal for {share:.0%} of observations"
     if row["kc_spikes"] == 0:
         return "silent mushroom body"
     if not row["fills"]["BUY"] and not row["fills"]["SELL"]:

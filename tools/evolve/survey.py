@@ -18,26 +18,12 @@ from pathlib import Path
 
 from stonkfly.config import Settings
 
-from .evaluate import CHART_WINDOW, WARMUP, Account, ceiling
+from .evaluate import buy_and_hold, ceiling
 from .loop import FULL_OBSERVATIONS, FULL_STARTS, median
 from .series import candle_series, quotes, split, starts
 
 GRANULARITIES = ["ONE_MINUTE", "FIVE_MINUTE", "FIFTEEN_MINUTE", "ONE_HOUR",
                  "SIX_HOUR", "ONE_DAY"]
-
-
-def buy_and_hold(prices, start, observations, settings):
-    """Deploy the whole budget as fast as the order size allows, then hold.
-
-    The same account rules every fly is bound by, so it is a fair comparison
-    rather than an idealised index.
-    """
-    account = Account(settings.capital, settings.order_limit, settings.paper_fee)
-    window = prices[start + CHART_WINDOW + WARMUP:][:observations]
-    for price in window:
-        bid, ask = quotes(price)
-        account.apply("BUY", bid, ask)
-    return account.equity(quotes(window[-1])[0]) - account.start if window else 0.0
 
 
 def bars_to_clear(prices, cost, samples=400, cap=4000):

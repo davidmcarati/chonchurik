@@ -8,6 +8,10 @@ parameters suited this stretch of history" and "the fly learned to trade":
   - the test segment is evaluated exactly once, at the very end;
   - fitness is the median over independent chronological starts, so one lucky
     start cannot carry a genome;
+  - fitness is profit *over buying and holding the same window*, so a rising
+    market cannot be mistaken for skill, while the kill criterion stays on
+    absolute profit against the baselines -- the two must not be the same
+    number, or the search would be graded by the thing it optimises;
   - four baselines are run on the same segments and the same account rules;
   - the kill criterion is declared here, in code, before any run;
   - the whole final population is reported out of sample, not just the winner.
@@ -52,7 +56,24 @@ def median(values):
 
 
 def fitness(rows):
-    """Profit, as the median over independent starts. Nothing else."""
+    """Profit over buying and holding, median over independent starts.
+
+    Selection only. The pre-declared kill criterion is unchanged and still
+    compares absolute profit against the four baselines; see profit_fitness.
+
+    Absolute profit was the original objective and it was the wrong one. In a
+    window where price rises, the profit-maximising policy is maximum
+    exposure, so the search converges on being buy-and-hold minus fees -- and
+    the criterion then asks that same fly to beat buy-and-hold. Generation 0 on
+    five-minute candles reached +0.1866 absolute and lost to the benchmark at
+    all five starts. Subtracting the benchmark takes the market's drift out of
+    what is selected and leaves the timing.
+    """
+    return median([r["excess"] for r in rows])
+
+
+def profit_fitness(rows):
+    """Absolute profit, median over starts. What the baselines are judged on."""
     return median([r["profit"] for r in rows])
 
 
@@ -92,9 +113,9 @@ def screen(executor, population, prices, window, observations):
         # them fired at all. Carrying the whole generation forward would let
         # the loop crash or, worse, quietly restart from random genomes and
         # lose the record that this happened.
-        alive = sorted(population, key=lambda i: -i["screen"]["profit"])[:ELITES]
+        alive = sorted(population, key=lambda i: -i["screen"]["excess"])[:ELITES]
         for individual in alive:
-            individual["screen_fitness"] = individual["screen"]["profit"]
+            individual["screen_fitness"] = individual["screen"]["excess"]
         return alive, len(population)
     alive.sort(key=lambda i: -i["screen_fitness"])
     return alive[:keep], len(population) - len(alive)
@@ -140,6 +161,8 @@ def evolve(executor, segments, rng, generations, size, out, resume=None,
         for individual, row in zip(survivors, rows):
             individual["starts"] = row
             individual["fitness"] = fitness(row)
+            individual["profit"] = profit_fitness(row)
+            individual["buy_and_hold"] = median([r["buy_and_hold"] for r in row])
         survivors.sort(key=lambda i: -i["fitness"])
         best = survivors[0]
         state["history"].append({
@@ -147,12 +170,16 @@ def evolve(executor, segments, rng, generations, size, out, resume=None,
             "evaluated": len(population),
             "degenerate": dropped,
             "best_fitness": best["fitness"],
+            "best_profit": best["profit"],
+            "best_buy_and_hold": best["buy_and_hold"],
             "best_id": G.identity(best["genome"]),
             "median_fitness": median([i["fitness"] for i in survivors]),
             "seconds": round(time.time() - started, 1),
         })
         print(f"  generation {generation:3}  {len(population)} evaluated, "
-              f"{dropped} degenerate, best {best['fitness']:+.4f}, median "
+              f"{dropped} degenerate, best {best['fitness']:+.4f} over "
+              f"benchmark (profit {best['profit']:+.4f} against buy+hold "
+              f"{best['buy_and_hold']:+.4f}), median "
               f"{state['history'][-1]['median_fitness']:+.4f}  "
               f"({state['history'][-1]['seconds']:.0f}s)", flush=True)
         population = next_generation(survivors, rng, size)
@@ -186,7 +213,15 @@ def judge(executor, champion, population, segments, rng, out, seed,
         ]
         collected = [f.result() for f in base]
         results[name] = {
-            "champion": fitness(rows[index]),
+            # Absolute profit: the only thing comparable to the baselines, and
+            # what the criterion below is applied to. Selection used `excess`;
+            # grading must not, or the search would be graded by its own
+            # objective.
+            "champion": profit_fitness(rows[index]),
+            "champion_excess": fitness(rows[index]),
+            "champion_buy_and_hold": median(
+                [r["buy_and_hold"] for r in rows[index]]
+            ),
             # Without this a champion that never filled an order reads as a
             # flat 0.0000, which is indistinguishable from one that traded and
             # broke even. On a segment with negative expectancy, profit
@@ -201,7 +236,8 @@ def judge(executor, champion, population, segments, rng, out, seed,
                 },
                 "rejected": sum(r["rejected"] for r in rows[index]),
             },
-            "population": sorted(fitness(r) for r in rows),
+            "population": sorted(profit_fitness(r) for r in rows),
+            "population_excess": sorted(fitness(r) for r in rows),
             "baselines": {
                 b: median([c[b]["profit"] for c in collected]) for b in BASELINES
             },
@@ -239,7 +275,21 @@ def judge(executor, champion, population, segments, rng, out, seed,
             "observations_per_evaluation": observations,
             "screen_observations": screen_length(observations),
             "starts_per_evaluation": FULL_STARTS,
-            "fitness": "median profit in quote currency over independent chronological starts",
+            "fitness": "SELECTION: median of (profit - buy_and_hold on the "
+                       "same window) in quote currency, over independent "
+                       "chronological starts. GRADING: absolute median profit "
+                       "against the four baselines. These are deliberately "
+                       "different quantities; grading on the selected quantity "
+                       "would make the criterion unfalsifiable.",
+            "fitness_changed": "Generation 0 of the first five-minute run "
+                               "selected on absolute profit and produced a "
+                               "champion at +0.1866 that proposed BUY at 96% "
+                               "of observations and lost to buy-and-hold at "
+                               "5 of 5 starts. In a rising window, maximum "
+                               "exposure maximises profit, so the objective "
+                               "was pushing the population towards the "
+                               "baseline the criterion requires beating. The "
+                               "criterion did not move; the objective did.",
             "test_segment_evaluations": 1,
             "kill_criterion": "A champion that does not beat every one of "
                               f"{', '.join(BASELINES)} on the test segment is "

@@ -126,6 +126,12 @@ intervention.
 over fourteen declared free physiological parameters. It never touches wiring
 and never places an order.
 
+Genomes are **ranked** on profit over buying and holding the same window, and
+**graded** on absolute profit against four baselines. Those are different
+numbers on purpose: ranking on absolute profit selects for maximum exposure
+wherever price rises, which is buy-and-hold, which is one of the baselines the
+champion has to beat.
+
 ```sh
 python -m tools.evolve --source fixture --generations 10 --population 24
 python -m tools.evolve --source candles --candles data/candles.json --resume
@@ -138,8 +144,9 @@ on purpose, so a run cannot quietly acquire data or change the segment it is
 judged on halfway through.
 
 `--workers` defaults to 8. Each worker holds one brain, measured at 0.6 GB,
-and runs at below-normal priority so the machine stays usable; raise it for an
-unattended night. State is written every generation, so `--resume` continues
+and runs at below-normal priority so the machine stays usable -- verified
+against the scheduler by a test, after the Windows call turned out to have
+been failing silently since it shipped. Raise it for an unattended night. State is written every generation, so `--resume` continues
 an interrupted run rather than restarting it.
 
 The split, the four baselines and the kill criterion are in
