@@ -64,13 +64,18 @@ class FlyController:
         self.olfaction = Olfaction(a) if odor else None
         self.gustation = Gustation(self.brain.sugar) if taste else None
 
-    def observe(self, rgb, reinforcement, history=None, executed=None, account=None):
+    def observe(self, rgb, reinforcement, history=None, executed=None,
+                account=None, bars=None):
         """One market observation.
 
         `history` opens the olfactory channel, `account` the gustatory one, and
         `executed` names the fly's own last filled trade so it can smell it.
         Each stays shut when its argument is absent, so a caller written before
         a channel existed still measures what it measured then.
+
+        `bars` are whole klines for the same history. They add the three
+        whole-bar odour channels; without them those rest, which is what every
+        caller and every recorded diagnostic did before they existed.
         """
         if reinforcement not in ("none", "reward", "aversive"):
             raise ValueError("Unknown reinforcement")
@@ -79,7 +84,7 @@ class FlyController:
         # reinforcement pulse is not. They are separate entries in the list.
         odor, smelled = (None, None)
         if self.olfaction is not None and history is not None:
-            odor, smelled = self.olfaction.stimulation(history, executed)
+            odor, smelled = self.olfaction.stimulation(history, executed, bars)
         taste, tasted = (None, None)
         if self.gustation is not None and account is not None:
             taste, tasted = self.gustation.stimulation(*account)

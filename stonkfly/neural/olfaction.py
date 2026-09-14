@@ -33,7 +33,30 @@ FEATURES = [
 # all share the resting value, so "no trade" is one odour rather than three.
 TRADE = "executed_trade"
 TRADE_CODE = {None: 0.5, "HOLD": 0.5, "VETO": 0.5, "BUY": 1.0, "SELL": 0.0}
-CHANNELS = FEATURES + [TRADE]
+# Descriptors of a whole bar rather than of its close. Everything in FEATURES
+# above is a function of one number, the closing price, which is why they
+# share a fate: tools/features.py measured all five against the forward return
+# on 10,446 hourly bars and found nothing at any horizon.
+#
+# These three are the readings a close cannot give. `flow` in particular is
+# not a function of price at all -- it is the share of the bar's volume that
+# was somebody lifting the offer rather than hitting the bid, and it answers a
+# different question about the same minute.
+#
+# Measured before being added, on Binance BTCUSDT, both timeframes and both
+# the training and the validation segment: `flow` and `bar_position` carry the
+# same sign in all four panels, around -0.03 at one bar and gone by six. That
+# is short-horizon reversion, it is small, and it is the only effect any
+# descriptor in this file has ever shown. `flow_slow` is the same reading over
+# the fast window, so a single bar cannot carry the channel alone.
+#
+# Three and not six. The glomeruli are a fixed budget -- 53 of them, split
+# into equal bands -- so every channel added costs every other channel
+# resolution. volume, trade size and bar range were measured alongside these
+# and showed nothing, and a place code with four glomeruli to a feature can
+# hardly express one.
+BARS = ["flow", "flow_slow", "bar_position"]
+CHANNELS = FEATURES + BARS + [TRADE]
 # Observation counts, not minutes: the wall interval is a separate setting,
 # and these are deliberately short. This fly is meant to scalp.
 FAST, SLOW, RANGE = 5, 30, 60
@@ -58,6 +81,7 @@ CURRENT = 30.0
 
 PARAMETERS = {
     "olfactory_channels": CHANNELS,
+    "olfactory_bar_channels": BARS,
     "olfactory_windows": {"fast": FAST, "slow": SLOW, "range": RANGE},
     "olfactory_normalisation": "Realised volatility of the same series. Trends are z-scores over their own horizon, volatility is a ratio of the short window to the long one, position in range is a fraction. No channel carries a unit tied to the sampling interval.",
     "olfactory_full_deflection_deviations": DEVIATIONS,
@@ -65,7 +89,7 @@ PARAMETERS = {
     "olfactory_threshold": FLOOR,
     "olfactory_peak_current": CURRENT,
     "olfactory_trade_code": {str(k): v for k, v in TRADE_CODE.items()},
-    "interpretation": "Engineered assignment of price descriptors and the fly's own last executed trade to glomerular channels. Fixed, alphabetical, content-independent; no odour identity, receptor affinity or concentration is modeled.",
+    "interpretation": "Engineered assignment of price descriptors, whole-bar descriptors including order flow, and the fly's own last executed trade to glomerular channels. Fixed, alphabetical, content-independent; no odour identity, receptor affinity or concentration is modeled. The whole-bar channels rest unless the caller supplies klines.",
 }
 
 
@@ -170,16 +194,23 @@ class Olfaction:
             out[band] = np.exp(-0.5 * (offset / self.sigma) ** 2)
         return np.where(out < self.floor, 0.0, out)
 
-    def stimulation(self, history, executed=None):
+    def stimulation(self, history, executed=None, bars=None):
         """One pulse for the whole observation, or None when there is no odour.
 
         Indices stay unique across glomeruli: `drive[ix] += amplitude` is plain
         fancy indexing, so a repeated index would silently overwrite instead of
         summing.
+
+        `bars` are whole klines for the same history, newest last. Without
+        them the three whole-bar channels sit at their resting value, which is
+        the same thing `activation` does for any channel it is not given -- so
+        a caller written before those channels existed, or a data source that
+        carries closes only, measures what it always measured.
         """
         if executed not in TRADE_CODE:
             raise ValueError(f"Unknown executed trade: {executed!r}")
-        values = {**features(history), TRADE: TRADE_CODE[executed]}
+        values = {**features(history), **bar_features(bars),
+                  TRADE: TRADE_CODE[executed]}
         amplitude = self.activation(values)
         live = np.flatnonzero(amplitude > 0)
         if not len(live):
@@ -189,3 +220,40 @@ class Olfaction:
             [np.full(len(self.cells[g]), amplitude[g]) for g in live]
         )
         return (indices, (self.current * current).astype(np.float32)), values
+
+
+def bar_features(bars):
+    """The whole-bar descriptors. Empty when there are no bars to read.
+
+    `bars` are dicts with at least high, low, close, volume and
+    taker_buy_base, oldest first; `tools/fetch_binance.py` writes them and
+    `tools/evolve/series.klines` reads them back. At most FAST of them are
+    consulted for the averaged channel and one for the rest, so a caller can
+    hand over a short window.
+
+    Returning nothing rather than a neutral dict is deliberate: `activation`
+    already rests a channel it is not given, and an explicit 0.5 here would be
+    indistinguishable from a bar that genuinely read 0.5.
+    """
+    if not bars:
+        return {}
+    last = bars[-1]
+    fast = bars[-FAST:]
+
+    def share(bar):
+        volume = bar.get("volume", 0.0)
+        if volume <= 0:
+            return 0.5
+        return float(np.clip(bar.get("taker_buy_base", 0.0) / volume, 0.0, 1.0))
+
+    span = last["high"] - last["low"]
+    return {
+        # Centred on a half in absolute terms, not against the window's own
+        # mean: which side was the aggressor is meaningful by itself, and an
+        # hour of steady buying must not read neutral because of its own
+        # persistence.
+        "flow": share(last),
+        "flow_slow": float(sum(share(b) for b in fast) / len(fast)),
+        "bar_position": (float((last["close"] - last["low"]) / span)
+                         if span > 0 else 0.5),
+    }

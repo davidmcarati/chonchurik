@@ -136,7 +136,8 @@ def test_olfactory_features_are_bounded_and_json_safe():
 
 
 def test_olfactory_code_is_sparse_separable_and_free_of_repeated_indices():
-    from stonkfly.neural.olfaction import CHANNELS, Olfaction, features
+    from stonkfly.neural.olfaction import (BARS, CHANNELS, Olfaction,
+                                           features)
 
     o = Olfaction(odor_annotation())
     assert len(o.names) == 53 and len(o.indices) == 159
@@ -150,12 +151,22 @@ def test_olfactory_code_is_sparse_separable_and_free_of_repeated_indices():
     falling = [100.0 * 0.998**i for i in range(80)]
     codes = [o.activation(features(h)) > 0 for h in [rising, falling]]
     for code in codes:
-        assert 0 < code.sum() <= 3 * len(CHANNELS)
+        assert 0 < code.sum() <= 4 * len(CHANNELS)
     assert not np.array_equal(*codes)
+    # What actually bounds the footprint is the tuning width against the
+    # floor, not the number of channels: a Gaussian of sigma s clears a floor
+    # f within s*sqrt(-2 ln f) glomeruli, which at 0.9 and 0.1 is 1.93 -- so
+    # three whole glomeruli, or four when the peak falls between two. Adding a
+    # channel narrows every band and must not widen any peak.
+    for code in codes:
+        for band in o.bands:
+            assert code[band].sum() <= 4
     pulse, values = o.stimulation(rising)
     indices, current = pulse
     assert len(indices) == len(current) and current.max() <= o.current
-    assert set(values) == set(CHANNELS)
+    # Without klines the whole-bar channels are absent rather than neutral, so
+    # a reader can tell "no data" from "this bar read one half".
+    assert set(values) == set(CHANNELS) - set(BARS)
     # The trade tag is an efference copy: it must move the code on its own,
     # with the market held exactly still.
     bought = o.activation(o.stimulation(rising, "BUY")[1]) > 0
@@ -165,6 +176,24 @@ def test_olfactory_code_is_sparse_separable_and_free_of_repeated_indices():
     assert np.array_equal(held, o.activation(o.stimulation(rising)[1]) > 0)
     with pytest.raises(ValueError):
         o.stimulation(rising, "LONG")
+
+    # Klines fill the remaining three, and they move the code with the price
+    # history held exactly still -- which is the whole reason they exist.
+    def bar(close, taker):
+        return {"high": close * 1.002, "low": close * 0.998, "close": close,
+                "volume": 100.0, "taker_buy_base": taker}
+
+    bought = [bar(c, 85.0) for c in rising]
+    sold = [bar(c, 15.0) for c in rising]
+    assert set(o.stimulation(rising, None, bought)[1]) == set(CHANNELS)
+    aggressive = o.activation(o.stimulation(rising, None, bought)[1]) > 0
+    passive = o.activation(o.stimulation(rising, None, sold)[1]) > 0
+    assert not np.array_equal(aggressive, passive)
+    # And a bar channel only ever touches its own band.
+    plain = o.activation(o.stimulation(rising)[1]) > 0
+    outside = np.concatenate([b for b, name in zip(o.bands, CHANNELS)
+                              if name not in BARS])
+    assert np.array_equal(aggressive[outside], plain[outside])
 
 
 def test_satiety_is_bounded_and_rests_at_half():
