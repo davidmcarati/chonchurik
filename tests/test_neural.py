@@ -63,26 +63,44 @@ def test_full_graph_sensory_reinforcement_checkpoint(tmp_path):
     c = FlyController(Settings())
     assert len(c.brain.post) == 25582938 and len(c.brain.circuit["edges"]) == 7835
     assert len(c.brain.retina) == 3335 and len(c.brain.r8) == 811
+    from stonkfly.display import market_frame
+
+    # The mushroom body is reached through the olfactory channel, so that is
+    # what this drives. A white field is kept as an explicit control because
+    # it used to be the whole test: at the reconstructed excitation/inhibition
+    # ratio it activated a third of the Kenyon population, which looked like
+    # sensory drive and was saturation. It no longer reaches memory, and that
+    # is a measured consequence of the inhibitory gain, not a regression.
+    history = [100.0 * 1.002**i for i in range(80)]
+    chart = market_frame("BTC-USDC", history, 100.0, 100.1)
     white = np.full((180, 320, 3), 255, np.uint8)
+    c.brain.reset()
+    assert c.observe(white, "none")["KC_spikes"] < 100
     for _ in range(3):
-        c.observe(white, "none")
+        c.observe(chart, "none", history)
     c.save(tmp_path / "before.npz")
     before = c.brain.weight[c.brain.circuit["edges"]].copy()
-    reward = c.observe(white, "reward")
+    reward = c.observe(chart, "reward", history)
     assert reward["reward_spikes"] > 0 and reward["stimulus_ms"] == 200
+    assert reward["ORN_spikes"] > 0 and reward["sugar_spikes"] == 0
     assert reward["KC_spikes"] > 0 and reward["memory"]["changed_edges"] > 0
     reward_weights = c.brain.weight[c.brain.circuit["edges"]].copy()
     c.restore(tmp_path / "before.npz")
-    control = c.observe(white, "none")
+    control = c.observe(chart, "none", history)
     assert not np.array_equal(reward_weights, c.brain.weight[c.brain.circuit["edges"]])
     c.restore(tmp_path / "before.npz")
     c.brain.weights_frozen = True
-    c.observe(white, "reward")
+    c.observe(chart, "reward", history)
     assert np.array_equal(before, c.brain.weight[c.brain.circuit["edges"]])
+    c.brain.weights_frozen = False
     c.restore(tmp_path / "before.npz")
-    loss = c.observe(white, "aversive")
+    loss = c.observe(chart, "aversive", history)
     assert loss["aversive_spikes"] > 0 and loss["stimulus_ms"] == 200
     assert np.isfinite(c.brain.weight).all()
+    # The sugar channel only opens when an account is supplied.
+    c.restore(tmp_path / "before.npz")
+    tasted = c.observe(chart, "none", history, None, ("105", "100"))
+    assert tasted["satiety"] > 0.9 and tasted["sugar_spikes"] > 0
     print({"reward": reward, "unpaired_control": control, "loss": loss})
 
 
@@ -160,6 +178,13 @@ def test_satiety_is_bounded_and_rests_at_half():
     g = Gustation(np.array([3, 7, 11], dtype=np.int32))
     (indices, current), value = g.stimulation("100", "100")
     assert list(indices) == [3, 7, 11]
-    assert float(current) == pytest.approx(g.current * 0.5) and value == 0.5
+    assert float(current) == pytest.approx(g.floor + g.span * 0.5) and value == 0.5
+    # Graded in BOTH directions: a loss has to be a smaller current than
+    # resting, not the same silence as a bigger loss.
+    drives = [
+        float(g.stimulation(e, "100")[0][1]) for e in ["95", "98", "100", "102", "105"]
+    ]
+    assert drives == sorted(drives) and drives[0] < drives[2] < drives[-1]
+    assert min(drives) >= g.floor and max(drives) <= g.floor + g.span
     with pytest.raises(RuntimeError):
         Gustation(np.array([3, 3], dtype=np.int32))

@@ -37,7 +37,12 @@ class Settings:
     neural_ms: float = 500
     neural_bin_ms: float = 10
     pulse_ms: float = 200
-    pulse_current: float = 20
+    # Both compartments get this same amplitude, but PAM11 has 15 cells and
+    # PPL101 has 2. At 20 the reward compartment received 14.7x the per-cell
+    # drive the aversive one did -- an accident of population size, not a
+    # decision. 40 is the smallest swept amplitude that drives both within 2x
+    # (32.2 against 21.0 spikes per cell); see tools/diagnose.py pulse.
+    pulse_current: float = 40
     reward_deadband: str = "0.01"
     decoder_threshold_hz: float = 2
     paper_fee: str = "0.006"

@@ -23,14 +23,28 @@ LIBRARY = (OUT / "physiology-v6") / ("libmemory" + SUFFIX)
 MODEL = "stonkfly-dual-compartment-v1"
 from .rule import PARAMETERS as RULE_PARAMETERS
 
+# Excitation and inhibition are both set from contact count times 0.275, with
+# the sign taken from the transmitter annotation. Real circuits are not
+# balanced that way, and as reconstructed this one saturates: 94% of the layer
+# one synapse from the olfactory receptors fired for every market state, and
+# 41-47% of Kenyon cells with it. Scaling every inhibitory weight by 1.9 is
+# the single parameter that brings the whole chain into range -- Kenyon
+# activity 1.6-2.4% with market states sharing half their code instead of
+# nine tenths. It was selected by a rule declared before the sweep was run
+# (sparse in every market state first, lowest overlap second) and it is a
+# declared free parameter, not a measured property of the reconstruction.
+# See docs/validation.md and tools/diagnose.py inhibition.
+INHIBITORY_GAIN = 1.9
+
 PARAMETERS = {
     **RULE_PARAMETERS,
     "neural_dt_ms": 0.1,
+    "inhibitory_gain": INHIBITORY_GAIN,
     "modulator_delivery_trace_ms": 100.0,
     "kc_rest_mV": -60.0,
     "kc_adaptation_jump_mV": 8.0,
     "kc_adaptation_tau_ms": 200.0,
-    "interpretation": "Candidate KC adaptation/rest plus a baseline-centered anti-Hebbian rate-rule extension to two compartments. No fitted DAN/MBON background current; lamina bias is a display proxy. Gain, trace constants and transfer to this graph remain unvalidated assumptions.",
+    "interpretation": "Candidate KC adaptation/rest plus a baseline-centered anti-Hebbian rate-rule extension to two compartments. No fitted DAN/MBON background current; lamina bias is a display proxy. The excitation/inhibition ratio is a declared free parameter chosen on a sparseness and code-overlap measurement, not on trading returns. Gain, trace constants and transfer to this graph remain unvalidated assumptions.",
 }
 
 
@@ -153,6 +167,7 @@ class MemoryBrain(NativeBrain):
         kc_rest=-60.0,
         adaptation_jump=8.0,
         adaptation_tau=200.0,
+        inhibitory_gain=INHIBITORY_GAIN,
     ):
         super().__init__(path)
         self.build = build()
@@ -181,6 +196,13 @@ class MemoryBrain(NativeBrain):
         )
         self.advance.restype = None
         self.circuit = identify(self) if circuit is None else circuit
+        # After identify(), so the compartment gains are still read off the
+        # reconstruction. Sign and wiring are untouched; only the ratio moves.
+        if not math.isfinite(inhibitory_gain) or inhibitory_gain <= 0:
+            raise ValueError("Inhibitory gain must be finite and positive")
+        self.inhibitory_gain = float(inhibitory_gain)
+        self.inhibitory_edges = np.flatnonzero(self.weight < 0).astype(np.int64)
+        self.weight[self.inhibitory_edges] *= self.inhibitory_gain
         if not math.isfinite(kc_rest) or not -80 <= kc_rest <= -45:
             raise ValueError("Invalid KC resting potential")
         self.rest = np.full(self.n, -52.0, dtype=np.float32)
@@ -515,6 +537,7 @@ class MemoryBrain(NativeBrain):
             "rest": digest(self.rest),
             "adaptation_jump": self.adaptation_jump,
             "adaptation_tau": self.adaptation_tau,
+            "inhibitory_gain": self.inhibitory_gain,
             **{
                 k: digest(getattr(self, k)) for k in ["retina", "uv", "lamina", "sugar"]
             },

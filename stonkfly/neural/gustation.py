@@ -25,12 +25,20 @@ import numpy as np
 # A 2% move away from the reference equity spans most of the range. Declared
 # model choice, not fitted to returns.
 SCALE = 0.02
-CURRENT = 12.0
+# Satiety is delivered as a current between these two, not between zero and a
+# peak. Measured reason: a cell needs roughly 7 units of drive to reach
+# threshold at all, so a channel that rests below it reports gains and nothing
+# else -- a 2% loss and a 5% loss both arrive as silence, and so does an
+# untouched account. Resting well above threshold makes the channel graded in
+# both directions, which is the whole point of a satiety signal.
+FLOOR_CURRENT = 8.0
+SPAN_CURRENT = 24.0
 PARAMETERS = {
     "satiety_scale": SCALE,
-    "satiety_peak_current": CURRENT,
+    "satiety_floor_current": FLOOR_CURRENT,
+    "satiety_span_current": SPAN_CURRENT,
     "reference": "The ledger's accounting anchor, i.e. equity at the previous observation boundary.",
-    "interpretation": "Account equity relative to its reference, delivered to LB3c sugar gustatory neurons as a graded current. Engineered assignment; no feeding state, metabolic drive or taste quality is modeled.",
+    "interpretation": "Account equity relative to its reference, delivered to LB3c sugar gustatory neurons as a current graded in both directions around a resting level. Engineered assignment; no feeding state, metabolic drive or taste quality is modeled.",
 }
 
 
@@ -54,11 +62,12 @@ def satiety(equity, reference):
 class Gustation:
     """Drives the retained LB3c population with one graded current."""
 
-    def __init__(self, sugar, current=CURRENT):
+    def __init__(self, sugar, floor=FLOOR_CURRENT, span=SPAN_CURRENT):
         self.indices = np.asarray(sugar, dtype=np.int32)
         if not len(self.indices) or len(np.unique(self.indices)) != len(self.indices):
             raise RuntimeError("Invalid sugar gustatory population")
-        self.current = float(current)
+        self.floor = float(floor)
+        self.span = float(span)
         self.report = {
             **PARAMETERS,
             "sugar_neurons": int(len(self.indices)),
@@ -68,4 +77,4 @@ class Gustation:
     def stimulation(self, equity, reference):
         """One pulse for the whole observation, plus the value delivered."""
         value = satiety(equity, reference)
-        return (self.indices, np.float32(self.current * value)), value
+        return (self.indices, np.float32(self.floor + self.span * value)), value

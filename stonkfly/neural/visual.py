@@ -83,7 +83,12 @@ class VisualMemoryBrain(MemoryBrain):
             edges = np.arange(self.ptr[i], self.ptr[i + 1])
             e = edges[a.type.iloc[self.post[edges]].eq("aMe12").to_numpy()]
             corrected.extend(e.tolist())
-            self.weight[e] = np.abs(self.weight[e])
+            # These edges were inhibitory, so the global inhibitory gain has
+            # already been applied to them. Take it back out: they are being
+            # made excitatory at their ORIGINAL contact magnitude, which is
+            # what the Xiao et al. transfer assumes and what this report says.
+            w = self.weight[e]
+            self.weight[e] = np.where(w < 0, -w / self.inhibitory_gain, w)
         self.corrected_edges = np.asarray(corrected, dtype=np.int64)
         self.initial_weight_sha256 = digest(self.weight)
         self.fields.append("r8_light")
@@ -99,7 +104,8 @@ class VisualMemoryBrain(MemoryBrain):
             "corrected_edge_sha256": digest(self.corrected_edges),
             "coordinate_inference": "Modal column of all outgoing contacts to any column-annotated target; same viewport transform as R1-R6.",
             "spectrum": "Linear sRGB B for R8p; G for R8y. Display proxy, not calibrated photon flux or spectral sensitivity. R7, dorsal and untyped R8 receive no invented optical drive.",
-            "physiology": "R8 to aMe12 net sign positive; original contact magnitudes retained. Other R8 targets retain baseline sign. Photoreceptors still use a LIF rate proxy, not graded in-vivo dynamics.",
+            "inhibitory_gain": self.inhibitory_gain,
+            "physiology": "R8 to aMe12 net sign positive; original contact magnitudes retained, with the global inhibitory gain removed from these edges because they are no longer inhibitory. Other R8 targets retain baseline sign. Photoreceptors still use a LIF rate proxy, not graded in-vivo dynamics.",
             "evidence": [
                 "https://doi.org/10.1038/s41586-023-06681-6",
                 "https://doi.org/10.1038/s41467-024-49616-z",
