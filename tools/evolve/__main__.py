@@ -36,6 +36,10 @@ def main():
     p.add_argument("--granularity", default="ONE_HOUR")
     p.add_argument("--length", type=int, default=1200,
                    help="fixture only: observations to synthesise")
+    p.add_argument("--observations", type=int, default=FULL_OBSERVATIONS,
+                   help="scored observations per evaluation; must exceed the "
+                        "`hold` column of tools.evolve.survey or no trade has "
+                        "room to pay for itself")
     p.add_argument("--generations", type=int, default=10)
     p.add_argument("--population", type=int, default=24)
     p.add_argument("--workers", type=int, default=DEFAULT_WORKERS,
@@ -53,7 +57,7 @@ def main():
     if a.source == "candles":
         dead = [
             name for name, prices in segments.items()
-            if ceiling(prices, 0, FULL_OBSERVATIONS)["ceiling"] <= 0
+            if ceiling(prices, 0, a.observations)["ceiling"] <= 0
         ]
         if dead:
             raise SystemExit(
@@ -76,13 +80,14 @@ def main():
           f"/ test {len(segments['test'])}", flush=True)
     print(f"{a.population} genomes x {a.generations} generations on "
           f"{a.workers} workers at below-normal priority; "
-          f"{FULL_OBSERVATIONS} observations x {FULL_STARTS} starts per full "
+          f"{a.observations} observations x {FULL_STARTS} starts per full "
           f"evaluation", flush=True)
     started = time.time()
     settings = Settings()
     with pool(settings, a.workers) as executor:
         state = evolve(
-            executor, segments, rng, a.generations, a.population, a.out, state
+            executor, segments, rng, a.generations, a.population, a.out, state,
+            a.observations,
         )
         survivors = state["survivors"]
         champion = max(survivors, key=lambda i: i["fitness"])
@@ -90,7 +95,8 @@ def main():
               f"{champion['fitness']:+.4f} on train; opening validation and "
               f"test once", flush=True)
         report = judge(
-            executor, champion, survivors, segments, rng, a.out, a.seed, label
+            executor, champion, survivors, segments, rng, a.out, a.seed, label,
+            a.observations,
         )
     print(f"\n{report['verdict']}\n", flush=True)
     print(f"written {a.out / 'champion.json'} and {a.out / 'population.json'} "

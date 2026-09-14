@@ -22,8 +22,19 @@ from .evaluate import WARMUP, ceiling, degenerate
 from .pool import run_baselines, run_one
 from .series import starts
 
-SCREEN_OBSERVATIONS, SCREEN_STARTS = 20, 1
-FULL_OBSERVATIONS, FULL_STARTS = 50, 5
+SCREEN_STARTS, FULL_STARTS = 1, 5
+FULL_OBSERVATIONS = 50
+
+
+def screen_length(observations):
+    """Long enough to be a filter, short enough to be worth skipping ahead.
+
+    A quarter of the full evaluation. Screening a hold-based fly over twenty
+    observations would rank the survivors on noise, because at five-minute
+    bars twenty observations is under two hours and the shortest profitable
+    hold is about eight.
+    """
+    return max(20, observations // 4)
 SURVIVOR_FRACTION = 1 / 3
 ELITES = 2
 # Declared before any evolution: a champion that does not beat every baseline
@@ -62,10 +73,11 @@ def evaluate_population(executor, population, prices, observations, count, windo
     return rows
 
 
-def screen(executor, population, prices, window):
+def screen(executor, population, prices, window, observations):
     """Cheap pass that removes flies that cannot act before paying for them."""
     rows = evaluate_population(
-        executor, population, prices, SCREEN_OBSERVATIONS, SCREEN_STARTS, window
+        executor, population, prices, screen_length(observations),
+        SCREEN_STARTS, window,
     )
     for individual, row in zip(population, rows):
         individual["screen"] = row[0]
@@ -107,7 +119,8 @@ def save(path, state):
     temporary.replace(path)
 
 
-def evolve(executor, segments, rng, generations, size, out, resume=None):
+def evolve(executor, segments, rng, generations, size, out, resume=None,
+           observations=FULL_OBSERVATIONS):
     """Generations on the train segment only. Validation is looked at; test is
     not opened here at all."""
     window = 100
@@ -117,9 +130,11 @@ def evolve(executor, segments, rng, generations, size, out, resume=None):
     ]
     for generation in range(state["generation"], generations):
         started = time.time()
-        survivors, dropped = screen(executor, population, segments["train"], window)
+        survivors, dropped = screen(
+            executor, population, segments["train"], window, observations
+        )
         rows = evaluate_population(
-            executor, survivors, segments["train"], FULL_OBSERVATIONS,
+            executor, survivors, segments["train"], observations,
             FULL_STARTS, window,
         )
         for individual, row in zip(survivors, rows):
@@ -151,7 +166,7 @@ def evolve(executor, segments, rng, generations, size, out, resume=None):
 
 
 def judge(executor, champion, population, segments, rng, out, seed,
-          source="fixture"):
+          source="fixture", observations=FULL_OBSERVATIONS):
     """The single pass over the test segment, and the pre-declared verdict."""
     window = 100
     results = {}
@@ -161,14 +176,12 @@ def judge(executor, champion, population, segments, rng, out, seed,
     )
     for name in ["validation", "test"]:
         prices = segments[name]
-        offsets = starts(prices, FULL_STARTS, window, FULL_OBSERVATIONS + WARMUP)
+        offsets = starts(prices, FULL_STARTS, window, observations + WARMUP)
         rows = evaluate_population(
-            executor, population, prices, FULL_OBSERVATIONS, FULL_STARTS, window
+            executor, population, prices, observations, FULL_STARTS, window
         )
         base = [
-            executor.submit(
-                run_baselines, (prices, start, FULL_OBSERVATIONS, seed + i)
-            )
+            executor.submit(run_baselines, (prices, start, observations, seed + i))
             for i, start in enumerate(offsets)
         ]
         collected = [f.result() for f in base]
@@ -196,9 +209,9 @@ def judge(executor, champion, population, segments, rng, out, seed,
             # Reported, never compared against: nothing beats perfect
             # foresight. It says how much was there to take at all.
             "perfect_foresight_ceiling": median(
-                [ceiling(prices, o, FULL_OBSERVATIONS)["ceiling"] for o in offsets]
+                [ceiling(prices, o, observations)["ceiling"] for o in offsets]
             ),
-            "ceiling_detail": ceiling(prices, offsets[0], FULL_OBSERVATIONS),
+            "ceiling_detail": ceiling(prices, offsets[0], observations),
         }
     verdict = decide(results["test"])
     if results["test"]["perfect_foresight_ceiling"] <= 0:
@@ -223,7 +236,8 @@ def judge(executor, champion, population, segments, rng, out, seed,
             # Settings.interval_seconds has to match what is recorded here.
             "source": source,
             "warmup_observations": WARMUP,
-            "observations_per_evaluation": FULL_OBSERVATIONS,
+            "observations_per_evaluation": observations,
+            "screen_observations": screen_length(observations),
             "starts_per_evaluation": FULL_STARTS,
             "fitness": "median profit in quote currency over independent chronological starts",
             "test_segment_evaluations": 1,

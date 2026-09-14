@@ -22,7 +22,8 @@ from .evaluate import CHART_WINDOW, WARMUP, Account, ceiling
 from .loop import FULL_OBSERVATIONS, FULL_STARTS, median
 from .series import candle_series, quotes, split, starts
 
-GRANULARITIES = ["ONE_MINUTE", "FIFTEEN_MINUTE", "ONE_HOUR", "SIX_HOUR", "ONE_DAY"]
+GRANULARITIES = ["ONE_MINUTE", "FIVE_MINUTE", "FIFTEEN_MINUTE", "ONE_HOUR",
+                 "SIX_HOUR", "ONE_DAY"]
 
 
 def buy_and_hold(prices, start, observations, settings):
