@@ -32,6 +32,7 @@ from stonkfly.genome import apply as apply_genome
 from stonkfly.genome import pristine_inhibitory
 from stonkfly.display import market_frame
 from stonkfly.neural.controller import FlyController
+from stonkfly.neural.olfaction import FAST
 from stonkfly.reinforcement import reinforcement
 
 from .genome import WILD_TYPE
@@ -150,7 +151,8 @@ class Account:
         return None
 
 
-def replay(controller, prices, start, observations, propose, account):
+def replay(controller, prices, start, observations, propose, account,
+           bars=None):
     """One chronological pass. `propose` turns an observation into a side."""
     history = list(prices[start:start + CHART_WINDOW])
     cursor = start + CHART_WINDOW
@@ -169,6 +171,7 @@ def replay(controller, prices, start, observations, propose, account):
         side, spikes = propose(
             market_frame(PRODUCT, history, bid, ask), kind, history, executed,
             (str(equity), anchor),
+            None if bars is None else bars[max(0, cursor - FAST + 1):cursor + 1],
         )
         anchor = str(equity)
         kc += spikes
@@ -197,8 +200,9 @@ def replay(controller, prices, start, observations, propose, account):
 
 
 def neural_proposal(controller):
-    def propose(frame, kind, history, executed, balance):
-        n = controller.observe(frame, kind, history, executed, balance)
+    def propose(frame, kind, history, executed, balance, bars=None):
+        n = controller.observe(frame, kind, history, executed, balance,
+                               bars)
         return n["side"], n["KC_spikes"]
 
     return propose
@@ -280,11 +284,11 @@ def degenerate(row):
 
 
 def fixed_proposal(side):
-    return lambda *_: (side, 0)
+    return lambda *_, **__: (side, 0)
 
 
 def random_proposal(rng):
-    return lambda *_: (rng.choice(["BUY", "SELL", "HOLD"]), 0)
+    return lambda *_, **__: (rng.choice(["BUY", "SELL", "HOLD"]), 0)
 
 
 def baselines(controller, pristine, prices, start, observations, settings, rng):

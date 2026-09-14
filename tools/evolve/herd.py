@@ -36,6 +36,7 @@ import numpy as np
 
 from stonkfly.display import market_frame
 from stonkfly.neural.brain import PARAMETERS
+from stonkfly.neural.olfaction import FAST
 from stonkfly.reinforcement import reinforcement
 
 from .evaluate import CHART_WINDOW, PRODUCT, WARMUP, Account, buy_and_hold
@@ -173,7 +174,7 @@ def cuda_headers():
             return
 
 
-def standing_pulses(controller, history, executed, account):
+def standing_pulses(controller, history, executed, account, bars=None):
     """The odour and taste currents for one observation, as the controller
     assembles them.
 
@@ -186,7 +187,7 @@ def standing_pulses(controller, history, executed, account):
     """
     out = []
     if controller.olfaction is not None and history is not None:
-        odor = controller.olfaction.stimulation(history, executed)[0]
+        odor = controller.olfaction.stimulation(history, executed, bars)[0]
         if odor is not None:
             out.append(odor)
     if controller.gustation is not None and account is not None:
@@ -417,7 +418,8 @@ class Herd:
 
     # -- one observation ----------------------------------------------------
 
-    def observe(self, frames, histories, kinds, executed, accounts):
+    def observe(self, frames, histories, kinds, executed, accounts,
+                bars=None):
         """One market observation for every fly. `FlyController.observe`."""
         B, n = self.batch, self.n
         brain = self.brain
@@ -428,7 +430,8 @@ class Herd:
         for b, genome in enumerate(self.genomes):
             self._sensory_parameters(genome)
             standing.append(standing_pulses(
-                self.controller, histories[b], executed[b], accounts[b]))
+                self.controller, histories[b], executed[b], accounts[b],
+                None if bars is None else bars[b]))
             # Odour and taste are present for the whole observation; the
             # reinforcement pulse is not, and is appended per bin below.
             pulses.append(None if kinds[b] == "none" else
@@ -582,7 +585,8 @@ class Herd:
         }
 
 
-def replay_herd(herd, prices, observations, report=None):
+def replay_herd(herd, prices, observations, report=None, record=False,
+                bars=None):
     """`evaluate.replay` for every fly at once, one account each.
 
     The chart is the price series and not anything a fly did, so flies sharing
@@ -611,11 +615,24 @@ def replay_herd(herd, prices, observations, report=None):
     anchors = [str(a.start) for a in accounts]
     executed = [None] * B
     sides = [[] for _ in range(B)]
+    # The continuous readout behind each proposal, kept only when asked. The
+    # side is that number put through a threshold and a gate, and the two can
+    # disagree about whether the brain knew anything: `tools/ic.py` measures
+    # both, so a dead proposal stream can be told apart from a live readout
+    # that the decoder threw away.
+    readout = [[] for _ in range(B)]
     kc = [0] * B
     for step in range(WARMUP + observations):
-        frame, quote = {}, {}
+        frame, quote, window = {}, {}, {}
         for start in unique:
-            price = prices[cursor[start]]
+            c = cursor[start]
+            # Only the fast window is ever read, and it ends at the bar
+            # whose close the fly is being shown. Handing over more would
+            # not change the odour; handing over one more would be a look
+            # at a bar that has not finished.
+            if bars is not None:
+                window[start] = bars[max(0, c - FAST + 1):c + 1]
+            price = prices[c]
             bid, ask = quotes(price)
             quote[start] = (bid, ask, price)
             frame[start] = market_frame(PRODUCT, history[start], bid, ask)
@@ -627,6 +644,7 @@ def replay_herd(herd, prices, observations, report=None):
             [history[starts[b]] for b in range(B)],
             kinds, executed,
             [(str(equities[b]), anchors[b]) for b in range(B)],
+            None if bars is None else [window[starts[b]] for b in range(B)],
         )
         for b in range(B):
             bid, ask, _ = quote[starts[b]]
@@ -634,6 +652,9 @@ def replay_herd(herd, prices, observations, report=None):
             kc[b] += out[b]["KC_spikes"]
             if step >= WARMUP:
                 sides[b].append(out[b]["side"])
+                if record:
+                    readout[b].append((out[b]["difference_hz"],
+                                       out[b]["gate_spikes"]))
                 executed[b] = accounts[b].apply(out[b]["side"], bid, ask)
             else:
                 # Warm-up runs the network but never the account, so a fly is
@@ -663,6 +684,14 @@ def replay_herd(herd, prices, observations, report=None):
             "rejected": accounts[b].rejected,
             "kc_spikes": int(kc[b]),
         })
+        if record:
+            # Opt-in because a row is saved into the population state after
+            # every generation, and a proposal per observation per fly per
+            # start would add tens of thousands of strings to a file that is
+            # read back on every resume. Only a diagnostic asks for them.
+            rows[-1]["sides"] = list(sides[b])
+            rows[-1]["difference_hz"] = [d for d, _ in readout[b]]
+            rows[-1]["gate_spikes"] = [g for _, g in readout[b]]
     return rows
 
 

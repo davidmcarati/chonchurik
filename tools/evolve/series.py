@@ -80,3 +80,36 @@ def starts(segment, count, window, observations):
 
 def quotes(price, spread=SPREAD):
     return price * (1 - spread), price * (1 + spread)
+
+
+def klines(path, symbol="BTCUSDT", granularity="ONE_HOUR"):
+    """Whole bars from a Binance file, oldest first.
+
+    `candle_series` above returns the closes an evaluation prices against;
+    this returns the bars those closes came from, so the olfactory whole-bar
+    channels have something to read. The two are index-aligned by
+    construction -- same file, same order, same length -- and a caller slices
+    both with the same offsets.
+
+    A closes-only file is rejected rather than silently read as bars with no
+    volume in them, which would rest the flow channel and look like a market
+    in which nobody was ever the aggressor.
+    """
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    rows = data[symbol] if symbol in data else next(iter(data.values()))
+    if not isinstance(rows, dict) or granularity not in rows:
+        raise ValueError(
+            f"{granularity} not in {path}; have "
+            f"{sorted(rows) if isinstance(rows, dict) else type(rows).__name__}"
+        )
+    bars = rows[granularity]
+    needed = {"high", "low", "close", "volume", "taker_buy_base"}
+    missing = sorted(needed - set(bars[0]))
+    if missing:
+        raise ValueError(
+            f"{path} is closes only; {', '.join(missing)} are needed for the "
+            f"whole-bar odour channels. Fetch with tools/fetch_binance.py."
+        )
+    if len(bars) < 200:
+        raise ValueError("Candle file needs at least 200 bars")
+    return bars
