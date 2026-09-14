@@ -550,6 +550,57 @@ at some starts — one such start appeared in the first verification run, at 18
 BUY and 0 SELL of 20 observations, scoring an exact 0.0000 against a benchmark
 it had accidentally reproduced. The two protections overlap on purpose.
 
+### What the money says about the readout
+
+Generation 0 of the second five-minute run reproduced the first run's initial
+population exactly -- same seed, same twenty-four random genomes -- and ranked
+it on the new objective. The same fly that scored **+0.1866** on absolute
+profit scored **-0.8029** on excess. Its five profits are identical to the
+cent; only the ruler changed.
+
+That coincidence makes a clean decomposition possible. The benchmark pays fees
+too: it fills nine orders deploying the budget. This fly filled 17 to 27.
+
+| Window | Its profit | Buy-and-hold | Its fills | Benchmark fills | Extra fees | Shortfall | Left for timing |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | −2.0768 | −0.9541 | 27 | 9 | 1.08 | 1.12 | 0.04 |
+| 15,642 | −1.8165 | −1.2644 | 17 | 9 | 0.48 | 0.55 | 0.07 |
+| 31,284 | +1.3669 | +2.1698 | 21 | 9 | 0.72 | 0.80 | 0.08 |
+| 46,925 | +4.6802 | +5.3981 | 21 | 9 | 0.72 | 0.72 | −0.00 |
+| 62,567 | +0.1866 | +1.1100 | 23 | 9 | 0.84 | 0.92 | 0.08 |
+| **mean** | | | | | **0.77** | **0.82** | **0.06** |
+
+**Ninety-four percent of the underperformance is the fee on the extra trades.**
+What is left for the trading decisions themselves is 0.06 USDC, and it is flat
+across windows that range from a 2.08 loss to a 4.68 gain: 0.04, 0.07, 0.08,
+−0.00, 0.08.
+
+The fly is not trading badly. Its decisions are worth approximately nothing,
+and it pays 0.77 for the right to make them.
+
+**This is the third independent measurement of the same thing.** Two were
+neural and indirect; this one is in money:
+
+| Measurement | Reading |
+| --- | --- |
+| decoder signal-to-noise | **0.66** — the market moves the readout less than silencing unrelated neurons does |
+| decisions changed by silencing 1% | **4 of 5** — unstable to noise the market never touches |
+| timing's contribution to P&L | **0.06 USDC** against a 0.77 fee bill |
+
+Three methods with nothing in common agree that the readout carries no market
+information. The parameter search is currently tuning physiology around a
+readout that reads noise, which is worth knowing before any champion is
+believed.
+
+**What would have to change.** For excess to go positive, the timing has to be
+worth more than the fee bill it creates -- today about thirteen times more.
+Two routes exist and neither is evolution finding a lucky genome. The first is
+a readout with signal above its own noise, which is the unfixed bottleneck
+every measurement above points at. The second is arithmetic: trade less often,
+or pay the 0.40% maker fee instead of the 0.60% taker fee the fill-or-kill path
+always incurs. A fly filling nine orders pays exactly what the benchmark pays,
+and the objective already rewards that without anyone adding a rule for it.
+
 ### First run, 2026-09-14: the criterion fired
 
 A deliberately small machinery check — 8 genomes, 2 generations, 6 workers,
