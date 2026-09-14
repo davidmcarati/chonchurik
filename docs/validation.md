@@ -538,6 +538,18 @@ genome proposing one side at 90% or more of observations, with the measured
 Generation 0 also cost **5,600 seconds**, not the ~2,900 estimated, putting a
 twelve-generation run at 18.7 hours rather than 10.
 
+**What the new objective's zero point means.** Excess fitness scores exactly
+0.0000 for behaving like the benchmark, so "become buy-and-hold" is a tie
+rather than a win, and any fly with positive excess beats it. A population
+converging on 0.0000 therefore does not mean the search broke; it means
+nothing found beat buying and holding, and the kill criterion reports that,
+because beating a baseline is a strict inequality and a tie is not one. The
+degeneracy screen catches the same shape earlier and more cheaply, but it
+looks at a single screening start and can miss a genome that is one-sided only
+at some starts — one such start appeared in the first verification run, at 18
+BUY and 0 SELL of 20 observations, scoring an exact 0.0000 against a benchmark
+it had accidentally reproduced. The two protections overlap on purpose.
+
 ### First run, 2026-09-14: the criterion fired
 
 A deliberately small machinery check — 8 genomes, 2 generations, 6 workers,
