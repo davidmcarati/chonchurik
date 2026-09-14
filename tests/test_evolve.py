@@ -226,3 +226,24 @@ def test_buy_and_hold_benchmark_obeys_the_same_account_rules():
     # Never more than the capital it is allowed to deploy.
     assert buy_and_hold(rising, 0, 50, s) < float(s.capital)
     assert buy_and_hold(flat, 0, 0, s) == 0.0
+
+
+def test_median_row_subtracts_exactly():
+    """Three separately-taken medians do not subtract; one real start does."""
+    from tools.evolve.loop import fitness, median_row, profit_fitness
+
+    rows = [
+        {"profit": -3.4384, "buy_and_hold": -3.1171, "excess": -0.3213},
+        {"profit": +0.9136, "buy_and_hold": +1.8909, "excess": -0.9773},
+        {"profit": -2.6909, "buy_and_hold": -2.8443, "excess": +0.1534},
+        {"profit": -1.5711, "buy_and_hold": -0.1003, "excess": -1.4708},
+        {"profit": -0.7201, "buy_and_hold": -0.3698, "excess": -0.3503},
+    ]
+    # The trap: these are each correct and their difference is not the fitness.
+    assert round(profit_fitness(rows) - median([r["buy_and_hold"] for r in rows]),
+                 4) == -1.2013
+    assert round(fitness(rows), 4) == -0.3503
+    # The reported row is one real evaluation, and it does subtract.
+    mid = median_row(rows)
+    assert round(mid["profit"] - mid["buy_and_hold"], 4) == round(mid["excess"], 4)
+    assert round(mid["excess"], 4) == round(fitness(rows), 4)

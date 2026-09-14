@@ -77,6 +77,24 @@ def profit_fitness(rows):
     return median([r["profit"] for r in rows])
 
 
+def median_row(rows):
+    """The one evaluation sitting at the median of excess.
+
+    Reported instead of three separately-taken medians. Those are each correct
+    and they do not subtract: on the first run of this, median profit was
+    -1.5711 and median buy-and-hold -0.3698, a difference of -1.2013, while
+    the median excess was -0.3503 -- three different starts supplying the
+    three middles. A reader subtracting the printed numbers would conclude the
+    arithmetic was broken. One real start's profit and benchmark do subtract,
+    exactly, to the fitness beside them.
+
+    With an even number of starts `median` averages the middle two and no
+    single row is the median; the upper middle is reported and the fitness is
+    then the only exact number on the line.
+    """
+    return sorted(rows, key=lambda r: r["excess"])[len(rows) // 2]
+
+
 def evaluate_population(executor, population, prices, observations, count, window):
     """One (genome, start) task per future; the pool decides the packing."""
     # The warm-up is consumed from the same segment, so a start that leaves
@@ -163,6 +181,7 @@ def evolve(executor, segments, rng, generations, size, out, resume=None,
             individual["fitness"] = fitness(row)
             individual["profit"] = profit_fitness(row)
             individual["buy_and_hold"] = median([r["buy_and_hold"] for r in row])
+            individual["median_start"] = median_row(row)
         survivors.sort(key=lambda i: -i["fitness"])
         best = survivors[0]
         state["history"].append({
@@ -172,14 +191,19 @@ def evolve(executor, segments, rng, generations, size, out, resume=None,
             "best_fitness": best["fitness"],
             "best_profit": best["profit"],
             "best_buy_and_hold": best["buy_and_hold"],
+            "best_median_start": {
+                k: best["median_start"][k]
+                for k in ["profit", "buy_and_hold", "excess"]
+            },
             "best_id": G.identity(best["genome"]),
             "median_fitness": median([i["fitness"] for i in survivors]),
             "seconds": round(time.time() - started, 1),
         })
+        mid = best["median_start"]
         print(f"  generation {generation:3}  {len(population)} evaluated, "
               f"{dropped} degenerate, best {best['fitness']:+.4f} over "
-              f"benchmark (profit {best['profit']:+.4f} against buy+hold "
-              f"{best['buy_and_hold']:+.4f}), median "
+              f"benchmark (at that start: profit {mid['profit']:+.4f}, "
+              f"buy+hold {mid['buy_and_hold']:+.4f}), population median "
               f"{state['history'][-1]['median_fitness']:+.4f}  "
               f"({state['history'][-1]['seconds']:.0f}s)", flush=True)
         population = next_generation(survivors, rng, size)
