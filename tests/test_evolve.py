@@ -82,12 +82,18 @@ def test_account_never_invents_money():
 
 
 def test_degenerate_rejects_a_fly_that_cannot_act():
-    row = {"observations": 20, "buy": 20, "sell": 0, "hold": 0, "kc_spikes": 99}
+    traded = {"BUY": 3, "SELL": 2}
+    row = {"observations": 20, "buy": 20, "sell": 0, "hold": 0, "kc_spikes": 99,
+           "fills": traded}
     assert degenerate(row) == "one proposal for every observation"
     assert degenerate({**row, "buy": 10, "hold": 10, "kc_spikes": 0}) == (
         "silent mushroom body"
     )
     assert degenerate({**row, "observations": 0}) == "no observations"
+    # Sitting in cash ties the all-cash baseline for first wherever trading
+    # loses money, so it is disqualified rather than allowed to win.
+    assert degenerate({**row, "buy": 9, "sell": 5, "hold": 6,
+                       "fills": {"BUY": 0, "SELL": 0}}) == "never filled an order"
     assert degenerate({**row, "buy": 9, "sell": 5, "hold": 6}) is None
 
 

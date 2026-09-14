@@ -15,6 +15,8 @@ price history enters here; account balance and executed trades are separate
 channels with their own disclosure.
 """
 
+import math
+
 import numpy as np
 
 PREFIX = "ORN_"
@@ -32,16 +34,21 @@ FEATURES = [
 TRADE = "executed_trade"
 TRADE_CODE = {None: 0.5, "HOLD": 0.5, "VETO": 0.5, "BUY": 1.0, "SELL": 0.0}
 CHANNELS = FEATURES + [TRADE]
-# Observation counts, not minutes: the wall interval is a separate setting.
+# Observation counts, not minutes: the wall interval is a separate setting,
+# and these are deliberately short. This fly is meant to scalp.
 FAST, SLOW, RANGE = 5, 30, 60
-# Deflection scales in log-return units. Declared, not fitted: roughly the
-# size of a move this experiment should treat as large.
-SCALES = {
-    "trend_fast": 0.003,
-    "trend_slow": 0.008,
-    "volatility": 0.002,
-    "acceleration": 0.002,
-}
+# Channels are expressed in units of the market's own realised volatility, not
+# in a fixed number of basis points. A trend is how many standard deviations
+# of its own horizon the move covers; volatility is a ratio to the longer
+# window; position in range is already a fraction.
+#
+# Fixed scales in log-return units were what this shipped with, and they tie
+# the fly to one sampling interval: one-minute bars move 0.044% per bar and
+# fifteen-minute bars 0.197%, so a scale calibrated for one reads flat on the
+# other and full deflection on a third. Nothing below carries a unit that a
+# change of interval could invalidate.
+DEVIATIONS = 2.0
+VOLATILITY_RATIO = 2.0
 # Tuning width in glomeruli, and the floor below which a glomerulus is left
 # unstimulated. Together they put about three glomeruli per feature above
 # threshold, which is the sparseness a real antennal lobe delivers.
@@ -52,7 +59,8 @@ CURRENT = 30.0
 PARAMETERS = {
     "olfactory_channels": CHANNELS,
     "olfactory_windows": {"fast": FAST, "slow": SLOW, "range": RANGE},
-    "olfactory_scales": SCALES,
+    "olfactory_normalisation": "Realised volatility of the same series. Trends are z-scores over their own horizon, volatility is a ratio of the short window to the long one, position in range is a fraction. No channel carries a unit tied to the sampling interval.",
+    "olfactory_full_deflection_deviations": DEVIATIONS,
     "olfactory_tuning_sigma_glomeruli": SIGMA,
     "olfactory_threshold": FLOOR,
     "olfactory_peak_current": CURRENT,
@@ -76,21 +84,36 @@ def features(history):
     """
     p = np.asarray(history, dtype=float)
     p = p[np.isfinite(p) & (p > 0)]
-    if len(p) < 2:
+    if len(p) < 3:
         return {k: (0.0 if k == "volatility" else 0.5) for k in FEATURES}
     r = np.diff(np.log(p))
     fast, slow = r[-FAST:], r[-SLOW:]
     window = p[-RANGE:]
     span = float(window.max() - window.min())
+    # How far this market usually travels over the window in question. A
+    # random walk covers about sd * sqrt(n), so a trend is measured in those.
+    reference = float(np.std(r[-RANGE:]))
+
+    def trend(returns):
+        scale = reference * math.sqrt(len(returns)) * DEVIATIONS
+        return squash(float(returns.sum()) / scale) if scale > 0 else 0.5
+
     return {
-        "trend_fast": squash(fast.sum() / SCALES["trend_fast"]),
-        "trend_slow": squash(slow.sum() / SCALES["trend_slow"]),
-        "volatility": squash(float(np.std(slow)) / SCALES["volatility"], signed=False),
+        "trend_fast": trend(fast),
+        "trend_slow": trend(slow),
+        "volatility": (
+            squash(float(np.std(fast)) / (reference * VOLATILITY_RATIO), signed=False)
+            if reference > 0 else 0.0
+        ),
         "range_position": (
             float((p[-1] - window.min()) / span) if span > 0 else 0.5
         ),
-        "acceleration": squash(
-            (fast.mean() - slow.mean()) / SCALES["acceleration"]
+        "acceleration": (
+            squash(
+                (float(fast.mean()) - float(slow.mean()))
+                / (reference * DEVIATIONS)
+            )
+            if reference > 0 else 0.5
         ),
     }
 

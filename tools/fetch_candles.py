@@ -35,8 +35,13 @@ SECONDS = {
     "ONE_DAY": 86400,
 }
 SPANS = {
-    "ONE_MINUTE": 10 * 86400,
-    "FIFTEEN_MINUTE": 90 * 86400,
+    # A short window of one-minute candles is not a sample of the market, it
+    # is a sample of one week's weather: five evaluation starts spread over
+    # ten days all landed in the same quiet stretch and the ceiling read zero
+    # everywhere. A year covers enough regimes for the starts to disagree.
+    "ONE_MINUTE": 365 * 86400,
+    "FIVE_MINUTE": 365 * 86400,
+    "FIFTEEN_MINUTE": 365 * 86400,
     "ONE_HOUR": 730 * 86400,
     "SIX_HOUR": 1460 * 86400,
     "ONE_DAY": 2000 * 86400,

@@ -118,6 +118,13 @@ def test_olfactory_features_are_bounded_and_json_safe():
 
     flat = features([100.0] * 80)
     assert flat["volatility"] == 0.0
+    # Volatility normalisation must make the channels independent of the
+    # sampling interval: the same shape of market, scaled up, reads the same.
+    slow = [100.0 * 1.001**i for i in range(80)]
+    fast = [100.0 * 1.010**i for i in range(80)]
+    a, b = features(slow), features(fast)
+    for key in ["trend_fast", "trend_slow", "range_position"]:
+        assert a[key] == pytest.approx(b[key], abs=0.02), key
     for key in ["trend_fast", "trend_slow", "range_position", "acceleration"]:
         assert flat[key] == pytest.approx(0.5)
     for history in [[], [100.0], [100.0, 101.0], [100.0 * 1.01**i for i in range(80)]]:

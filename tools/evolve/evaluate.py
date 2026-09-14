@@ -219,6 +219,13 @@ def degenerate(row):
 
     Screened before the expensive evaluation so a genome that proposes one
     thing forever, or whose mushroom body never fires, does not consume it.
+
+    Filling nothing is disqualifying too. Against an all-cash baseline of
+    exactly zero, a fly that never trades ties for first on any segment where
+    trading loses money, and the first real generation of the fixture run
+    collapsed the whole population onto exactly that. Sitting in cash is a
+    legitimate strategy and it is already represented -- by the baseline. What
+    is being searched for here is a fly that trades.
     """
     if row["observations"] == 0:
         return "no observations"
@@ -226,6 +233,8 @@ def degenerate(row):
         return "one proposal for every observation"
     if row["kc_spikes"] == 0:
         return "silent mushroom body"
+    if not row["fills"]["BUY"] and not row["fills"]["SELL"]:
+        return "never filled an order"
     return None
 
 
