@@ -34,7 +34,7 @@ def build_runner(a, settings):
         return PoolRunner(executor, a.workers), executor
     from .herd import HerdRunner
 
-    return HerdRunner(settings, a.batch), None
+    return HerdRunner(settings, a.batch, out=a.out), None
 
 
 def main():

@@ -28,6 +28,7 @@ Nothing here decides a trade. The herd reports what the decoder says and the
 accounts do the rest, exactly as `evaluate.replay` does for one fly.
 """
 
+import json
 import time
 from pathlib import Path
 
@@ -581,7 +582,7 @@ class Herd:
         }
 
 
-def replay_herd(herd, prices, observations):
+def replay_herd(herd, prices, observations, report=None):
     """`evaluate.replay` for every fly at once, one account each.
 
     The chart is the price series and not anything a fly did, so flies sharing
@@ -639,6 +640,10 @@ def replay_herd(herd, prices, observations):
                 # judged from a charged mushroom body and a full balance.
                 executed[b] = None
                 accounts[b].cash, accounts[b].base = accounts[b].start, 0.0
+        if report is not None:
+            report(step, WARMUP + observations,
+                   [accounts[b].equity(quote[starts[b]][0]) - accounts[b].start
+                    for b in range(B)])
         for start in unique:
             history[start].append(quote[start][2])
             cursor[start] += 1
@@ -661,9 +666,9 @@ def replay_herd(herd, prices, observations):
     return rows
 
 
-def evaluate_herd(herd, prices, observations):
+def evaluate_herd(herd, prices, observations, report=None):
     """`evaluate.evaluate` for every fly: profit, and profit over benchmark."""
-    rows = replay_herd(herd, prices, observations)
+    rows = replay_herd(herd, prices, observations, report)
     benchmark = {}
     for row, start in zip(rows, herd.starts):
         if start not in benchmark:
@@ -683,9 +688,24 @@ class HerdRunner:
     past eighty-four either way -- throughput stopped improving there.
     """
 
-    def __init__(self, settings, batch=None, controller=None, pristine=None):
+    def __init__(self, settings, batch=None, controller=None, pristine=None,
+                 out=None):
         from .evaluate import build
 
+        # Where the heartbeat goes. A generation writes nothing to disk until
+        # it ends, which is half an hour of a watcher having to infer from CPU
+        # load whether anything is happening. This writes one small file per
+        # observation instead, so the question stops being a guess.
+        # One process feeding a card is still one core at 100%, and the
+        # policy for this project is that an evolution left running does not
+        # make the machine unpleasant to use. Same call the worker pool makes.
+        from .pool import deprioritise
+
+        deprioritise()
+        self.out = out
+        self.stage = ""
+        self.wave = (0, 0)
+        self.beat = 0.0
         cuda_headers()
         import cupy as cp
 
@@ -712,6 +732,50 @@ class HerdRunner:
                 f"{free / 1e9:.1f} GB free on the device; {room} do"
             )
 
+    def announce(self, stage):
+        """What the loop is doing, for the heartbeat to say out loud."""
+        self.stage = stage
+
+    def _report(self, flies, starts, observations, warmup):
+        """A callback that writes `progress.json`, throttled to twice a second.
+
+        Atomic: written beside the target and renamed, so a watcher polling it
+        never reads half a file. Never raises -- a run must not die because a
+        status file could not be written.
+        """
+        if self.out is None:
+            return None
+        began = [None]
+
+        def report(step, total, equity):
+            now = time.time()
+            if began[0] is None:
+                began[0] = now
+            if now - self.beat < 0.5 and step + 1 < total:
+                return
+            self.beat = now
+            done = (step + 1) * flies
+            state = {
+                "stage": self.stage,
+                "wave": self.wave[0], "waves": self.wave[1],
+                "flies": flies,
+                "starts": sorted(set(starts)),
+                "observation": step + 1, "observations": total,
+                "warmup": warmup,
+                "rate": done / max(1e-9, now - began[0]),
+                "profit": [round(float(x), 6) for x in equity],
+                "updated": now,
+            }
+            try:
+                path = Path(self.out) / "progress.json"
+                temporary = path.with_suffix(".partial")
+                temporary.write_text(json.dumps(state), encoding="utf-8")
+                temporary.replace(path)
+            except OSError:
+                pass
+
+        return report
+
     def describe(self):
         name = self.cp.cuda.runtime.getDeviceProperties(0)["name"]
         if isinstance(name, bytes):
@@ -722,7 +786,9 @@ class HerdRunner:
         herd = Herd(self.controller, self.pristine, genomes, self.settings,
                     starts)
         try:
-            return evaluate_herd(herd, prices, observations)
+            return evaluate_herd(
+                herd, prices, observations,
+                self._report(len(genomes), starts, observations, WARMUP))
         finally:
             del herd
             self.cp.get_default_memory_pool().free_all_blocks()
@@ -731,7 +797,9 @@ class HerdRunner:
         """Rows per genome, one per start, in the order the offsets came in."""
         tasks = [(i, start) for i in range(len(genomes)) for start in offsets]
         rows = [[] for _ in genomes]
-        for cut in range(0, len(tasks), self.batch):
+        waves = (len(tasks) + self.batch - 1) // self.batch
+        for index, cut in enumerate(range(0, len(tasks), self.batch), start=1):
+            self.wave = (index, waves)
             wave = tasks[cut:cut + self.batch]
             done = self._wave([genomes[i] for i, _ in wave],
                               [s for _, s in wave], prices, observations)

@@ -25,6 +25,7 @@ from . import genome as G
 from .evaluate import WARMUP, ceiling, degenerate
 from .series import starts
 
+DOT = "\u00b7"
 SCREEN_STARTS, FULL_STARTS = 1, 5
 FULL_OBSERVATIONS = 50
 
@@ -161,9 +162,11 @@ def evolve(runner, segments, rng, generations, size, out, resume=None,
     ]
     for generation in range(state["generation"], generations):
         started = time.time()
+        runner.announce(f"generation {generation} {DOT} screening")
         survivors, dropped = screen(
             runner, population, segments["train"], window, observations
         )
+        runner.announce(f"generation {generation} {DOT} full evaluation")
         rows = evaluate_population(
             runner, survivors, segments["train"], observations,
             FULL_STARTS, window,
@@ -220,9 +223,11 @@ def judge(runner, champion, population, segments, rng, out, seed,
     for name in ["validation", "test"]:
         prices = segments[name]
         offsets = starts(prices, FULL_STARTS, window, observations + WARMUP)
+        runner.announce(f"{name} {DOT} the single pass")
         rows = evaluate_population(
             runner, population, prices, observations, FULL_STARTS, window
         )
+        runner.announce(f"{name} {DOT} baselines")
         collected = runner.baselines(prices, offsets, observations, seed)
         results[name] = {
             # Absolute profit: the only thing comparable to the baselines, and

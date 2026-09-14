@@ -128,6 +128,15 @@ class PoolRunner:
     def describe(self):
         return f"{self.workers} worker processes at below-normal priority"
 
+    def announce(self, stage):
+        """The card's runner writes a heartbeat; this one does not.
+
+        A worker pool has no lockstep to report from -- eight processes are at
+        eight different observations of eight different flies -- so the view
+        falls back to reading CPU from the scheduler, which is what it did
+        before either runner existed.
+        """
+
     def evaluate(self, genomes, prices, offsets, observations):
         """One (genome, start) task per future; the pool decides the packing."""
         futures = {}

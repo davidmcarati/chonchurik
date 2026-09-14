@@ -37,8 +37,12 @@ PRIORITY = {0x4000: "BelowNormal", 0x20: "Normal", 0x8000: "AboveNormal",
 # back to something ASCII rather than the view dying on a UnicodeEncodeError
 # in front of the person who just wanted to see how their run was going.
 UNICODE = {"rule": "─", "full": "█", "empty": "░",
-           "axis": "│", "dot": "·"}
-ASCII = {"rule": "-", "full": "#", "empty": ".", "axis": "|", "dot": "-"}
+           "axis": "│", "dot": "·", "fly": "➤", "zero": "┼",
+           "left": "├", "right": "┤", "one": "·", "few": ":", "many": "#",
+           "spin": "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"}
+ASCII = {"rule": "-", "full": "#", "empty": ".", "axis": "|", "dot": "-",
+         "fly": ">", "zero": "+", "left": "[", "right": "]", "one": ".",
+         "few": ":", "many": "#", "spin": "|/-\\"}
 G = dict(UNICODE)
 
 
@@ -252,17 +256,138 @@ def wrap(text, width):
     return out
 
 
-def render(out, state, report, procs, previous, plan):
+# --- the race --------------------------------------------------------------
+
+TRACK = 52
+
+
+def lane(value, low, high, width=TRACK):
+    """Which column of the track a profit sits at. Clamped, never wrapped."""
+    if high <= low:
+        return width // 2
+    return max(0, min(width - 1, round((value - low) / (high - low) * (width - 1))))
+
+
+def swarm(values, low, high, width=TRACK):
+    """Every fly at once, as a density of characters along the track.
+
+    Eighty-four lanes will not fit on a console, and the shape of the field is
+    the interesting part anyway: whether the population is spread out or piled
+    on one number.
+    """
+    counts = [0] * width
+    for v in values:
+        counts[lane(v, low, high, width)] += 1
+    out = []
+    for n in counts:
+        out.append(" " if not n else G["one"] if n == 1
+                   else G["few"] if n < 4 else G["many"])
+    return "".join(out)
+
+
+def runner_line(label, value, low, high, colour, width=TRACK):
+    """One named fly on its own lane, with the number beside it."""
+    at = lane(value, low, high, width)
+    track = [" "] * width
+    zero = lane(0.0, low, high, width) if low < 0 < high else None
+    if zero is not None:
+        track[zero] = G["axis"]
+    track[at] = "@"
+    drawn = "".join(track).replace("@", f"{colour}{G['fly']}{RESET}")
+    return f"  {DIM}{label:<7}{RESET}{drawn} {colour}{value:+8.4f}{RESET}"
+
+
+def heartbeat(progress, report, frame):
+    """How long since the run last said anything, and whether that is fine."""
+    spin = G["spin"][frame % len(G["spin"])]
+    age = time.time() - progress.get("updated", 0)
+    if report:
+        return f"{DIM}finished{RESET}"
+    if age < 5:
+        return f"{GREEN}{spin} racing{RESET}{DIM} {age:.1f}s ago{RESET}"
+    if age < 90:
+        return f"{YELLOW}{spin} last beat {clock(age)} ago{RESET}"
+    return f"{RED}no beat for {clock(age)} — stalled?{RESET}"
+
+
+def race(progress, report, frame):
+    """The live panel: what the run is doing right now, and who is winning."""
+    lines = []
+    add = lines.append
+    stage = progress.get("stage") or "running"
+    if G is ASCII or G.get("fly") == ">":
+        # The stage text comes from the run, not from this file, so a console
+        # that refused UTF-8 would still be handed whatever the loop wrote.
+        stage = stage.replace("·", "-").encode("ascii", "replace").decode()
+    flies = progress.get("flies", 0)
+    starts = progress.get("starts") or []
+    where = (f"{len(starts)} starts" if len(starts) > 1
+             else f"start {starts[0]}" if starts else "")
+    wave, waves = progress.get("wave", 0), progress.get("waves", 0)
+    add(f"{BOLD}THE RACE{RESET}  {stage}"
+        + (f"{DIM} {G['dot']} wave {wave} of {waves}{RESET}" if waves > 1 else "")
+        + f"{DIM} {G['dot']} {flies} flies {G['dot']} {where}{RESET}")
+
+    done = progress.get("observation", 0)
+    total = max(1, progress.get("observations", 1))
+    filled = min(BAR, round(BAR * done / total))
+    # No percentage: the bar already is one, and this line has to fit an
+    # eighty-column console beside the rate and the heartbeat.
+    add(f" {DIM}obs{RESET} {done:3}/{total:<4}{CYAN}{G['full'] * filled}{RESET}"
+        f"{GREY}{G['empty'] * (BAR - filled)}{RESET}  "
+        f"{DIM}{progress.get('rate', 0):.1f} fly-obs/s{RESET}  "
+        f"{heartbeat(progress, report, frame)}")
+
+    profit = progress.get("profit") or []
+    if not profit:
+        return lines
+    warmup = progress.get("warmup", 0)
+    if done <= warmup:
+        add(f"  {DIM}warm-up {G['dot']} mushroom bodies charging, accounts "
+            f"open at observation {warmup + 1}{RESET}")
+        return lines
+
+    low, high = min(profit), max(profit)
+    if high <= low:
+        add(f"  {DIM}every fly is at {low:+.4f} — nobody has filled an order "
+            f"yet{RESET}")
+        return lines
+    pad = " " * 9
+    add(f"{DIM}{low:>+8.4f} {G['left']}{G['rule'] * (TRACK - 2)}"
+        f"{G['right']} {high:+.4f}{RESET}")
+    add(f"  {DIM}{'swarm':<7}{RESET}{CYAN}{swarm(profit, low, high)}{RESET}"
+        f" {DIM}{len(profit)} flies{RESET}")
+    order = sorted(range(len(profit)), key=lambda i: -profit[i])
+    picks = [("leader", order[0], GREEN),
+             ("median", order[len(order) // 2], YELLOW),
+             ("tail", order[-1], RED)]
+    # A fly that has never filled an order sits at exactly zero, and early in
+    # a generation most of them do. Saying how many stops "leader +0.0000"
+    # from reading as a fly that is winning.
+    idle = sum(1 for x in profit if x == 0)
+    seen = set()
+    for label, i, colour in picks:
+        if i in seen:
+            continue
+        seen.add(i)
+        note = (f" {GREY}fly {i}{RESET}" if profit[i] != 0
+                else f" {GREY}{idle} flat{RESET}")
+        add(runner_line(f"{label}", profit[i], low, high, colour) + note)
+    return lines
+
+
+def render(out, state, report, procs, previous, plan,
+           progress=None, frame=0):
     lines = []
     add = lines.append
     history = (state or {}).get("history", [])
     busy = [p for p in procs if p["cpu"] > 5]
 
     where = str(out)
-    if len(where) > 56:
-        where = "..." + where[-53:]
+    if len(where) > 50:
+        where = "..." + where[-47:]
     add(f"{BOLD}Johnny Silverfly{RESET}{DIM} — evolution{RESET}"
-        f"{GREY}{where:>56}{RESET}")
+        f"{GREY}{where:>50}{RESET}")
     add(GREY + G["rule"] * 79 + RESET)
     if plan.get("label"):
         add(f"{DIM}{plan['label']} {G['dot']} "
@@ -270,9 +395,15 @@ def render(out, state, report, procs, previous, plan):
             f"{plan.get('generations', '?')} generations {G['dot']} "
             f"{plan.get('observations', '?')} observations x "
             f"{plan.get('starts', '?')} starts{RESET}")
-    add(f"{DIM}ranked on profit over buy-and-hold, graded on absolute profit "
-        f"against 4 baselines{RESET}")
+    add(f"{DIM}ranked on excess over buy-and-hold, graded on profit against "
+        f"4 baselines{RESET}")
     add("")
+
+    # First, because it is the only part that changes while a generation is
+    # still running, and "is it stuck" is the question the view exists for.
+    if progress:
+        lines.extend(race(progress, report, frame))
+        add("")
 
     planned = plan.get("generations")
     if history:
@@ -322,9 +453,12 @@ def render(out, state, report, procs, previous, plan):
             f"{last['evaluated']} — one-sided, silent, or never filled{RESET}")
     else:
         add(f"{YELLOW}generation 0 has not finished{RESET}")
-        add(f"{DIM}State is written only when a generation ends, so there is "
-            f"nothing to plot yet.{RESET}")
-        add(f"{DIM}The worker line below is what tells you it is alive.{RESET}")
+        add(f"{DIM}Per-generation state is written only when a generation "
+            f"ends, so there is{RESET}")
+        add(f"{DIM}nothing to plot here yet.{RESET}")
+        add(f"{DIM}{'The race above is the live one.' if progress else
+                    'The worker line below is what tells you it is alive.'}"
+            f"{RESET}")
     add("")
 
     if busy:
@@ -378,7 +512,11 @@ def main():
                         "count; looked for beside the run directory if omitted")
     p.add_argument("--generations", type=int,
                    help="the target, when there is no log to read it from")
-    p.add_argument("--interval", type=float, default=5)
+    p.add_argument("--interval", type=float, default=1.0,
+                   help="seconds between frames; the race moves "
+                        "every observation, so this is a second "
+                        "rather than the five a generation bar "
+                        "would need")
     p.add_argument("--once", action="store_true",
                    help="print one frame and exit, for a pipe or a check")
     p.add_argument("--ascii", action="store_true",
@@ -403,19 +541,21 @@ def main():
     previous = {"cpu": sum(w["cpu"] for w in seed if w["cpu"] > 5), "at": time.time()}
     if previous["cpu"]:
         time.sleep(min(1.0, a.interval))
+    tick = 0
     try:
         while True:
-            frame = render(
+            drawn = render(
                 a.out, read_json(a.out / "population.json"),
                 read_json(a.out / "champion.json"), workers(), previous,
-                plan,
+                plan, read_json(a.out / "progress.json"), tick,
             )
             if not a.once:
                 sys.stdout.write("\033[H\033[J")
-            sys.stdout.write("\n".join(frame) + "\n")
+            sys.stdout.write("\n".join(drawn) + "\n")
             sys.stdout.flush()
             if a.once:
                 return
+            tick += 1
             time.sleep(a.interval)
     except KeyboardInterrupt:
         sys.stdout.write("\n")

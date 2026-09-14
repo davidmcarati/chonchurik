@@ -164,9 +164,27 @@ zero, the median start behind the headline number, how many genomes the screen
 killed, the remaining time from the measured pace, and the verdict once there
 is one.
 
-The worker line is the point of it. A generation takes tens of minutes and
-writes nothing until it ends, so a log tail is indistinguishable from a crash
-for that whole time. This asks the scheduler
+It opens on the race, because that is the part that moves. A generation takes
+tens of minutes and the per-generation state is written only when one ends, so
+the question a watcher is actually asking -- is this thing still going -- used
+to have to be inferred from CPU load. A herd now writes `progress.json` after
+every observation: which stage and wave it is on, how far through, how many
+fly-observations a second it is managing, and the running profit of every fly
+in the wave.
+
+The race draws those profits as a track. The swarm line is all eighty-four at
+once, as a density, because eighty-four lanes do not fit on a console and the
+shape of the field is the interesting part anyway; under it the leader, the
+median and the tail get a lane each. Flies that have never filled an order sit
+at exactly zero and are counted as `flat` rather than reported as leading.
+
+The heartbeat beside the progress bar is the honest signal: the spinner says
+the *view* is alive, and the age beside it says when the *run* last spoke.
+Green under five seconds, red past ninety.
+
+The worker line is still there, and it is what a CPU run falls back to: eight
+worker processes are at eight different observations of eight different flies,
+so there is no lockstep to report from. This asks the scheduler
 instead: how many processes are burning CPU, how much memory they hold, and
 what priority they are *actually* at -- which is how the pool's silent failure
 to lower its priority would have been visible.
