@@ -165,8 +165,12 @@ def main():
             else CoinbaseMarket(settings.products)
         )
         previous = ledger.get("observation")
+        executed = None
         if previous:
             market.history = previous["market_history"]
+            # The fly smells its own last filled trade at the next observation;
+            # a resumed run must not forget which one that was.
+            executed = previous.get("executed")
             if a.fixture:
                 market.tick = previous["fixture_tick"]
         controller = FlyController(settings)
@@ -184,10 +188,13 @@ def main():
             "olfaction": (
                 None if controller.olfaction is None else controller.olfaction.report
             ),
+            "gustation": (
+                None if controller.gustation is None else controller.gustation.report
+            ),
             "mode": broker.mode,
             "feed": "fixture" if a.fixture else "coinbase-public",
             "decoder": "DNp20 mean R-L: buy/sell; DNpe017 spike gate; otherwise hold. Engineered fixed mapping.",
-            "sensory_inputs": "Rendered chart pixels to the retina; price-history descriptors to olfactory receptor neurons. Neither carries account balance, position or P&L.",
+            "sensory_inputs": "Rendered chart pixels to the retina; price-history descriptors and an efference copy of the last filled trade to olfactory receptor neurons; account equity relative to its accounting anchor to LB3c sugar gustatory neurons. The network therefore receives portfolio state continuously, which it did not before; see docs/model.md.",
             "learning_validated": False,
             "pain_receptors_modeled": False,
             "timing": "Each observation advances configured neural_ms regardless of wall-market time; no claim of real-time fly physiology.",
@@ -228,7 +235,13 @@ def main():
                 equity, ledger.get("anchor"), settings.reward_deadband
             )
             frame = market_frame(product, market.history[product], q.bid, q.ask)
-            neural = controller.observe(frame, kind, market.history[product])
+            neural = controller.observe(
+                frame,
+                kind,
+                market.history[product],
+                executed,
+                (equity, ledger.get("anchor")),
+            )
             # Checkpoint + accounting anchor are committed before any trade.
             # Two slots keep the last committed snapshot safe during a crash.
             slot = ledger.get("tick") % 2
@@ -245,6 +258,7 @@ def main():
                 "pnl_delta_usdc": str(delta),
                 "market_history": market.history,
                 "fixture_tick": getattr(market, "tick", None),
+                "executed": executed,
             }
             ledger.commit_tick(equity, checkpoint_info, observation)
             order = {"status": "HOLD"}
@@ -259,6 +273,9 @@ def main():
                     order = action.invoke({"product": product, "side": neural["side"]})
                 except Veto as e:
                     order = {"status": "VETO", "reason": str(e)}
+            executed = (
+                neural["side"] if order["status"] in ("FILLED", "SETTLED") else None
+            )
             row = {
                 "tick": ledger.get("tick"),
                 "wall_time": time.time(),

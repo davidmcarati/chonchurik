@@ -25,6 +25,13 @@ FEATURES = [
     "range_position",
     "acceleration",
 ]
+# An efference copy of the fly's own last executed trade, on its own band of
+# glomeruli. It is fed at the NEXT observation, because nothing can be smelled
+# before it happens. HOLD, a vetoed proposal and the very first observation
+# all share the resting value, so "no trade" is one odour rather than three.
+TRADE = "executed_trade"
+TRADE_CODE = {None: 0.5, "HOLD": 0.5, "VETO": 0.5, "BUY": 1.0, "SELL": 0.0}
+CHANNELS = FEATURES + [TRADE]
 # Observation counts, not minutes: the wall interval is a separate setting.
 FAST, SLOW, RANGE = 5, 30, 60
 # Deflection scales in log-return units. Declared, not fitted: roughly the
@@ -43,13 +50,14 @@ FLOOR = 0.1
 CURRENT = 30.0
 
 PARAMETERS = {
-    "olfactory_features": FEATURES,
+    "olfactory_channels": CHANNELS,
     "olfactory_windows": {"fast": FAST, "slow": SLOW, "range": RANGE},
     "olfactory_scales": SCALES,
     "olfactory_tuning_sigma_glomeruli": SIGMA,
     "olfactory_threshold": FLOOR,
     "olfactory_peak_current": CURRENT,
-    "interpretation": "Engineered assignment of price descriptors to glomerular channels. Fixed, alphabetical, content-independent; no odour identity, receptor affinity or concentration is modeled.",
+    "olfactory_trade_code": {str(k): v for k, v in TRADE_CODE.items()},
+    "interpretation": "Engineered assignment of price descriptors and the fly's own last executed trade to glomerular channels. Fixed, alphabetical, content-independent; no odour identity, receptor affinity or concentration is modeled.",
 }
 
 
@@ -107,10 +115,10 @@ class Olfaction:
         ]
         self.bands = [
             np.asarray(b, dtype=np.int32)
-            for b in np.array_split(np.arange(len(self.names)), len(FEATURES))
+            for b in np.array_split(np.arange(len(self.names)), len(CHANNELS))
         ]
         if min(len(b) for b in self.bands) < 2:
-            raise RuntimeError("Too few glomeruli to give every feature a band")
+            raise RuntimeError("Too few glomeruli to give every channel a band")
         self.indices = np.concatenate(self.cells).astype(np.int32)
         if len(np.unique(self.indices)) != len(self.indices):
             raise RuntimeError("A receptor neuron belongs to two glomeruli")
@@ -123,30 +131,32 @@ class Olfaction:
             "glomeruli": len(self.names),
             "band_sizes": [int(len(b)) for b in self.bands],
             "assignment": {
-                feature: [self.names[i] for i in band]
-                for feature, band in zip(FEATURES, self.bands)
+                channel: [self.names[i] for i in band]
+                for channel, band in zip(CHANNELS, self.bands)
             },
             "validated": False,
         }
 
     def activation(self, values):
-        """Per-glomerulus amplitude in [0, 1]. A place code, one peak per feature."""
+        """Per-glomerulus amplitude in [0, 1]. A place code, one peak per channel."""
         out = np.zeros(len(self.names), dtype=np.float32)
-        for feature, band in zip(FEATURES, self.bands):
-            x = float(np.clip(values[feature], 0.0, 1.0))
+        for channel, band in zip(CHANNELS, self.bands):
+            x = float(np.clip(values.get(channel, 0.5), 0.0, 1.0))
             centre = x * (len(band) - 1)
             offset = np.arange(len(band), dtype=np.float32) - centre
             out[band] = np.exp(-0.5 * (offset / self.sigma) ** 2)
         return np.where(out < self.floor, 0.0, out)
 
-    def stimulation(self, history):
+    def stimulation(self, history, executed=None):
         """One pulse for the whole observation, or None when there is no odour.
 
         Indices stay unique across glomeruli: `drive[ix] += amplitude` is plain
         fancy indexing, so a repeated index would silently overwrite instead of
         summing.
         """
-        values = features(history)
+        if executed not in TRADE_CODE:
+            raise ValueError(f"Unknown executed trade: {executed!r}")
+        values = {**features(history), TRADE: TRADE_CODE[executed]}
         amplitude = self.activation(values)
         live = np.flatnonzero(amplitude > 0)
         if not len(live):

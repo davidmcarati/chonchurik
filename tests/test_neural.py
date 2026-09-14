@@ -111,7 +111,7 @@ def test_olfactory_features_are_bounded_and_json_safe():
 
 
 def test_olfactory_code_is_sparse_separable_and_free_of_repeated_indices():
-    from stonkfly.neural.olfaction import FEATURES, Olfaction, features
+    from stonkfly.neural.olfaction import CHANNELS, Olfaction, features
 
     o = Olfaction(odor_annotation())
     assert len(o.names) == 53 and len(o.indices) == 159
@@ -125,9 +125,41 @@ def test_olfactory_code_is_sparse_separable_and_free_of_repeated_indices():
     falling = [100.0 * 0.998**i for i in range(80)]
     codes = [o.activation(features(h)) > 0 for h in [rising, falling]]
     for code in codes:
-        assert 0 < code.sum() <= 3 * len(FEATURES)
+        assert 0 < code.sum() <= 3 * len(CHANNELS)
     assert not np.array_equal(*codes)
     pulse, values = o.stimulation(rising)
     indices, current = pulse
     assert len(indices) == len(current) and current.max() <= o.current
-    assert set(values) == set(FEATURES)
+    assert set(values) == set(CHANNELS)
+    # The trade tag is an efference copy: it must move the code on its own,
+    # with the market held exactly still.
+    bought = o.activation(o.stimulation(rising, "BUY")[1]) > 0
+    sold = o.activation(o.stimulation(rising, "SELL")[1]) > 0
+    held = o.activation(o.stimulation(rising, "HOLD")[1]) > 0
+    assert not np.array_equal(bought, sold)
+    assert np.array_equal(held, o.activation(o.stimulation(rising)[1]) > 0)
+    with pytest.raises(ValueError):
+        o.stimulation(rising, "LONG")
+
+
+def test_satiety_is_bounded_and_rests_at_half():
+    from stonkfly.neural.gustation import Gustation, satiety
+
+    assert satiety("100", "100") == pytest.approx(0.5)
+    assert satiety("105", "100") > 0.9
+    assert satiety("95", "100") < 0.1
+    # A missing, zeroed or unparseable reference must read as resting, not as
+    # maximal loss: the sugar channel would otherwise invent a starving fly on
+    # the first observation of every run.
+    for bad in [None, "0", "", "abc", float("nan")]:
+        assert satiety("100", bad) == 0.5
+        assert satiety(bad, "100") == 0.5 or bad == "0"
+    # An account that really is empty is a real total loss, not missing data.
+    assert satiety("0", "100") == 0.0
+
+    g = Gustation(np.array([3, 7, 11], dtype=np.int32))
+    (indices, current), value = g.stimulation("100", "100")
+    assert list(indices) == [3, 7, 11]
+    assert float(current) == pytest.approx(g.current * 0.5) and value == 0.5
+    with pytest.raises(RuntimeError):
+        Gustation(np.array([3, 3], dtype=np.int32))
