@@ -126,3 +126,21 @@ def test_next_generation_keeps_the_elites_verbatim():
     assert children[0]["genome"] == survivors[0]["genome"]
     assert children[1]["genome"] == survivors[1]["genome"]
     assert children[0]["genome"] is not survivors[0]["genome"]
+
+
+def test_ceiling_is_an_upper_bound_and_detects_a_dead_window():
+    from tools.evolve.evaluate import CHART_WINDOW, WARMUP, ceiling
+
+    # A window that only moves less than the round trip costs has nothing in
+    # it for anyone, and the ceiling has to say so rather than report a small
+    # positive number.
+    flat = [100.0] * (CHART_WINDOW + WARMUP + 60)
+    assert ceiling(flat, 0, 50)["ceiling"] == 0.0
+
+    rising = [100.0 * 1.01**i for i in range(CHART_WINDOW + WARMUP + 60)]
+    high = ceiling(rising, 0, 50)
+    assert high["ceiling"] > 0 and high["profitable_buys"] > 0
+    # Nothing can beat perfect foresight, so a real replay must stay under it.
+    a = Account("100", "10", "0.006")
+    assert a.start == 100.0
+    assert high["round_trip_cost_percent"] == pytest.approx(1.2)

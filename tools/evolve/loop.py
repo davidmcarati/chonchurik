@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 
 from . import genome as G
-from .evaluate import WARMUP, degenerate
+from .evaluate import WARMUP, ceiling, degenerate
 from .pool import run_baselines, run_one
 from .series import starts
 
@@ -179,8 +179,25 @@ def judge(executor, champion, population, segments, rng, out, seed):
                 b: median([c[b]["profit"] for c in collected]) for b in BASELINES
             },
             "starts": offsets,
+            # Reported, never compared against: nothing beats perfect
+            # foresight. It says how much was there to take at all.
+            "perfect_foresight_ceiling": median(
+                [ceiling(prices, o, FULL_OBSERVATIONS)["ceiling"] for o in offsets]
+            ),
+            "ceiling_detail": ceiling(prices, offsets[0], FULL_OBSERVATIONS),
         }
     verdict = decide(results["test"])
+    if results["test"]["perfect_foresight_ceiling"] <= 0:
+        verdict = (
+            f"there was nothing to take: a trader with perfect foresight makes "
+            f"{results['test']['perfect_foresight_ceiling']:+.4f} on this test "
+            f"segment, so no policy can profit here and the champion's "
+            f"{results['test']['champion']:+.4f} says nothing about the fly. "
+            f"Sample at a coarser interval or evaluate over more observations "
+            f"until the ceiling clears the "
+            f"{results['test']['ceiling_detail']['round_trip_cost_percent']:.1f}% "
+            f"round-trip cost. Original verdict: " + verdict
+        )
     report = {
         "champion_id": G.identity(champion["genome"]),
         "champion_genome": G.describe(champion["genome"]),

@@ -288,3 +288,46 @@ def graph_unchanged(brain, snapshot):
         np.array_equal(before, after)
         for before, after in zip(snapshot, (brain.ptr, brain.post, brain.weight))
     )
+
+
+def ceiling(prices, start, observations):
+    """Profit a trader with perfect foresight could take from this window.
+
+    Not a baseline -- nothing can beat perfect foresight, and it is not there
+    to be beaten. It is there because if the ceiling is at or below zero, no
+    policy of any kind can profit on this segment at this sampling interval,
+    and evolving one is a waste of a night.
+
+    Derivation: with a final bid B, a BUY at step i moves final equity by
+    order x (B / ask_i - (1 + fee)) and a SELL by order x ((1 - fee) - B /
+    bid_i). Those contributions are independent of each other, so the best
+    achievable is the sum of the positive ones -- taking the better of the two
+    actions at each step and ignoring budget and inventory, which can only
+    make the bound looser and therefore keeps it a true ceiling.
+    """
+    window = prices[start + CHART_WINDOW: start + CHART_WINDOW + WARMUP + observations]
+    traded = window[WARMUP:]
+    if len(traded) < 2:
+        return {"ceiling": 0.0, "observations": len(traded)}
+    settings = Settings()
+    order, fee = float(settings.order_limit), float(settings.paper_fee)
+    final = quotes(traded[-1])[0]
+    best, buys, sells = 0.0, 0, 0
+    for price in traded[:-1]:
+        bid, ask = quotes(price)
+        gain_buy = order * (final / ask - (1 + fee))
+        gain_sell = order * ((1 - fee) - final / bid)
+        step = max(0.0, gain_buy, gain_sell)
+        best += step
+        buys += gain_buy > 0 and gain_buy >= gain_sell
+        sells += gain_sell > 0 and gain_sell > gain_buy
+    return {
+        "ceiling": float(best),
+        "observations": len(traded),
+        "profitable_buys": int(buys),
+        "profitable_sells": int(sells),
+        "price_range_percent": float(
+            (max(traded) - min(traded)) / min(traded) * 100
+        ),
+        "round_trip_cost_percent": float(2 * fee * 100),
+    }
