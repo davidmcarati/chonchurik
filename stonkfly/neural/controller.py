@@ -1,10 +1,16 @@
-"""Only RGB and engineered reinforcement enter the network. No market policy."""
+"""Only sensory input and engineered reinforcement enter the network.
+
+The chart reaches the retina and the price history reaches the olfactory
+receptors. No market policy, no profit term and no price rule touches the
+proposal the network produces.
+"""
 
 import hashlib
 
 import numpy as np
 
 from .common import annotations
+from .olfaction import Olfaction
 from .visual import VisualMemoryBrain
 
 
@@ -47,18 +53,24 @@ class Decoder:
 
 
 class FlyController:
-    def __init__(self, settings):
+    def __init__(self, settings, odor=True):
         self.s = settings
         self.brain = VisualMemoryBrain()
         self.brain.weights_frozen = not settings.learning
-        self.decoder = Decoder(
-            self.brain.ids, annotations(self.brain.ids), settings.decoder_threshold_hz
-        )
+        a = annotations(self.brain.ids)
+        self.decoder = Decoder(self.brain.ids, a, settings.decoder_threshold_hz)
+        # Off only for diagnostics that need the pre-olfactory control arm.
+        self.olfaction = Olfaction(a) if odor else None
 
-    def observe(self, rgb, reinforcement):
+    def observe(self, rgb, reinforcement, history=None):
         if reinforcement not in ("none", "reward", "aversive"):
             raise ValueError("Unknown reinforcement")
         b = self.brain
+        # The odour is present for the whole observation; the reinforcement
+        # pulse is not. They are separate entries in the stimulation list.
+        odor, smelled = (None, None)
+        if self.olfaction is not None and history is not None:
+            odor, smelled = self.olfaction.stimulation(history)
         counts = np.zeros(b.n, dtype=np.int32)
         wall = 0.0
         remaining = round(self.s.neural_ms / b.dt)
@@ -68,11 +80,11 @@ class FlyController:
             n = min(remaining, round(self.s.neural_bin_ms / b.dt))
             if pulse:
                 n = min(n, pulse)
-            stimulus = (
-                (b.circuit[reinforcement], self.s.pulse_current) if pulse else None
-            )
+            stimulus = [] if odor is None else [odor]
+            if pulse:
+                stimulus.append((b.circuit[reinforcement], self.s.pulse_current))
             c, elapsed = b.rgb_step(
-                rgb, n * b.dt, learning=self.s.learning, stimulation=stimulus
+                rgb, n * b.dt, learning=self.s.learning, stimulation=stimulus or None
             )
             counts += c
             wall += elapsed
@@ -87,6 +99,11 @@ class FlyController:
             "compute_seconds": wall,
             "stimulus": reinforcement,
             "stimulus_ms": delivered * b.dt,
+            "odor": smelled,
+            "ORN_spikes": (
+                0 if self.olfaction is None
+                else int(counts[self.olfaction.indices].sum())
+            ),
             "reward_spikes": int(counts[b.circuit["reward"]].sum()),
             "aversive_spikes": int(counts[b.circuit["aversive"]].sum()),
             "KC_spikes": int(counts[b.circuit["kc"]].sum()),

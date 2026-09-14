@@ -181,9 +181,13 @@ def main():
             "dataset": verified,
             "circuit": controller.brain.circuit["report"],
             "vision": controller.brain.visual_report,
+            "olfaction": (
+                None if controller.olfaction is None else controller.olfaction.report
+            ),
             "mode": broker.mode,
             "feed": "fixture" if a.fixture else "coinbase-public",
             "decoder": "DNp20 mean R-L: buy/sell; DNpe017 spike gate; otherwise hold. Engineered fixed mapping.",
+            "sensory_inputs": "Rendered chart pixels to the retina; price-history descriptors to olfactory receptor neurons. Neither carries account balance, position or P&L.",
             "learning_validated": False,
             "pain_receptors_modeled": False,
             "timing": "Each observation advances configured neural_ms regardless of wall-market time; no claim of real-time fly physiology.",
@@ -224,7 +228,7 @@ def main():
                 equity, ledger.get("anchor"), settings.reward_deadband
             )
             frame = market_frame(product, market.history[product], q.bid, q.ask)
-            neural = controller.observe(frame, kind)
+            neural = controller.observe(frame, kind, market.history[product])
             # Checkpoint + accounting anchor are committed before any trade.
             # Two slots keep the last committed snapshot safe during a crash.
             slot = ledger.get("tick") % 2

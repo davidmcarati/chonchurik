@@ -84,3 +84,50 @@ def test_full_graph_sensory_reinforcement_checkpoint(tmp_path):
     assert loss["aversive_spikes"] > 0 and loss["stimulus_ms"] == 200
     assert np.isfinite(c.brain.weight).all()
     print({"reward": reward, "unpaired_control": control, "loss": loss})
+
+
+def odor_annotation(cells_per_glomerulus=3, glomeruli=53):
+    names = [f"ORN_G{i:02d}" for i in range(glomeruli)]
+    return pd.DataFrame(
+        {"type": [n for n in names for _ in range(cells_per_glomerulus)] + ["KC"]}
+    )
+
+
+def test_olfactory_features_are_bounded_and_json_safe():
+    import json
+
+    from stonkfly.neural.olfaction import FEATURES, features
+
+    flat = features([100.0] * 80)
+    assert flat["volatility"] == 0.0
+    for key in ["trend_fast", "trend_slow", "range_position", "acceleration"]:
+        assert flat[key] == pytest.approx(0.5)
+    for history in [[], [100.0], [100.0, 101.0], [100.0 * 1.01**i for i in range(80)]]:
+        values = features(history)
+        assert set(values) == set(FEATURES)
+        # events.jsonl and the ledger both refuse NaN and numpy scalars.
+        assert json.loads(json.dumps(values, allow_nan=False)) == values
+        assert all(0.0 <= v <= 1.0 for v in values.values())
+
+
+def test_olfactory_code_is_sparse_separable_and_free_of_repeated_indices():
+    from stonkfly.neural.olfaction import FEATURES, Olfaction, features
+
+    o = Olfaction(odor_annotation())
+    assert len(o.names) == 53 and len(o.indices) == 159
+    # drive[ix] += amplitude is plain fancy indexing: a repeated index would
+    # overwrite instead of summing, silently losing one feature's drive.
+    assert len(np.unique(o.indices)) == len(o.indices)
+    assert sum(len(b) for b in o.bands) == len(o.names)
+    assert len({int(i) for b in o.bands for i in b}) == len(o.names)
+
+    rising = [100.0 * 1.002**i for i in range(80)]
+    falling = [100.0 * 0.998**i for i in range(80)]
+    codes = [o.activation(features(h)) > 0 for h in [rising, falling]]
+    for code in codes:
+        assert 0 < code.sum() <= 3 * len(FEATURES)
+    assert not np.array_equal(*codes)
+    pulse, values = o.stimulation(rising)
+    indices, current = pulse
+    assert len(indices) == len(current) and current.max() <= o.current
+    assert set(values) == set(FEATURES)
