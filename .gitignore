@@ -26,3 +26,8 @@ build/
 coinbase-key.json
 cdp_api_key.json
 *.partial
+
+# Built from tools/watch.py, not committed. An 8 MB binary nobody can read is
+# not something to ship in a repository whose whole argument is that its
+# numbers can be re-derived. Rebuild it with the command in tools/README.md.
+johnny-watch.exe

@@ -82,6 +82,19 @@ def main():
           f"{a.workers} workers at below-normal priority; "
           f"{a.observations} observations x {FULL_STARTS} starts per full "
           f"evaluation", flush=True)
+    # Written before the first generation so a watcher started at any moment
+    # knows what it is watching. Nothing reads it back into the run.
+    a.out.mkdir(parents=True, exist_ok=True)
+    (a.out / "plan.json").write_text(json.dumps({
+        "label": label,
+        "generations": a.generations,
+        "population": a.population,
+        "observations": a.observations,
+        "starts": FULL_STARTS,
+        "workers": a.workers,
+        "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }, indent=2) + "
+", encoding="utf-8")
     started = time.time()
     settings = Settings()
     with pool(settings, a.workers) as executor:

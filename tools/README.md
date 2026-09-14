@@ -171,8 +171,23 @@ instead: how many processes are burning CPU, how much memory they hold, and
 what priority they are *actually* at -- which is how the pool's silent failure
 to lower its priority would have been visible.
 
-`--log` is only needed for the progress bar's target; without it there is no
-way to know how many generations were asked for. `--once` prints a single
-frame, and `--ascii` is for a console that refuses UTF-8 even when asked.
+A run writes `plan.json` into its own directory before the first generation,
+so the view can be started with no arguments at all. `--log` reads the same
+facts out of an older run's stdout, `--generations` supplies the target when
+there is neither, `--once` prints a single frame, and `--ascii` is for a
+console that refuses UTF-8 even when asked.
+
+### As an executable
+
+```sh
+pip install -e '.[build]'
+python -m PyInstaller --onefile --console --name johnny-watch --distpath .   --exclude-module numpy --exclude-module pandas --exclude-module PIL   --exclude-module pyarrow --exclude-module pydantic --noconfirm tools/watch.py
+```
+
+Puts `johnny-watch.exe` in the repository root, about 8 MB, runnable by
+double-click with no Python on PATH. It is **git-ignored on purpose**: an 8 MB
+binary nobody can read does not belong in a repository whose argument is that
+every number in it can be re-derived. Rebuild it after changing `watch.py`, or
+just run the script.
 Read `champion.json` bottom-up: the verdict first, then the population out of
 sample, then the genome.

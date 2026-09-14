@@ -163,6 +163,27 @@ def read_json(path):
         return None
 
 
+def find_log(out, given):
+    """The run's stdout, if it can be found without being told.
+
+    A double-clicked executable gets no arguments, so the usual places are
+    tried: the run directory itself, then the newest log beside it. Returns
+    None rather than guessing wildly, and an unknown target is drawn as
+    unknown rather than as finished.
+    """
+    if given:
+        return given
+    for candidate in [out / "evolution.log", out / "run.log",
+                      out.parent / f"{out.name}.log"]:
+        if candidate.exists():
+            return candidate
+    try:
+        beside = sorted(out.parent.glob("*.log"), key=lambda f: -f.stat().st_mtime)
+    except OSError:
+        return None
+    return beside[0] if beside else None
+
+
 def plan_from_log(path):
     """Population, generations and the source, from the two header lines.
 
@@ -252,18 +273,26 @@ def render(out, state, report, procs, previous, plan):
         f"against 4 baselines{RESET}")
     add("")
 
-    planned = plan.get("generations") or len(history) or 1
+    planned = plan.get("generations")
     if history:
         done = len(history)
         pace = sorted(h["seconds"] for h in history)[done // 2]
-        left = max(0, planned - done) * pace
-        filled = min(2 * BAR, round(2 * BAR * done / planned))
-        add(f"{BOLD}generation{RESET} {done}/{planned}  {CYAN}"
-            f"{G['full'] * filled}{RESET}{GREY}{G['empty'] * (2 * BAR - filled)}{RESET} "
-            f"{100 * done // planned:3d}%")
-        add(f"{DIM}per generation{RESET} {clock(pace)}   "
-            f"{DIM}remaining{RESET} {clock(left)}   {DIM}ends about{RESET} "
-            f"{time.strftime('%H:%M', time.localtime(time.time() + left))}")
+        if planned:
+            left = max(0, planned - done) * pace
+            filled = min(2 * BAR, round(2 * BAR * done / planned))
+            add(f"{BOLD}generation{RESET} {done}/{planned}  {CYAN}"
+                f"{G['full'] * filled}{RESET}{GREY}"
+                f"{G['empty'] * (2 * BAR - filled)}{RESET} "
+                f"{100 * done // planned:3d}%")
+            add(f"{DIM}per generation{RESET} {clock(pace)}   "
+                f"{DIM}remaining{RESET} {clock(left)}   {DIM}ends about{RESET} "
+                f"{time.strftime('%H:%M', time.localtime(time.time() + left))}")
+        else:
+            # A full bar drawn because the target is unknown would report an
+            # unfinished run as a finished one.
+            add(f"{BOLD}generation{RESET} {done} done   {DIM}target unknown "
+                f"— pass --generations or --log{RESET}")
+            add(f"{DIM}per generation{RESET} {clock(pace)}")
         add("")
         scale = max([abs(h["best_fitness"]) for h in history] + [1e-9])
         add(f"{BOLD}best excess over buy-and-hold{RESET}{DIM}, per generation"
@@ -345,7 +374,9 @@ def main():
     p.add_argument("--out", type=Path, default=Path("runs/evolution-5min"))
     p.add_argument("--log", type=Path,
                    help="the run's stdout, for its population and generation "
-                        "count; without it the progress bar has no target")
+                        "count; looked for beside the run directory if omitted")
+    p.add_argument("--generations", type=int,
+                   help="the target, when there is no log to read it from")
     p.add_argument("--interval", type=float, default=5)
     p.add_argument("--once", action="store_true",
                    help="print one frame and exit, for a pipe or a check")
@@ -357,7 +388,12 @@ def main():
     prepare_console()
     if a.ascii:
         globals()["G"] = dict(ASCII)
-    plan = plan_from_log(a.log)
+    # A run writes its own plan.json; the log is the fallback for runs that
+    # predate it, and --generations the fallback for having neither. This
+    # ordering is what lets the view be started with no arguments at all.
+    plan = read_json(a.out / "plan.json") or plan_from_log(find_log(a.out, a.log))
+    if a.generations:
+        plan["generations"] = a.generations
     # Load is a difference between two samples, so one is taken before the
     # first frame is drawn. Without it the view opens on "nan% of one core",
     # which is exactly the moment someone is looking to find out whether their
@@ -371,7 +407,7 @@ def main():
             frame = render(
                 a.out, read_json(a.out / "population.json"),
                 read_json(a.out / "champion.json"), workers(), previous,
-                plan or plan_from_log(a.log),
+                plan,
             )
             if not a.once:
                 sys.stdout.write("\033[H\033[J")
