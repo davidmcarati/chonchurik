@@ -305,6 +305,123 @@ External reinforcement does carry signal: it roughly quadruples the depression, 
 
 The former dark chart produced no KC spikes in an early three-step probe. A light-background display restored some activity without altering the neural parameters. That is a disclosed sensory-adapter change, not evidence that we found biologically correct vision.
 
+## Re-measured on the shipped physiology
+
+Everything above the olfactory section was measured before the inhibitory
+gain, the pulse and the satiety currents changed, and through the visual
+pathway alone. Those numbers describe a network that no longer exists. The
+four original diagnostics were re-run at the shipped settings, with the
+olfactory channel open — which is what the run loop actually does, and what
+the earlier runs were silently omitting.
+
+### The one-sided proposals are gone
+
+| Arm | Mean R−L | Frame-to-frame spread | BUY / SELL / HOLD |
+| --- | --- | --- | --- |
+| baseline | +0.25 | 4.20 | 3 / **3** / 2 |
+| mirrored chart | −3.50 | 6.48 | 2 / **4** / 2 |
+| header repainted | −0.25 | 5.18 | 5 / **3** / 0 |
+| per-side drive equalised | −6.50 | 6.91 | 1 / **7** / 0 |
+
+**17 of 32 observations propose SELL, where the same four arms produced 0 of
+24 before.** The baseline now sits 0.25 Hz from zero against a frame-to-frame
+spread of 4.20 Hz. The standing bias that dominated this experiment was a
+property of the saturated regime, not of the 2.04:1 receptor asymmetry in the
+reconstruction — the asymmetry is still there and the decoder is no longer
+pinned by it.
+
+No manipulation of the input moves an arm further than the spread inside the
+arms, so none of them is measurably doing anything. An earlier version of this
+verdict read the sign of the mean and announced that mirroring "flips the
+bias"; at ±0.25 Hz against a 4 Hz spread, a sign is a coin toss.
+
+### Participation, before and after
+
+| | As reconstructed | Shipped |
+| --- | --- | --- |
+| neurons firing at least once | 11.2% | 9.2% |
+| participation ratio | 8,832 | 8,111 |
+| **superclass entropy** | 1.47 bits | **1.78 bits** |
+| spikes per observation | 404,336 | 442,464 |
+| **Kenyon spikes** | 1,083 | **146** |
+
+Slightly fewer neurons fire, and what fires is spread more evenly across the
+superclasses — the brain participates more broadly while the mushroom body
+itself goes sparse, which is the direction the whole exercise was aimed at.
+
+### What is underneath the bias is noise
+
+Ablation, re-run at the shipped settings, with the dead-cell control passing
+and the graph asserted byte-identical:
+
+| Silenced | Decisions changed | SD of R−L |
+| --- | --- | --- |
+| 1% | **4 / 5** | 6.62 |
+| 5% | 1 / 5 | 12.09 |
+| 20% | 2 / 5 | 12.24 |
+| 50% | 2 / 5 | 6.37 |
+
+Silencing 1% of the network now changes four decisions in five, where before
+it changed none. The brain genuinely reaches the decision — and the decision
+is not stable. By the rule written in the plan before any of this was
+measured, a readout that moves chaotically at every ablation level is reading
+noise, and the dynamics have to be stabilised before anything else is built on
+top. That is the same conclusion the decoder measurement reached from the
+other direction with a signal-to-noise of 0.66.
+
+### Reinforcement, re-measured: the credit-assignment finding reverses
+
+Three arms of 60 observations each from an identical reset state, with the
+olfactory channel open — ordered reinforcement, the same labels scrambled, and
+no external reinforcement at all.
+
+| Arm | Edges changed vs baseline | Final mean efficacy |
+| --- | --- | --- |
+| ordered | 497 | 1.00122 |
+| shuffled | 497 | 1.00164 |
+| **none** | **0** | **1.000000** |
+
+**Nothing is written without external reinforcement.** In the saturated regime
+the no-reward arm moved 3,401 edges — 97% as many as the reinforced arms — and
+that was the basis for saying endogenous dopamine wrote almost the same memory
+anyway. It does not. Every plastic change measured here is attributable to the
+reward and aversive pulses.
+
+| Comparison | Relative L1 |
+| --- | --- |
+| ordered vs none — *presence* | 0.18% |
+| ordered vs shuffled — *timing* | **0.20%** |
+
+**Timing now outweighs presence 1.11×**, reversing the earlier 4.6× the other
+way. The same labels in a scrambled order write a memory that differs from the
+ordered one by *more* than the ordered one differs from no memory at all —
+which can only happen if the two arms move the same edges in opposite
+directions. That is temporal pairing, and it is what credit assignment
+requires.
+
+The earlier ratio was a property of the saturated regime, where Kenyon rates
+were high and near-constant so there was little for a timing-sensitive rule to
+key on. This does not establish that the fly assigns credit to *actions*; it
+establishes that the rule is sensitive to when dopamine arrives relative to
+Kenyon activity, which is the mechanism such an assignment would need.
+
+### The moving-scene hypothesis is not supported
+
+63% of the retained graph is visual and most of it detects motion, so the plan
+proposed a scrolling scene. Tested against a still frame of the *same*
+landscape, so that motion is the only difference:
+
+| Arm | Input pixels changing | Visual neurons active | Response churn |
+| --- | --- | --- | --- |
+| still | 0.00% | 8.91% | 0.026 |
+| flight (8 px per observation) | **19.30%** | 8.91% | 0.027 |
+| shipped chart | 16.56% | 8.92% | 0.029 |
+
+Moving a fifth of the screen changes how much of the visual system fires by
+nothing at all, and how much its response moves by 0.001. The visual system is
+running at 8.9% active and is indifferent to what is on the screen. By the
+plan's own rule the moving display is dropped rather than built.
+
 ## Profit-selected parameter search
 
 `tools/evolve` searches fourteen declared free parameters for profit. It is
@@ -358,9 +475,15 @@ a champion is not a validated trading result until it has been re-run through
 
 And there is a measured reason to expect little. The best readout tested has a
 signal-to-noise of 0.66: the market moves it less than silencing 5% of
-unrelated neurons does. Selection pressure therefore acts partly on noise. The
-multi-start median, the four baselines and the kill criterion exist precisely
-so that this shows up as a failed criterion rather than as a champion.
+unrelated neurons does, and silencing 1% of the network changes four decisions
+in five. Selection pressure therefore acts partly on noise. The multi-start
+median, the four baselines and the kill criterion exist precisely so that this
+shows up as a failed criterion rather than as a champion.
+
+What a search can act on has improved, though. The learning rule is now
+sensitive to reinforcement *timing* rather than only to dose, and writes
+nothing at all without reinforcement, so the earlier qualification — that
+evolution could only tune how much dopamine arrived — no longer holds.
 
 **On a sine wave.** The offline `fixture` source replays this repository's own
 deterministic sine. A sine is not a market. Profit there would show that the

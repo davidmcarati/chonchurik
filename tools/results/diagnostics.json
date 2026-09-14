@@ -15,74 +15,94 @@
   },
   "seed": 20260914,
   "baseline": {
-    "frames": 6,
-    "active_fraction_mean": 0.11223255348930215,
-    "effective_population_mean": 8831.878202039306,
-    "superclass_entropy_mean": 1.4718824323066182,
-    "total_spikes_mean": 404335.6666666667,
-    "KC_spikes_mean": 1082.8333333333333,
-    "difference_hz_std": 4.268749491621899,
-    "difference_hz_distinct": 4,
+    "frames": 8,
+    "active_fraction_mean": 0.09165791841631674,
+    "effective_population_mean": 8111.44043410088,
+    "superclass_entropy_mean": 1.7825533899542259,
+    "total_spikes_mean": 442463.75,
+    "KC_spikes_mean": 145.875,
+    "difference_hz_std": 3.929058411375428,
+    "difference_hz_distinct": 6,
     "per_frame": [
       {
-        "active_neurons": 16379,
-        "active_fraction": 0.09825434913017396,
-        "total_spikes": 374843,
-        "superclass_entropy_bits": 1.3325243264865207,
-        "effective_population": 7900.68407660489,
+        "active_neurons": 14810,
+        "active_fraction": 0.08884223155368927,
+        "total_spikes": 439837,
+        "superclass_entropy_bits": 1.7720912396804094,
+        "effective_population": 8065.224771516355,
+        "side": "BUY",
+        "difference_hz": 4.0,
+        "KC_spikes": 114
+      },
+      {
+        "active_neurons": 15322,
+        "active_fraction": 0.09191361727654469,
+        "total_spikes": 445349,
+        "superclass_entropy_bits": 1.8253224874698002,
+        "effective_population": 8130.589897813659,
+        "side": "HOLD",
+        "difference_hz": 0.0,
+        "KC_spikes": 108
+      },
+      {
+        "active_neurons": 15730,
+        "active_fraction": 0.09436112777444511,
+        "total_spikes": 449888,
+        "superclass_entropy_bits": 1.8297248820751477,
+        "effective_population": 8319.24095607851,
+        "side": "SELL",
+        "difference_hz": -4.0,
+        "KC_spikes": 165
+      },
+      {
+        "active_neurons": 15522,
+        "active_fraction": 0.09311337732453509,
+        "total_spikes": 444371,
+        "superclass_entropy_bits": 1.7742657303254046,
+        "effective_population": 8127.67797133529,
+        "side": "HOLD",
+        "difference_hz": 0.0,
+        "KC_spikes": 189
+      },
+      {
+        "active_neurons": 14855,
+        "active_fraction": 0.0891121775644871,
+        "total_spikes": 441852,
+        "superclass_entropy_bits": 1.766524900079882,
+        "effective_population": 8046.867918362906,
+        "side": "BUY",
+        "difference_hz": 4.0,
+        "KC_spikes": 149
+      },
+      {
+        "active_neurons": 15215,
+        "active_fraction": 0.09127174565086983,
+        "total_spikes": 442985,
+        "superclass_entropy_bits": 1.7676679816912486,
+        "effective_population": 8092.3567506283525,
+        "side": "SELL",
+        "difference_hz": -6.0,
+        "KC_spikes": 157
+      },
+      {
+        "active_neurons": 15153,
+        "active_fraction": 0.0908998200359928,
+        "total_spikes": 440822,
+        "superclass_entropy_bits": 1.7637835674697513,
+        "effective_population": 8078.646420970387,
         "side": "BUY",
         "difference_hz": 6.0,
-        "KC_spikes": 16
+        "KC_spikes": 159
       },
       {
-        "active_neurons": 24515,
-        "active_fraction": 0.14706058788242352,
-        "total_spikes": 476558,
-        "superclass_entropy_bits": 1.8422728913495228,
-        "effective_population": 11125.951460910013,
-        "side": "HOLD",
-        "difference_hz": 0.0,
-        "KC_spikes": 3303
-      },
-      {
-        "active_neurons": 16322,
-        "active_fraction": 0.0979124175164967,
-        "total_spikes": 373886,
-        "superclass_entropy_bits": 1.3222129687975706,
-        "effective_population": 7877.593085787712,
-        "side": "HOLD",
-        "difference_hz": 0.0,
-        "KC_spikes": 16
-      },
-      {
-        "active_neurons": 23744,
-        "active_fraction": 0.1424355128974205,
-        "total_spikes": 458684,
-        "superclass_entropy_bits": 1.7765380518429743,
-        "effective_population": 10596.964598279814,
-        "side": "BUY",
-        "difference_hz": 10.0,
-        "KC_spikes": 3130
-      },
-      {
-        "active_neurons": 16497,
-        "active_fraction": 0.09896220755848831,
-        "total_spikes": 377782,
-        "superclass_entropy_bits": 1.3579917437639435,
-        "effective_population": 7974.482833370304,
-        "side": "BUY",
-        "difference_hz": 10.0,
-        "KC_spikes": 16
-      },
-      {
-        "active_neurons": 14798,
-        "active_fraction": 0.08877024595080983,
-        "total_spikes": 364261,
-        "superclass_entropy_bits": 1.1997546115991795,
-        "effective_population": 7515.593157283093,
-        "side": "BUY",
-        "difference_hz": 2.0,
-        "KC_spikes": 16
+        "active_neurons": 15628,
+        "active_fraction": 0.09374925014997,
+        "total_spikes": 434606,
+        "superclass_entropy_bits": 1.7610463308421629,
+        "effective_population": 8030.9187861015835,
+        "side": "SELL",
+        "difference_hz": -2.0,
+        "KC_spikes": 126
       }
     ],
     "verdict": "decoder output varies with input"
@@ -95,1414 +115,1422 @@
     },
     "A0_baseline": {
       "sides": {
-        "BUY": 4,
-        "SELL": 0,
+        "BUY": 3,
+        "SELL": 3,
         "HOLD": 2
       },
-      "mean_difference_hz": 4.666666666666667,
-      "mean_drive_ratio": 2.124303181966146,
+      "mean_difference_hz": 0.25,
+      "mean_drive_ratio": 2.096012592315674,
       "difference_hz": [
+        4.0,
+        0.0,
+        -4.0,
+        0.0,
+        4.0,
+        -6.0,
         6.0,
-        0.0,
-        0.0,
-        10.0,
-        10.0,
-        2.0
+        -2.0
       ]
     },
     "A1_mirrored": {
       "sides": {
-        "BUY": 5,
-        "SELL": 0,
-        "HOLD": 1
+        "BUY": 2,
+        "SELL": 4,
+        "HOLD": 2
       },
-      "mean_difference_hz": 5.333333333333333,
-      "mean_drive_ratio": 2.1398460467656455,
+      "mean_difference_hz": -3.5,
+      "mean_drive_ratio": 2.113642156124115,
       "difference_hz": [
+        0.0,
+        -16.0,
+        -6.0,
+        -8.0,
         4.0,
-        8.0,
-        6.0,
-        6.0,
-        8.0,
-        0.0
+        0.0,
+        2.0,
+        -4.0
       ]
     },
     "A3_header_repainted": {
       "sides": {
         "BUY": 5,
-        "SELL": 0,
-        "HOLD": 1
+        "SELL": 3,
+        "HOLD": 0
       },
-      "mean_difference_hz": 6.0,
-      "mean_drive_ratio": 1.9996742606163025,
+      "mean_difference_hz": -0.25,
+      "mean_drive_ratio": 1.975188508629799,
       "difference_hz": [
+        -8.0,
         4.0,
-        12.0,
-        6.0,
-        0.0,
-        6.0,
-        8.0
+        -8.0,
+        2.0,
+        4.0,
+        -2.0,
+        2.0,
+        4.0
       ]
     },
     "A4_drive_equalised": {
       "sides": {
-        "BUY": 4,
-        "SELL": 0,
-        "HOLD": 2
+        "BUY": 1,
+        "SELL": 7,
+        "HOLD": 0
       },
-      "mean_difference_hz": 3.3333333333333335,
-      "mean_drive_ratio": 2.124303181966146,
+      "mean_difference_hz": -6.5,
+      "mean_drive_ratio": 2.096012592315674,
       "difference_hz": [
-        2.0,
-        0.0,
-        10.0,
-        4.0,
-        4.0,
-        0.0
+        -14.0,
+        -4.0,
+        -12.0,
+        -2.0,
+        -14.0,
+        -8.0,
+        6.0,
+        -4.0
       ],
-      "tonic_added_to_left": 28.366619110107422
+      "tonic_added_to_left": 27.37889289855957
     },
-    "verdict": "bias survives drive equalisation: it is intrinsic to network dynamics, not input -> stop fixing the input, go to stage 2"
+    "verdict": "mean R-L per arm, with frame-to-frame spread and BUY/SELL/HOLD: baseline +0.25+-4.20 (3/3/2); mirrored -3.50+-6.48 (2/4/2); header_repainted -0.25+-5.18 (5/3/0); drive_equalised -6.50+-6.91 (1/7/0). 17 of 32 observations propose SELL. The standing one-sided bias is gone: the baseline sits 0.25 Hz from zero against a frame-to-frame spread of 4.20 Hz, so the readout is no longer pinned to one side. No manipulation of the input moves an arm further than the spread within it, so none of them is measurably doing anything"
   },
   "ablate": {
     "intact": {
       "side": "BUY",
-      "difference_hz": 6.0
+      "difference_hz": 4.0
     },
     "dead_cell_control_passed": true,
     "graph_unchanged": true,
     "levels": [
       {
-        "ablated_percent": 1.0,
-        "decisions_changed": 0,
+        "ablated_percent": 1,
+        "decisions_changed": 4,
         "trials": 5,
-        "changed_fraction": 0.0,
-        "mean_difference_hz": 6.4,
-        "std_difference_hz": 2.939387691339814
+        "changed_fraction": 0.8,
+        "mean_difference_hz": -6.4,
+        "std_difference_hz": 6.6211781428987395
       },
       {
-        "ablated_percent": 5.0,
+        "ablated_percent": 5,
         "decisions_changed": 1,
         "trials": 5,
         "changed_fraction": 0.2,
-        "mean_difference_hz": 4.0,
-        "std_difference_hz": 9.549869109050658
+        "mean_difference_hz": 6.4,
+        "std_difference_hz": 12.092973166264779
       },
       {
-        "ablated_percent": 20.0,
+        "ablated_percent": 20,
         "decisions_changed": 2,
         "trials": 5,
         "changed_fraction": 0.4,
-        "mean_difference_hz": 1.6,
-        "std_difference_hz": 27.170572316386714
+        "mean_difference_hz": 3.2,
+        "std_difference_hz": 12.237646832622685
       },
       {
-        "ablated_percent": 50.0,
-        "decisions_changed": 1,
+        "ablated_percent": 50,
+        "decisions_changed": 2,
         "trials": 5,
-        "changed_fraction": 0.2,
-        "mean_difference_hz": 24.0,
-        "std_difference_hz": 13.740451229854134
+        "changed_fraction": 0.4,
+        "mean_difference_hz": 10.4,
+        "std_difference_hz": 6.374950980203691
       }
     ],
-    "verdict": "readout is knife-edge: perturbing 1.0% of neurons already moves difference_hz by sd 2.94 Hz against a 2 Hz threshold, and spread reaches 14x the threshold under ablation. The label is held by a standing bias, not by the signal -> the decoder needs to INTEGRATE over the window, not just widen to more cells"
+    "verdict": "readout is knife-edge: perturbing 1% of neurons already moves difference_hz by sd 6.62 Hz against a 2 Hz threshold, and spread reaches 6x the threshold under ablation. The label is held by a standing bias, not by the signal -> the decoder needs to INTEGRATE over the window, not just widen to more cells"
   },
   "reinforce": {
     "observations": 60,
     "plastic_edges": 7835,
     "changed_vs_baseline": {
-      "ordered": 3462,
-      "shuffled": 3460,
-      "none": 3401
+      "ordered": 497,
+      "shuffled": 497,
+      "none": 0
     },
     "pairwise": {
       "ordered_vs_shuffled": {
-        "relative_l1": 0.025510603561997414,
-        "max_abs": 1.354527473449707,
-        "edges_differing": 3504
+        "relative_l1": 0.001976118190214038,
+        "max_abs": 0.7939691543579102,
+        "edges_differing": 497
       },
       "ordered_vs_none": {
-        "relative_l1": 0.1163451299071312,
-        "max_abs": 5.598432540893555,
-        "edges_differing": 3500
+        "relative_l1": 0.0017860991647467017,
+        "max_abs": 0.6110737323760986,
+        "edges_differing": 497
       },
       "shuffled_vs_none": {
-        "relative_l1": 0.11141128838062286,
-        "max_abs": 5.544530868530273,
-        "edges_differing": 3501
+        "relative_l1": 0.0020365032833069563,
+        "max_abs": 1.4050428867340088,
+        "edges_differing": 497
       }
     },
     "traces": {
       "ordered": [
         {
-          "changed_edges": 5,
-          "KC_spikes": 16,
-          "reward_spikes": 270,
-          "aversive_spikes": 29,
-          "mean_efficacy": 0.9999887943267822
+          "changed_edges": 28,
+          "KC_spikes": 114,
+          "reward_spikes": 484,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000057339668274
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 14,
+          "changed_edges": 99,
+          "KC_spikes": 107,
           "reward_spikes": 0,
-          "aversive_spikes": 20,
-          "mean_efficacy": 0.9999958872795105
+          "aversive_spikes": 28,
+          "mean_efficacy": 1.0000818967819214
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
+          "changed_edges": 136,
+          "KC_spikes": 101,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0002659559249878
+        },
+        {
+          "changed_edges": 177,
+          "KC_spikes": 132,
+          "reward_spikes": 475,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0003324747085571
+        },
+        {
+          "changed_edges": 181,
+          "KC_spikes": 129,
+          "reward_spikes": 0,
+          "aversive_spikes": 30,
+          "mean_efficacy": 1.0002679824829102
+        },
+        {
+          "changed_edges": 202,
+          "KC_spikes": 137,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006256103515625
+        },
+        {
+          "changed_edges": 226,
+          "KC_spikes": 184,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004141330718994
+        },
+        {
+          "changed_edges": 256,
+          "KC_spikes": 167,
+          "reward_spikes": 0,
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.0006035566329956
+        },
+        {
+          "changed_edges": 280,
+          "KC_spikes": 194,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0008325576782227
+        },
+        {
+          "changed_edges": 281,
+          "KC_spikes": 127,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004353523254395
+        },
+        {
+          "changed_edges": 284,
+          "KC_spikes": 138,
+          "reward_spikes": 0,
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.0005158185958862
+        },
+        {
+          "changed_edges": 292,
+          "KC_spikes": 201,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0007396936416626
+        },
+        {
+          "changed_edges": 311,
+          "KC_spikes": 182,
+          "reward_spikes": 476,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0005249977111816
+        },
+        {
+          "changed_edges": 340,
+          "KC_spikes": 215,
+          "reward_spikes": 0,
+          "aversive_spikes": 6,
+          "mean_efficacy": 1.000831127166748
+        },
+        {
+          "changed_edges": 345,
+          "KC_spikes": 174,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0010833740234375
+        },
+        {
+          "changed_edges": 345,
+          "KC_spikes": 139,
+          "reward_spikes": 475,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0005306005477905
+        },
+        {
+          "changed_edges": 350,
+          "KC_spikes": 194,
+          "reward_spikes": 0,
+          "aversive_spikes": 13,
+          "mean_efficacy": 1.0005393028259277
+        },
+        {
+          "changed_edges": 351,
+          "KC_spikes": 176,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0007755756378174
+        },
+        {
+          "changed_edges": 364,
+          "KC_spikes": 208,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004557371139526
+        },
+        {
+          "changed_edges": 364,
+          "KC_spikes": 108,
           "reward_spikes": 0,
           "aversive_spikes": 2,
-          "mean_efficacy": 1.0000200271606445
+          "mean_efficacy": 1.0005862712860107
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
-          "reward_spikes": 270,
-          "aversive_spikes": 2,
-          "mean_efficacy": 1.0000355243682861
-        },
-        {
-          "changed_edges": 5,
-          "KC_spikes": 12,
+          "changed_edges": 364,
+          "KC_spikes": 149,
           "reward_spikes": 0,
-          "aversive_spikes": 21,
-          "mean_efficacy": 1.0000178813934326
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0007154941558838
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 11,
+          "changed_edges": 366,
+          "KC_spikes": 163,
+          "reward_spikes": 475,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000427484512329
+        },
+        {
+          "changed_edges": 368,
+          "KC_spikes": 137,
+          "reward_spikes": 0,
+          "aversive_spikes": 6,
+          "mean_efficacy": 1.000491738319397
+        },
+        {
+          "changed_edges": 368,
+          "KC_spikes": 179,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0007286071777344
+        },
+        {
+          "changed_edges": 368,
+          "KC_spikes": 154,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000428557395935
+        },
+        {
+          "changed_edges": 368,
+          "KC_spikes": 127,
+          "reward_spikes": 0,
+          "aversive_spikes": 14,
+          "mean_efficacy": 1.000423550605774
+        },
+        {
+          "changed_edges": 369,
+          "KC_spikes": 173,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006393194198608
+        },
+        {
+          "changed_edges": 400,
+          "KC_spikes": 290,
+          "reward_spikes": 480,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006814002990723
+        },
+        {
+          "changed_edges": 400,
+          "KC_spikes": 155,
+          "reward_spikes": 0,
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.00080406665802
+        },
+        {
+          "changed_edges": 407,
+          "KC_spikes": 208,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000993013381958
+        },
+        {
+          "changed_edges": 413,
+          "KC_spikes": 154,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000503659248352
+        },
+        {
+          "changed_edges": 413,
+          "KC_spikes": 159,
+          "reward_spikes": 0,
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.000602126121521
+        },
+        {
+          "changed_edges": 414,
+          "KC_spikes": 170,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0007457733154297
+        },
+        {
+          "changed_edges": 416,
+          "KC_spikes": 161,
+          "reward_spikes": 475,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004205703735352
+        },
+        {
+          "changed_edges": 416,
+          "KC_spikes": 121,
+          "reward_spikes": 0,
+          "aversive_spikes": 2,
+          "mean_efficacy": 1.0005536079406738
+        },
+        {
+          "changed_edges": 439,
+          "KC_spikes": 193,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0008060932159424
+        },
+        {
+          "changed_edges": 439,
+          "KC_spikes": 206,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0003726482391357
+        },
+        {
+          "changed_edges": 439,
+          "KC_spikes": 154,
+          "reward_spikes": 0,
+          "aversive_spikes": 3,
+          "mean_efficacy": 1.0005905628204346
+        },
+        {
+          "changed_edges": 439,
+          "KC_spikes": 189,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0007721185684204
+        },
+        {
+          "changed_edges": 449,
+          "KC_spikes": 223,
+          "reward_spikes": 474,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.00049889087677
+        },
+        {
+          "changed_edges": 449,
+          "KC_spikes": 136,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006543397903442
+        },
+        {
+          "changed_edges": 449,
+          "KC_spikes": 157,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0007691383361816
+        },
+        {
+          "changed_edges": 450,
+          "KC_spikes": 233,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004583597183228
+        },
+        {
+          "changed_edges": 452,
+          "KC_spikes": 135,
+          "reward_spikes": 0,
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.000494122505188
+        },
+        {
+          "changed_edges": 452,
+          "KC_spikes": 116,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006047487258911
+        },
+        {
+          "changed_edges": 452,
+          "KC_spikes": 215,
+          "reward_spikes": 479,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000395655632019
+        },
+        {
+          "changed_edges": 452,
+          "KC_spikes": 145,
+          "reward_spikes": 0,
+          "aversive_spikes": 4,
+          "mean_efficacy": 1.0006378889083862
+        },
+        {
+          "changed_edges": 455,
+          "KC_spikes": 162,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0008333921432495
+        },
+        {
+          "changed_edges": 462,
+          "KC_spikes": 300,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006330013275146
+        },
+        {
+          "changed_edges": 478,
+          "KC_spikes": 244,
+          "reward_spikes": 0,
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.0010886192321777
+        },
+        {
+          "changed_edges": 478,
+          "KC_spikes": 113,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0012153387069702
+        },
+        {
+          "changed_edges": 478,
+          "KC_spikes": 164,
+          "reward_spikes": 475,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0007067918777466
+        },
+        {
+          "changed_edges": 478,
+          "KC_spikes": 157,
+          "reward_spikes": 0,
+          "aversive_spikes": 8,
+          "mean_efficacy": 1.0007461309432983
+        },
+        {
+          "changed_edges": 478,
+          "KC_spikes": 211,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0009559392929077
+        },
+        {
+          "changed_edges": 478,
+          "KC_spikes": 149,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006123781204224
+        },
+        {
+          "changed_edges": 479,
+          "KC_spikes": 165,
+          "reward_spikes": 0,
+          "aversive_spikes": 7,
+          "mean_efficacy": 1.0006860494613647
+        },
+        {
+          "changed_edges": 483,
+          "KC_spikes": 235,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0011131763458252
+        },
+        {
+          "changed_edges": 483,
+          "KC_spikes": 199,
+          "reward_spikes": 475,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006532669067383
+        },
+        {
+          "changed_edges": 494,
+          "KC_spikes": 182,
           "reward_spikes": 0,
           "aversive_spikes": 1,
-          "mean_efficacy": 1.0000343322753906
+          "mean_efficacy": 1.000962257385254
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
-          "reward_spikes": 270,
-          "aversive_spikes": 3,
-          "mean_efficacy": 1.00004243850708
-        },
-        {
-          "changed_edges": 2933,
-          "KC_spikes": 4774,
-          "reward_spikes": 1,
-          "aversive_spikes": 81,
-          "mean_efficacy": 1.0059210062026978
-        },
-        {
-          "changed_edges": 3101,
-          "KC_spikes": 4596,
+          "changed_edges": 497,
+          "KC_spikes": 230,
           "reward_spikes": 0,
-          "aversive_spikes": 75,
-          "mean_efficacy": 1.011780023574829
-        },
-        {
-          "changed_edges": 3194,
-          "KC_spikes": 4609,
-          "reward_spikes": 267,
-          "aversive_spikes": 74,
-          "mean_efficacy": 1.009526014328003
-        },
-        {
-          "changed_edges": 3202,
-          "KC_spikes": 4326,
-          "reward_spikes": 0,
-          "aversive_spikes": 90,
-          "mean_efficacy": 1.007919192314148
-        },
-        {
-          "changed_edges": 3206,
-          "KC_spikes": 4418,
-          "reward_spikes": 0,
-          "aversive_spikes": 79,
-          "mean_efficacy": 1.0127190351486206
-        },
-        {
-          "changed_edges": 3207,
-          "KC_spikes": 4369,
-          "reward_spikes": 262,
-          "aversive_spikes": 75,
-          "mean_efficacy": 1.0073084831237793
-        },
-        {
-          "changed_edges": 3226,
-          "KC_spikes": 4618,
-          "reward_spikes": 0,
-          "aversive_spikes": 99,
-          "mean_efficacy": 1.0037055015563965
-        },
-        {
-          "changed_edges": 3240,
-          "KC_spikes": 4408,
-          "reward_spikes": 0,
-          "aversive_spikes": 77,
-          "mean_efficacy": 1.0113259553909302
-        },
-        {
-          "changed_edges": 3246,
-          "KC_spikes": 4391,
-          "reward_spikes": 264,
-          "aversive_spikes": 83,
-          "mean_efficacy": 1.00228750705719
-        },
-        {
-          "changed_edges": 3272,
-          "KC_spikes": 4411,
-          "reward_spikes": 0,
-          "aversive_spikes": 100,
-          "mean_efficacy": 0.9997130036354065
-        },
-        {
-          "changed_edges": 3286,
-          "KC_spikes": 4547,
-          "reward_spikes": 0,
-          "aversive_spikes": 83,
-          "mean_efficacy": 1.0064777135849
-        },
-        {
-          "changed_edges": 3333,
-          "KC_spikes": 4377,
-          "reward_spikes": 265,
-          "aversive_spikes": 78,
-          "mean_efficacy": 1.0020232200622559
-        },
-        {
-          "changed_edges": 3337,
-          "KC_spikes": 4285,
-          "reward_spikes": 0,
-          "aversive_spikes": 99,
-          "mean_efficacy": 0.9985828399658203
-        },
-        {
-          "changed_edges": 3337,
-          "KC_spikes": 4382,
-          "reward_spikes": 0,
-          "aversive_spikes": 80,
-          "mean_efficacy": 1.0048102140426636
-        },
-        {
-          "changed_edges": 3346,
-          "KC_spikes": 4656,
-          "reward_spikes": 262,
-          "aversive_spikes": 75,
-          "mean_efficacy": 1.0048199892044067
-        },
-        {
-          "changed_edges": 3354,
-          "KC_spikes": 4310,
-          "reward_spikes": 0,
-          "aversive_spikes": 95,
-          "mean_efficacy": 1.0027772188186646
-        },
-        {
-          "changed_edges": 3354,
-          "KC_spikes": 4483,
-          "reward_spikes": 0,
-          "aversive_spikes": 78,
-          "mean_efficacy": 1.0104665756225586
-        },
-        {
-          "changed_edges": 3354,
-          "KC_spikes": 4360,
-          "reward_spikes": 264,
-          "aversive_spikes": 75,
-          "mean_efficacy": 1.005292296409607
-        },
-        {
-          "changed_edges": 3368,
-          "KC_spikes": 4608,
-          "reward_spikes": 0,
-          "aversive_spikes": 92,
-          "mean_efficacy": 1.0066391229629517
-        },
-        {
-          "changed_edges": 3372,
-          "KC_spikes": 4479,
-          "reward_spikes": 0,
-          "aversive_spikes": 80,
-          "mean_efficacy": 1.011734127998352
-        },
-        {
-          "changed_edges": 3372,
-          "KC_spikes": 4427,
-          "reward_spikes": 262,
-          "aversive_spikes": 79,
-          "mean_efficacy": 1.0058807134628296
-        },
-        {
-          "changed_edges": 3376,
-          "KC_spikes": 4563,
-          "reward_spikes": 0,
-          "aversive_spikes": 137,
-          "mean_efficacy": 0.9859726428985596
-        },
-        {
-          "changed_edges": 3400,
-          "KC_spikes": 4476,
-          "reward_spikes": 0,
-          "aversive_spikes": 128,
-          "mean_efficacy": 0.974885880947113
-        },
-        {
-          "changed_edges": 3407,
-          "KC_spikes": 4464,
-          "reward_spikes": 262,
-          "aversive_spikes": 133,
-          "mean_efficacy": 0.9556735157966614
-        },
-        {
-          "changed_edges": 3407,
-          "KC_spikes": 4391,
-          "reward_spikes": 0,
-          "aversive_spikes": 147,
-          "mean_efficacy": 0.9459241032600403
-        },
-        {
-          "changed_edges": 3407,
-          "KC_spikes": 4243,
-          "reward_spikes": 0,
-          "aversive_spikes": 128,
-          "mean_efficacy": 0.9467129707336426
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4680,
-          "reward_spikes": 262,
-          "aversive_spikes": 130,
-          "mean_efficacy": 0.9434239268302917
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4323,
-          "reward_spikes": 0,
-          "aversive_spikes": 145,
-          "mean_efficacy": 0.940200924873352
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4573,
-          "reward_spikes": 0,
-          "aversive_spikes": 132,
-          "mean_efficacy": 0.947020947933197
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4414,
-          "reward_spikes": 263,
-          "aversive_spikes": 130,
-          "mean_efficacy": 0.9396662712097168
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4368,
-          "reward_spikes": 0,
-          "aversive_spikes": 142,
-          "mean_efficacy": 0.9399351477622986
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4467,
-          "reward_spikes": 0,
-          "aversive_spikes": 132,
-          "mean_efficacy": 0.9452219009399414
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4240,
-          "reward_spikes": 262,
-          "aversive_spikes": 131,
-          "mean_efficacy": 0.935924768447876
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4551,
-          "reward_spikes": 0,
-          "aversive_spikes": 151,
-          "mean_efficacy": 0.9348316788673401
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4233,
-          "reward_spikes": 0,
-          "aversive_spikes": 135,
-          "mean_efficacy": 0.93769770860672
-        },
-        {
-          "changed_edges": 3445,
-          "KC_spikes": 4553,
-          "reward_spikes": 262,
-          "aversive_spikes": 134,
-          "mean_efficacy": 0.9355937242507935
-        },
-        {
-          "changed_edges": 3446,
-          "KC_spikes": 4438,
-          "reward_spikes": 0,
-          "aversive_spikes": 144,
-          "mean_efficacy": 0.9354110360145569
-        },
-        {
-          "changed_edges": 3446,
-          "KC_spikes": 4377,
-          "reward_spikes": 0,
-          "aversive_spikes": 138,
-          "mean_efficacy": 0.9402981996536255
-        },
-        {
-          "changed_edges": 3446,
-          "KC_spikes": 4427,
-          "reward_spikes": 264,
-          "aversive_spikes": 134,
-          "mean_efficacy": 0.9325234293937683
-        },
-        {
-          "changed_edges": 3446,
-          "KC_spikes": 4353,
-          "reward_spikes": 0,
-          "aversive_spikes": 143,
-          "mean_efficacy": 0.9356715083122253
-        },
-        {
-          "changed_edges": 3446,
-          "KC_spikes": 4611,
-          "reward_spikes": 0,
-          "aversive_spikes": 127,
-          "mean_efficacy": 0.9471612572669983
-        },
-        {
-          "changed_edges": 3446,
-          "KC_spikes": 4337,
-          "reward_spikes": 266,
-          "aversive_spikes": 134,
-          "mean_efficacy": 0.9365612268447876
-        },
-        {
-          "changed_edges": 3446,
-          "KC_spikes": 4357,
-          "reward_spikes": 0,
-          "aversive_spikes": 139,
-          "mean_efficacy": 0.94004887342453
-        },
-        {
-          "changed_edges": 3446,
-          "KC_spikes": 4306,
-          "reward_spikes": 0,
-          "aversive_spikes": 125,
-          "mean_efficacy": 0.9455335736274719
-        },
-        {
-          "changed_edges": 3449,
-          "KC_spikes": 4472,
-          "reward_spikes": 263,
-          "aversive_spikes": 129,
-          "mean_efficacy": 0.9421320557594299
-        },
-        {
-          "changed_edges": 3452,
-          "KC_spikes": 4478,
-          "reward_spikes": 0,
-          "aversive_spikes": 150,
-          "mean_efficacy": 0.9385132789611816
-        },
-        {
-          "changed_edges": 3455,
-          "KC_spikes": 4427,
-          "reward_spikes": 0,
-          "aversive_spikes": 134,
-          "mean_efficacy": 0.9447300434112549
-        },
-        {
-          "changed_edges": 3455,
-          "KC_spikes": 4343,
-          "reward_spikes": 263,
-          "aversive_spikes": 135,
-          "mean_efficacy": 0.9349468350410461
-        },
-        {
-          "changed_edges": 3455,
-          "KC_spikes": 4469,
-          "reward_spikes": 0,
-          "aversive_spikes": 149,
-          "mean_efficacy": 0.9335498809814453
-        },
-        {
-          "changed_edges": 3462,
-          "KC_spikes": 4296,
-          "reward_spikes": 1,
-          "aversive_spikes": 134,
-          "mean_efficacy": 0.9385013580322266
-        },
-        {
-          "changed_edges": 3461,
-          "KC_spikes": 4535,
-          "reward_spikes": 265,
-          "aversive_spikes": 136,
-          "mean_efficacy": 0.9341689944267273
-        },
-        {
-          "changed_edges": 3462,
-          "KC_spikes": 4395,
-          "reward_spikes": 0,
-          "aversive_spikes": 144,
-          "mean_efficacy": 0.936087429523468
-        },
-        {
-          "changed_edges": 3462,
-          "KC_spikes": 4239,
-          "reward_spikes": 0,
-          "aversive_spikes": 131,
-          "mean_efficacy": 0.9415031671524048
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0012201070785522
         }
       ],
       "shuffled": [
         {
-          "changed_edges": 5,
-          "KC_spikes": 16,
-          "reward_spikes": 270,
-          "aversive_spikes": 29,
-          "mean_efficacy": 0.9999887943267822
+          "changed_edges": 28,
+          "KC_spikes": 114,
+          "reward_spikes": 484,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000057339668274
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 14,
+          "changed_edges": 99,
+          "KC_spikes": 107,
           "reward_spikes": 0,
-          "aversive_spikes": 20,
-          "mean_efficacy": 0.9999958872795105
+          "aversive_spikes": 28,
+          "mean_efficacy": 1.0000818967819214
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
+          "changed_edges": 136,
+          "KC_spikes": 101,
           "reward_spikes": 0,
-          "aversive_spikes": 2,
-          "mean_efficacy": 1.0000200271606445
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0002659559249878
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
-          "reward_spikes": 270,
-          "aversive_spikes": 2,
-          "mean_efficacy": 1.0000355243682861
+          "changed_edges": 177,
+          "KC_spikes": 132,
+          "reward_spikes": 475,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0003324747085571
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
+          "changed_edges": 181,
+          "KC_spikes": 129,
           "reward_spikes": 0,
-          "aversive_spikes": 8,
-          "mean_efficacy": 1.0000361204147339
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000562310218811
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 11,
+          "changed_edges": 202,
+          "KC_spikes": 137,
           "reward_spikes": 0,
-          "aversive_spikes": 1,
-          "mean_efficacy": 1.0000452995300293
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000756025314331
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
+          "changed_edges": 226,
+          "KC_spikes": 184,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0008424520492554
+        },
+        {
+          "changed_edges": 256,
+          "KC_spikes": 167,
+          "reward_spikes": 0,
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.00082528591156
+        },
+        {
+          "changed_edges": 280,
+          "KC_spikes": 194,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0005500316619873
+        },
+        {
+          "changed_edges": 281,
+          "KC_spikes": 127,
+          "reward_spikes": 0,
+          "aversive_spikes": 4,
+          "mean_efficacy": 1.0006060600280762
+        },
+        {
+          "changed_edges": 284,
+          "KC_spikes": 138,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000713586807251
+        },
+        {
+          "changed_edges": 292,
+          "KC_spikes": 201,
+          "reward_spikes": 476,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.00050687789917
+        },
+        {
+          "changed_edges": 311,
+          "KC_spikes": 182,
+          "reward_spikes": 0,
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.0007116794586182
+        },
+        {
+          "changed_edges": 340,
+          "KC_spikes": 215,
+          "reward_spikes": 479,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006552934646606
+        },
+        {
+          "changed_edges": 345,
+          "KC_spikes": 174,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004303455352783
+        },
+        {
+          "changed_edges": 345,
+          "KC_spikes": 139,
+          "reward_spikes": 475,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0001646280288696
+        },
+        {
+          "changed_edges": 350,
+          "KC_spikes": 194,
+          "reward_spikes": 0,
+          "aversive_spikes": 13,
+          "mean_efficacy": 1.0003111362457275
+        },
+        {
+          "changed_edges": 351,
+          "KC_spikes": 176,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0000349283218384
+        },
+        {
+          "changed_edges": 364,
+          "KC_spikes": 208,
           "reward_spikes": 0,
           "aversive_spikes": 3,
-          "mean_efficacy": 1.0000485181808472
+          "mean_efficacy": 1.0004324913024902
         },
         {
-          "changed_edges": 3050,
-          "KC_spikes": 4875,
-          "reward_spikes": 1,
-          "aversive_spikes": 77,
-          "mean_efficacy": 1.0019596815109253
-        },
-        {
-          "changed_edges": 3125,
-          "KC_spikes": 4174,
-          "reward_spikes": 264,
-          "aversive_spikes": 70,
-          "mean_efficacy": 0.9995017051696777
-        },
-        {
-          "changed_edges": 3184,
-          "KC_spikes": 4592,
+          "changed_edges": 364,
+          "KC_spikes": 108,
           "reward_spikes": 0,
-          "aversive_spikes": 98,
-          "mean_efficacy": 0.9990231990814209
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000595211982727
         },
         {
-          "changed_edges": 3194,
-          "KC_spikes": 4570,
+          "changed_edges": 364,
+          "KC_spikes": 149,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 1.0036391019821167
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000706434249878
         },
         {
-          "changed_edges": 3216,
-          "KC_spikes": 4391,
-          "reward_spikes": 261,
-          "aversive_spikes": 80,
-          "mean_efficacy": 0.9976429343223572
-        },
-        {
-          "changed_edges": 3217,
-          "KC_spikes": 4385,
+          "changed_edges": 366,
+          "KC_spikes": 163,
           "reward_spikes": 0,
-          "aversive_spikes": 97,
-          "mean_efficacy": 0.9960751533508301
+          "aversive_spikes": 8,
+          "mean_efficacy": 1.0006494522094727
         },
         {
-          "changed_edges": 3227,
-          "KC_spikes": 4371,
-          "reward_spikes": 261,
-          "aversive_spikes": 79,
-          "mean_efficacy": 0.9922528266906738
-        },
-        {
-          "changed_edges": 3229,
-          "KC_spikes": 4308,
-          "reward_spikes": 262,
-          "aversive_spikes": 79,
-          "mean_efficacy": 0.9907902479171753
-        },
-        {
-          "changed_edges": 3247,
-          "KC_spikes": 4613,
-          "reward_spikes": 263,
-          "aversive_spikes": 78,
-          "mean_efficacy": 0.9930283427238464
-        },
-        {
-          "changed_edges": 3278,
-          "KC_spikes": 4577,
+          "changed_edges": 368,
+          "KC_spikes": 137,
           "reward_spikes": 0,
-          "aversive_spikes": 95,
-          "mean_efficacy": 0.9947941303253174
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000739574432373
         },
         {
-          "changed_edges": 3283,
-          "KC_spikes": 4564,
-          "reward_spikes": 263,
-          "aversive_spikes": 79,
-          "mean_efficacy": 0.9933518767356873
-        },
-        {
-          "changed_edges": 3298,
-          "KC_spikes": 4391,
+          "changed_edges": 368,
+          "KC_spikes": 179,
           "reward_spikes": 0,
-          "aversive_spikes": 97,
-          "mean_efficacy": 0.9930435419082642
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0008165836334229
         },
         {
-          "changed_edges": 3314,
-          "KC_spikes": 4429,
+          "changed_edges": 368,
+          "KC_spikes": 154,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004432201385498
+        },
+        {
+          "changed_edges": 368,
+          "KC_spikes": 127,
           "reward_spikes": 0,
-          "aversive_spikes": 74,
-          "mean_efficacy": 1.0048805475234985
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006580352783203
         },
         {
-          "changed_edges": 3318,
-          "KC_spikes": 4496,
+          "changed_edges": 369,
+          "KC_spikes": 173,
           "reward_spikes": 0,
-          "aversive_spikes": 79,
-          "mean_efficacy": 1.0083268880844116
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0007699728012085
         },
         {
-          "changed_edges": 3318,
-          "KC_spikes": 4133,
+          "changed_edges": 400,
+          "KC_spikes": 290,
           "reward_spikes": 0,
-          "aversive_spikes": 87,
-          "mean_efficacy": 1.005178689956665
+          "aversive_spikes": 4,
+          "mean_efficacy": 1.0008928775787354
         },
         {
-          "changed_edges": 3322,
-          "KC_spikes": 4729,
+          "changed_edges": 400,
+          "KC_spikes": 155,
           "reward_spikes": 0,
-          "aversive_spikes": 80,
-          "mean_efficacy": 1.0108659267425537
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.000963807106018
         },
         {
-          "changed_edges": 3327,
-          "KC_spikes": 4426,
+          "changed_edges": 407,
+          "KC_spikes": 208,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004875659942627
+        },
+        {
+          "changed_edges": 413,
+          "KC_spikes": 154,
           "reward_spikes": 0,
-          "aversive_spikes": 76,
-          "mean_efficacy": 1.0137648582458496
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006898641586304
         },
         {
-          "changed_edges": 3331,
-          "KC_spikes": 4450,
-          "reward_spikes": 263,
-          "aversive_spikes": 66,
-          "mean_efficacy": 1.0106359720230103
+          "changed_edges": 413,
+          "KC_spikes": 159,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0002840757369995
         },
         {
-          "changed_edges": 3342,
-          "KC_spikes": 4528,
+          "changed_edges": 414,
+          "KC_spikes": 170,
+          "reward_spikes": 474,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0000228881835938
+        },
+        {
+          "changed_edges": 416,
+          "KC_spikes": 161,
           "reward_spikes": 0,
-          "aversive_spikes": 82,
-          "mean_efficacy": 1.0120843648910522
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.000183343887329
         },
         {
-          "changed_edges": 3356,
-          "KC_spikes": 4563,
+          "changed_edges": 416,
+          "KC_spikes": 121,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 0.9999759793281555
+        },
+        {
+          "changed_edges": 439,
+          "KC_spikes": 193,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 1.012566089630127
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004870891571045
         },
         {
-          "changed_edges": 3364,
-          "KC_spikes": 4477,
+          "changed_edges": 439,
+          "KC_spikes": 206,
           "reward_spikes": 0,
-          "aversive_spikes": 95,
-          "mean_efficacy": 1.008289098739624
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.0007178783416748
         },
         {
-          "changed_edges": 3364,
-          "KC_spikes": 4292,
+          "changed_edges": 439,
+          "KC_spikes": 154,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 1.0078768730163574
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0008867979049683
         },
         {
-          "changed_edges": 3369,
-          "KC_spikes": 4517,
-          "reward_spikes": 265,
-          "aversive_spikes": 82,
-          "mean_efficacy": 0.9996824860572815
-        },
-        {
-          "changed_edges": 3376,
-          "KC_spikes": 4578,
+          "changed_edges": 439,
+          "KC_spikes": 189,
           "reward_spikes": 0,
-          "aversive_spikes": 75,
-          "mean_efficacy": 1.0092915296554565
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0009880065917969
         },
         {
-          "changed_edges": 3384,
-          "KC_spikes": 4620,
-          "reward_spikes": 267,
-          "aversive_spikes": 83,
-          "mean_efficacy": 1.0022014379501343
-        },
-        {
-          "changed_edges": 3401,
-          "KC_spikes": 4593,
-          "reward_spikes": 262,
-          "aversive_spikes": 79,
-          "mean_efficacy": 0.999413788318634
-        },
-        {
-          "changed_edges": 3401,
-          "KC_spikes": 4484,
+          "changed_edges": 449,
+          "KC_spikes": 223,
           "reward_spikes": 0,
-          "aversive_spikes": 103,
-          "mean_efficacy": 0.9947533011436462
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0010915994644165
         },
         {
-          "changed_edges": 3401,
-          "KC_spikes": 4010,
-          "reward_spikes": 264,
-          "aversive_spikes": 71,
-          "mean_efficacy": 0.9928721785545349
-        },
-        {
-          "changed_edges": 3401,
-          "KC_spikes": 4528,
+          "changed_edges": 449,
+          "KC_spikes": 136,
           "reward_spikes": 0,
-          "aversive_spikes": 75,
-          "mean_efficacy": 1.0042132139205933
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0011149644851685
         },
         {
-          "changed_edges": 3403,
-          "KC_spikes": 4522,
+          "changed_edges": 449,
+          "KC_spikes": 157,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0006290674209595
+        },
+        {
+          "changed_edges": 450,
+          "KC_spikes": 233,
           "reward_spikes": 0,
-          "aversive_spikes": 94,
-          "mean_efficacy": 1.0016729831695557
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0008611679077148
         },
         {
-          "changed_edges": 3405,
-          "KC_spikes": 4423,
+          "changed_edges": 452,
+          "KC_spikes": 135,
           "reward_spikes": 0,
-          "aversive_spikes": 77,
-          "mean_efficacy": 1.0067912340164185
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.0008208751678467
         },
         {
-          "changed_edges": 3411,
-          "KC_spikes": 4406,
+          "changed_edges": 452,
+          "KC_spikes": 116,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0004374980926514
+        },
+        {
+          "changed_edges": 452,
+          "KC_spikes": 215,
+          "reward_spikes": 479,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0003584623336792
+        },
+        {
+          "changed_edges": 452,
+          "KC_spikes": 145,
           "reward_spikes": 0,
-          "aversive_spikes": 124,
-          "mean_efficacy": 0.9885750412940979
+          "aversive_spikes": 4,
+          "mean_efficacy": 1.0007073879241943
         },
         {
-          "changed_edges": 3414,
-          "KC_spikes": 4604,
+          "changed_edges": 455,
+          "KC_spikes": 162,
+          "reward_spikes": 479,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0005171298980713
+        },
+        {
+          "changed_edges": 462,
+          "KC_spikes": 300,
           "reward_spikes": 0,
-          "aversive_spikes": 126,
-          "mean_efficacy": 0.9779782891273499
+          "aversive_spikes": 4,
+          "mean_efficacy": 1.0009948015213013
         },
         {
-          "changed_edges": 3416,
-          "KC_spikes": 4408,
+          "changed_edges": 478,
+          "KC_spikes": 244,
           "reward_spikes": 0,
-          "aversive_spikes": 143,
-          "mean_efficacy": 0.9604108333587646
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.001378059387207
         },
         {
-          "changed_edges": 3422,
-          "KC_spikes": 4243,
-          "reward_spikes": 264,
-          "aversive_spikes": 126,
-          "mean_efficacy": 0.9455673098564148
-        },
-        {
-          "changed_edges": 3426,
-          "KC_spikes": 4470,
+          "changed_edges": 478,
+          "KC_spikes": 113,
           "reward_spikes": 0,
-          "aversive_spikes": 131,
-          "mean_efficacy": 0.948384702205658
+          "aversive_spikes": 1,
+          "mean_efficacy": 1.001469612121582
         },
         {
-          "changed_edges": 3426,
-          "KC_spikes": 4444,
+          "changed_edges": 478,
+          "KC_spikes": 164,
           "reward_spikes": 0,
-          "aversive_spikes": 146,
-          "mean_efficacy": 0.9420270919799805
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.0014517307281494
         },
         {
-          "changed_edges": 3446,
-          "KC_spikes": 4429,
-          "reward_spikes": 262,
-          "aversive_spikes": 128,
-          "mean_efficacy": 0.9367993474006653
-        },
-        {
-          "changed_edges": 3446,
-          "KC_spikes": 4513,
-          "reward_spikes": 265,
-          "aversive_spikes": 128,
-          "mean_efficacy": 0.9333345293998718
-        },
-        {
-          "changed_edges": 3447,
-          "KC_spikes": 4377,
+          "changed_edges": 478,
+          "KC_spikes": 157,
           "reward_spikes": 0,
-          "aversive_spikes": 143,
-          "mean_efficacy": 0.9340226650238037
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0015398263931274
         },
         {
-          "changed_edges": 3447,
-          "KC_spikes": 4403,
-          "reward_spikes": 263,
-          "aversive_spikes": 129,
-          "mean_efficacy": 0.9303982257843018
+          "changed_edges": 478,
+          "KC_spikes": 211,
+          "reward_spikes": 477,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.001225471496582
         },
         {
-          "changed_edges": 3447,
-          "KC_spikes": 4530,
+          "changed_edges": 478,
+          "KC_spikes": 149,
           "reward_spikes": 0,
-          "aversive_spikes": 146,
-          "mean_efficacy": 0.932405948638916
+          "aversive_spikes": 6,
+          "mean_efficacy": 1.0012531280517578
         },
         {
-          "changed_edges": 3448,
-          "KC_spikes": 4460,
+          "changed_edges": 479,
+          "KC_spikes": 165,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0009757280349731
+        },
+        {
+          "changed_edges": 483,
+          "KC_spikes": 235,
           "reward_spikes": 0,
-          "aversive_spikes": 148,
-          "mean_efficacy": 0.9335817694664001
+          "aversive_spikes": 5,
+          "mean_efficacy": 1.0015287399291992
         },
         {
-          "changed_edges": 3448,
-          "KC_spikes": 4422,
+          "changed_edges": 483,
+          "KC_spikes": 199,
           "reward_spikes": 0,
-          "aversive_spikes": 147,
-          "mean_efficacy": 0.9326052069664001
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.001788854598999
         },
         {
-          "changed_edges": 3448,
-          "KC_spikes": 4366,
+          "changed_edges": 494,
+          "KC_spikes": 182,
+          "reward_spikes": 478,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0012613534927368
+        },
+        {
+          "changed_edges": 497,
+          "KC_spikes": 230,
           "reward_spikes": 0,
-          "aversive_spikes": 144,
-          "mean_efficacy": 0.9321762919425964
-        },
-        {
-          "changed_edges": 3448,
-          "KC_spikes": 4370,
-          "reward_spikes": 0,
-          "aversive_spikes": 135,
-          "mean_efficacy": 0.9382815957069397
-        },
-        {
-          "changed_edges": 3448,
-          "KC_spikes": 4445,
-          "reward_spikes": 261,
-          "aversive_spikes": 131,
-          "mean_efficacy": 0.9334732294082642
-        },
-        {
-          "changed_edges": 3448,
-          "KC_spikes": 4399,
-          "reward_spikes": 0,
-          "aversive_spikes": 139,
-          "mean_efficacy": 0.9362321496009827
-        },
-        {
-          "changed_edges": 3448,
-          "KC_spikes": 4238,
-          "reward_spikes": 264,
-          "aversive_spikes": 127,
-          "mean_efficacy": 0.9314236044883728
-        },
-        {
-          "changed_edges": 3451,
-          "KC_spikes": 4381,
-          "reward_spikes": 0,
-          "aversive_spikes": 148,
-          "mean_efficacy": 0.9317066073417664
-        },
-        {
-          "changed_edges": 3460,
-          "KC_spikes": 4462,
-          "reward_spikes": 0,
-          "aversive_spikes": 128,
-          "mean_efficacy": 0.9407392740249634
-        },
-        {
-          "changed_edges": 3460,
-          "KC_spikes": 4413,
-          "reward_spikes": 264,
-          "aversive_spikes": 132,
-          "mean_efficacy": 0.9337907433509827
-        },
-        {
-          "changed_edges": 3460,
-          "KC_spikes": 4252,
-          "reward_spikes": 0,
-          "aversive_spikes": 141,
-          "mean_efficacy": 0.9336026906967163
+          "aversive_spikes": 2,
+          "mean_efficacy": 1.0016356706619263
         }
       ],
       "none": [
         {
-          "changed_edges": 5,
-          "KC_spikes": 16,
+          "changed_edges": 0,
+          "KC_spikes": 114,
           "reward_spikes": 0,
-          "aversive_spikes": 29,
-          "mean_efficacy": 0.9999887943267822
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 14,
+          "changed_edges": 0,
+          "KC_spikes": 107,
           "reward_spikes": 0,
-          "aversive_spikes": 5,
-          "mean_efficacy": 1.000004768371582
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
+          "changed_edges": 0,
+          "KC_spikes": 101,
           "reward_spikes": 0,
-          "aversive_spikes": 2,
-          "mean_efficacy": 1.0000193119049072
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
+          "changed_edges": 0,
+          "KC_spikes": 132,
           "reward_spikes": 0,
-          "aversive_spikes": 2,
-          "mean_efficacy": 1.0000286102294922
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
+          "changed_edges": 0,
+          "KC_spikes": 129,
           "reward_spikes": 0,
-          "aversive_spikes": 8,
-          "mean_efficacy": 1.0000256299972534
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 11,
+          "changed_edges": 0,
+          "KC_spikes": 137,
           "reward_spikes": 0,
-          "aversive_spikes": 1,
-          "mean_efficacy": 1.000032901763916
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 5,
-          "KC_spikes": 12,
+          "changed_edges": 0,
+          "KC_spikes": 184,
           "reward_spikes": 0,
-          "aversive_spikes": 3,
-          "mean_efficacy": 1.0000348091125488
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 2916,
-          "KC_spikes": 4813,
-          "reward_spikes": 1,
-          "aversive_spikes": 66,
-          "mean_efficacy": 0.9995405077934265
+          "changed_edges": 0,
+          "KC_spikes": 167,
+          "reward_spikes": 0,
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3093,
-          "KC_spikes": 4517,
+          "changed_edges": 0,
+          "KC_spikes": 194,
           "reward_spikes": 0,
-          "aversive_spikes": 74,
-          "mean_efficacy": 0.9980528354644775
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3174,
-          "KC_spikes": 4558,
+          "changed_edges": 0,
+          "KC_spikes": 127,
           "reward_spikes": 0,
-          "aversive_spikes": 73,
-          "mean_efficacy": 0.9973576068878174
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3197,
-          "KC_spikes": 4324,
+          "changed_edges": 0,
+          "KC_spikes": 138,
           "reward_spikes": 0,
-          "aversive_spikes": 70,
-          "mean_efficacy": 0.9971875548362732
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3221,
-          "KC_spikes": 4639,
+          "changed_edges": 0,
+          "KC_spikes": 201,
           "reward_spikes": 0,
-          "aversive_spikes": 76,
-          "mean_efficacy": 0.9964017271995544
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3246,
-          "KC_spikes": 4509,
+          "changed_edges": 0,
+          "KC_spikes": 182,
           "reward_spikes": 0,
-          "aversive_spikes": 80,
-          "mean_efficacy": 0.9936438202857971
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3246,
-          "KC_spikes": 4329,
+          "changed_edges": 0,
+          "KC_spikes": 215,
           "reward_spikes": 0,
-          "aversive_spikes": 75,
-          "mean_efficacy": 0.9921408295631409
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3267,
-          "KC_spikes": 4345,
+          "changed_edges": 0,
+          "KC_spikes": 174,
           "reward_spikes": 0,
-          "aversive_spikes": 79,
-          "mean_efficacy": 0.9896986484527588
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3275,
-          "KC_spikes": 4357,
+          "changed_edges": 0,
+          "KC_spikes": 139,
           "reward_spikes": 0,
-          "aversive_spikes": 70,
-          "mean_efficacy": 0.9921918511390686
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3290,
-          "KC_spikes": 4412,
+          "changed_edges": 0,
+          "KC_spikes": 194,
           "reward_spikes": 0,
-          "aversive_spikes": 77,
-          "mean_efficacy": 0.9921751022338867
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3293,
-          "KC_spikes": 4616,
+          "changed_edges": 0,
+          "KC_spikes": 176,
           "reward_spikes": 0,
-          "aversive_spikes": 77,
-          "mean_efficacy": 0.992043137550354
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3307,
-          "KC_spikes": 4559,
+          "changed_edges": 0,
+          "KC_spikes": 208,
           "reward_spikes": 0,
-          "aversive_spikes": 82,
-          "mean_efficacy": 0.9901199340820312
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3307,
-          "KC_spikes": 4311,
+          "changed_edges": 0,
+          "KC_spikes": 108,
           "reward_spikes": 0,
-          "aversive_spikes": 77,
-          "mean_efficacy": 0.9895810484886169
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3307,
-          "KC_spikes": 4234,
+          "changed_edges": 0,
+          "KC_spikes": 149,
           "reward_spikes": 0,
-          "aversive_spikes": 71,
-          "mean_efficacy": 0.9908367991447449
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3331,
-          "KC_spikes": 4405,
+          "changed_edges": 0,
+          "KC_spikes": 163,
           "reward_spikes": 0,
-          "aversive_spikes": 80,
-          "mean_efficacy": 0.9885159730911255
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3333,
-          "KC_spikes": 4360,
+          "changed_edges": 0,
+          "KC_spikes": 137,
           "reward_spikes": 0,
-          "aversive_spikes": 76,
-          "mean_efficacy": 0.988173246383667
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3333,
-          "KC_spikes": 4301,
+          "changed_edges": 0,
+          "KC_spikes": 179,
           "reward_spikes": 0,
-          "aversive_spikes": 80,
-          "mean_efficacy": 0.9879079461097717
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3333,
-          "KC_spikes": 4585,
+          "changed_edges": 0,
+          "KC_spikes": 154,
           "reward_spikes": 0,
-          "aversive_spikes": 83,
-          "mean_efficacy": 0.9858453869819641
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3335,
-          "KC_spikes": 4192,
+          "changed_edges": 0,
+          "KC_spikes": 127,
           "reward_spikes": 0,
-          "aversive_spikes": 78,
-          "mean_efficacy": 0.9850553274154663
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3342,
-          "KC_spikes": 4766,
+          "changed_edges": 0,
+          "KC_spikes": 173,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 0.9879459142684937
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3342,
-          "KC_spikes": 4141,
+          "changed_edges": 0,
+          "KC_spikes": 290,
           "reward_spikes": 0,
-          "aversive_spikes": 69,
-          "mean_efficacy": 0.990328848361969
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3348,
-          "KC_spikes": 4523,
+          "changed_edges": 0,
+          "KC_spikes": 155,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 0.9885780215263367
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3348,
-          "KC_spikes": 4232,
+          "changed_edges": 0,
+          "KC_spikes": 208,
           "reward_spikes": 0,
-          "aversive_spikes": 75,
-          "mean_efficacy": 0.9880641102790833
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3350,
-          "KC_spikes": 4473,
+          "changed_edges": 0,
+          "KC_spikes": 154,
           "reward_spikes": 0,
-          "aversive_spikes": 83,
-          "mean_efficacy": 0.9876804947853088
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3350,
-          "KC_spikes": 4714,
+          "changed_edges": 0,
+          "KC_spikes": 159,
           "reward_spikes": 0,
-          "aversive_spikes": 80,
-          "mean_efficacy": 0.9885849952697754
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3360,
-          "KC_spikes": 4493,
+          "changed_edges": 0,
+          "KC_spikes": 170,
           "reward_spikes": 0,
-          "aversive_spikes": 75,
-          "mean_efficacy": 0.9903315901756287
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3360,
-          "KC_spikes": 4395,
+          "changed_edges": 0,
+          "KC_spikes": 161,
           "reward_spikes": 0,
-          "aversive_spikes": 80,
-          "mean_efficacy": 0.9885448217391968
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3376,
-          "KC_spikes": 4434,
+          "changed_edges": 0,
+          "KC_spikes": 121,
           "reward_spikes": 0,
-          "aversive_spikes": 79,
-          "mean_efficacy": 0.9883257746696472
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3376,
-          "KC_spikes": 4453,
+          "changed_edges": 0,
+          "KC_spikes": 193,
           "reward_spikes": 0,
-          "aversive_spikes": 78,
-          "mean_efficacy": 0.988706111907959
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3378,
-          "KC_spikes": 4443,
+          "changed_edges": 0,
+          "KC_spikes": 206,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 0.9881424903869629
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3381,
-          "KC_spikes": 4580,
+          "changed_edges": 0,
+          "KC_spikes": 154,
           "reward_spikes": 0,
-          "aversive_spikes": 78,
-          "mean_efficacy": 0.9880991578102112
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3381,
-          "KC_spikes": 4343,
+          "changed_edges": 0,
+          "KC_spikes": 189,
           "reward_spikes": 0,
-          "aversive_spikes": 78,
-          "mean_efficacy": 0.988430380821228
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3382,
-          "KC_spikes": 4355,
+          "changed_edges": 0,
+          "KC_spikes": 223,
           "reward_spikes": 0,
-          "aversive_spikes": 78,
-          "mean_efficacy": 0.9878394603729248
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3383,
-          "KC_spikes": 4338,
+          "changed_edges": 0,
+          "KC_spikes": 136,
           "reward_spikes": 0,
-          "aversive_spikes": 85,
-          "mean_efficacy": 0.9837584495544434
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3383,
-          "KC_spikes": 4571,
+          "changed_edges": 0,
+          "KC_spikes": 157,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 0.9846130609512329
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3383,
-          "KC_spikes": 4293,
+          "changed_edges": 0,
+          "KC_spikes": 233,
           "reward_spikes": 0,
-          "aversive_spikes": 76,
-          "mean_efficacy": 0.9862260222434998
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3383,
-          "KC_spikes": 4389,
+          "changed_edges": 0,
+          "KC_spikes": 135,
           "reward_spikes": 0,
-          "aversive_spikes": 75,
-          "mean_efficacy": 0.9882472157478333
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3386,
-          "KC_spikes": 4573,
+          "changed_edges": 0,
+          "KC_spikes": 116,
           "reward_spikes": 0,
-          "aversive_spikes": 84,
-          "mean_efficacy": 0.986508846282959
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3386,
-          "KC_spikes": 4624,
+          "changed_edges": 0,
+          "KC_spikes": 215,
           "reward_spikes": 0,
-          "aversive_spikes": 75,
-          "mean_efficacy": 0.989998996257782
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3386,
-          "KC_spikes": 4401,
+          "changed_edges": 0,
+          "KC_spikes": 145,
           "reward_spikes": 0,
-          "aversive_spikes": 72,
-          "mean_efficacy": 0.9924143552780151
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3386,
-          "KC_spikes": 4334,
+          "changed_edges": 0,
+          "KC_spikes": 162,
           "reward_spikes": 0,
-          "aversive_spikes": 84,
-          "mean_efficacy": 0.9874212145805359
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3386,
-          "KC_spikes": 4413,
+          "changed_edges": 0,
+          "KC_spikes": 300,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 0.9857484102249146
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3386,
-          "KC_spikes": 4379,
+          "changed_edges": 0,
+          "KC_spikes": 244,
           "reward_spikes": 0,
-          "aversive_spikes": 83,
-          "mean_efficacy": 0.9832607507705688
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3387,
-          "KC_spikes": 4606,
+          "changed_edges": 0,
+          "KC_spikes": 113,
           "reward_spikes": 0,
-          "aversive_spikes": 82,
-          "mean_efficacy": 0.984696090221405
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3387,
-          "KC_spikes": 4283,
+          "changed_edges": 0,
+          "KC_spikes": 164,
           "reward_spikes": 0,
-          "aversive_spikes": 76,
-          "mean_efficacy": 0.9864118695259094
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3387,
-          "KC_spikes": 4322,
+          "changed_edges": 0,
+          "KC_spikes": 157,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 0.9846850633621216
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3388,
-          "KC_spikes": 4548,
+          "changed_edges": 0,
+          "KC_spikes": 211,
           "reward_spikes": 0,
-          "aversive_spikes": 76,
-          "mean_efficacy": 0.9875209331512451
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3396,
-          "KC_spikes": 4463,
+          "changed_edges": 0,
+          "KC_spikes": 149,
           "reward_spikes": 0,
-          "aversive_spikes": 80,
-          "mean_efficacy": 0.987506628036499
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3396,
-          "KC_spikes": 4393,
+          "changed_edges": 0,
+          "KC_spikes": 165,
           "reward_spikes": 0,
-          "aversive_spikes": 79,
-          "mean_efficacy": 0.987302303314209
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3397,
-          "KC_spikes": 4412,
+          "changed_edges": 0,
+          "KC_spikes": 235,
           "reward_spikes": 0,
-          "aversive_spikes": 75,
-          "mean_efficacy": 0.9893604516983032
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3397,
-          "KC_spikes": 4457,
+          "changed_edges": 0,
+          "KC_spikes": 199,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 0.9876631498336792
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3401,
-          "KC_spikes": 4435,
+          "changed_edges": 0,
+          "KC_spikes": 182,
           "reward_spikes": 0,
-          "aversive_spikes": 81,
-          "mean_efficacy": 0.9866209626197815
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         },
         {
-          "changed_edges": 3401,
-          "KC_spikes": 4409,
+          "changed_edges": 0,
+          "KC_spikes": 230,
           "reward_spikes": 0,
-          "aversive_spikes": 78,
-          "mean_efficacy": 0.986825168132782
+          "aversive_spikes": 0,
+          "mean_efficacy": 1.0
         }
       ]
     },
-    "verdict": "reinforcement carries signal: presence moves the memory 11.6% (relative L1) against a 3,401-edge endogenous baseline, timing moves it 2.6%. Presence dominates timing 4.6x -- the rule responds mostly to HOW MUCH dopamine arrived, not WHEN. GA is unblocked, but what it can select on is dose, not credit assignment"
+    "verdict": "reinforcement carries signal: presence moves the memory 0.18% (relative L1), timing moves it 0.20%, against an endogenous baseline of 0 edges written with no external reinforcement at all -- nothing is written without it, so every plastic change measured here is attributable to the reward and aversive pulses. Timing outweighs presence 1.11x: the same labels in a scrambled order write a memory that differs from the ordered one by MORE than the ordered one differs from no memory at all, so the rule is responding to WHEN dopamine arrived relative to Kenyon activity. That is the temporal pairing credit assignment requires"
   },
-  "wall_seconds": 23.3,
+  "wall_seconds": 285.7,
   "separation": {
     "scenes": [
       "rally",
@@ -7938,5 +7966,40 @@
     "odor_floor": 0.1,
     "satiety_floor_current": 8.0,
     "satiety_span_current": 24.0
+  },
+  "motion": {
+    "steps": 10,
+    "pixels_per_observation": 8,
+    "visual_neurons": 105265,
+    "arms": {
+      "still": {
+        "active_fraction": 0.081373725254949,
+        "superclass_entropy_bits": 1.756583164839034,
+        "effective_population": 7916.835143878951,
+        "total_spikes": 436650.7,
+        "visual_active_fraction": 0.08914928988742696,
+        "visual_response_churn": 0.026285853209661814,
+        "input_pixels_changing": 0.0
+      },
+      "flight": {
+        "active_fraction": 0.0848386322735453,
+        "superclass_entropy_bits": 1.7844319317868191,
+        "effective_population": 8104.337273862225,
+        "total_spikes": 444826.8,
+        "visual_active_fraction": 0.08910369068541302,
+        "visual_response_churn": 0.02741380403450809,
+        "input_pixels_changing": 0.19298032407407406
+      },
+      "shipped": {
+        "active_fraction": 0.08480143971205759,
+        "superclass_entropy_bits": 1.820808857332549,
+        "effective_population": 8167.354908975348,
+        "total_spikes": 445714.7,
+        "visual_active_fraction": 0.08920248895644327,
+        "visual_response_churn": 0.029419331406410572,
+        "input_pixels_changing": 0.16559606481481481
+      }
+    },
+    "verdict": "the same landscape, still against advancing 8 px per observation: input moves 0.00% of pixels against 19.30%; visual neurons active 8.91% against 8.91%; response churn 0.026 against 0.027. The shipped chart sits at 8.92% active, churn 0.029. Motion changes neither how much of the visual system fires nor how much its response moves. The hypothesis that this network needs a moving scene is NOT supported, and by the plan's own rule the moving display is dropped rather than built"
   }
 }

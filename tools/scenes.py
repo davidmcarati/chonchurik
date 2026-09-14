@@ -112,3 +112,38 @@ RENDERERS = {
     "filled": render_filled,
     "filled_fixed_scale": render_fixed_scale,
 }
+
+
+def flight_canvas(history, width=640):
+    """A wide filled landscape, from which a moving viewport is cropped.
+
+    Rendering once and cropping means successive frames are a pure horizontal
+    translation of each other, which is what optic flow is. Redrawing per
+    offset would also rescale the axis and change the picture, and the test
+    could no longer tell motion from a different chart.
+    """
+    im = Image.new("RGB", (width, 180), BACKGROUND)
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, width - 1, 27), fill=HEADER)
+    for x in range(12, width - 10, 30):
+        d.line((x, 34, x, 160), fill=GRID)
+    for y in range(38, 162, 24):
+        d.line((10, y, width - 12, y), fill=GRID)
+    values = np.asarray(history[-200:], dtype=float)
+    if len(values) > 1:
+        span = max(float(np.ptp(values)), float(np.mean(values)) * 0.002)
+        lo = float(values.min()) - span * 0.12
+        span *= 1.24
+        ys = np.clip(153 - (values - lo) / span * 119, 34.0, 153.0)
+        xs = 12 + np.arange(len(values)) * (width - 24) / (len(values) - 1)
+        polygon = [(float(x), float(y)) for x, y in zip(xs, ys)]
+        polygon += [(float(xs[-1]), 153.0), (float(xs[0]), 153.0)]
+        d.polygon(polygon, fill=UP if values[-1] >= values[0] else DOWN)
+    return np.asarray(im, dtype=np.uint8)
+
+
+def render_flight(canvas, offset, width=320):
+    """One 320x180 viewport onto the landscape, offset pixels along."""
+    room = canvas.shape[1] - width
+    x = int(offset) % room if room > 0 else 0
+    return np.ascontiguousarray(canvas[:, x:x + width])

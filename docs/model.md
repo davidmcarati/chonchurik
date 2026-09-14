@@ -70,6 +70,8 @@ The PAM11/MBON07 compartment is motivated by [Ichinose et al., 2015](https://eli
 
 The implementation can demonstrate that sensory input reaches memory cells, that selected dopamine cells spike, and that temporal pairing changes eligible synapses. Those are mechanism checks. Even when weights change, useful credit assignment through the fixed trade decoder is unproven.
 
+Two of those checks improved measurably once the network left saturation, and neither is a claim about trading. Over 60 observations, no plastic edge moves without external reinforcement, so weight changes are attributable to the reward and aversive pulses rather than to endogenous dopamine. And scrambling the order of the same reinforcement labels changes the resulting memory by more than removing reinforcement does, so the rule is responding to *when* dopamine arrived relative to Kenyon activity. See [validation](validation.md).
+
 To claim learned trading behavior requires held-out chronological market replay, independent starts, frozen-weight and shuffled-reinforcement controls, fees/slippage, equal budgets, retention, and loss of benefit after resetting learned weights. Compare to cash and simple exposure baselines as well: rising crypto prices alone can make any buyer look skilled. Avoid selecting a lucky run or tuning on the test period.
 
 **No profitable learning, strategy improvement, biological replication, or live-funded performance has been demonstrated by this repository’s tests.** See [validation](validation.md) for the narrower checks actually performed.

@@ -32,6 +32,7 @@ leaves the machine usable.
 | `pathway` | Which synapse does the market signal stop surviving? | overlap layer by layer out from the receptors |
 | `inhibition` | Does one excitation/inhibition ratio explain every saturation? | every layer's overlap and Kenyon sparseness across inhibitory gains |
 | `pulse` | How much current does each dopamine compartment actually need? | per-cell spikes in PAM11 against PPL101 |
+| `motion` | Does a moving scene recruit the visual system a still one does not? | participation and response churn, still against a translating viewport |
 | `decoder` | Would a wider readout have more market signal than noise? | spread across market states over standard deviation under ablation |
 | `reinforce` | Does plasticity carry the reinforcement signal, or only its amount? | plastic weights under three arms: ordered, shuffled, and no external reinforcement |
 
@@ -76,6 +77,7 @@ magnitude metric has been right. Prefer spread and effect size over counts:
 | `separation` | a fixed price axis separates the input best | it also reintroduces six Kenyon-code collisions, which is what actually blocks learning |
 | `olfaction` | no two Kenyon codes are byte-identical, so the states are distinguishable | they share 88% of their active cells; zero identical pairs is what saturation looks like |
 | `decoder` | a wider readout beats the shipped one at 1.15 signal-to-noise | at 15 repeats instead of 5 it is 0.64, and the first number was noise in an estimate of noise |
+| `laterality` | mirroring the chart flips the sign, so content drives the bias | the means sit within a fraction of a hertz of zero against a 4 Hz spread, and a sign there is a coin toss |
 
 The verdict strings encode these rules, so read them rather than eyeballing
 the raw tables.
@@ -87,6 +89,13 @@ the raw tables.
 potentials, adaptation, tonic current or synaptic gain inside a context
 manager and assert `ptr`, `post` and `weight` byte-identical on the way out.
 An arm that leaks would silently contaminate every later arm in the same run.
+
+**Drive the senses the run loop drives.** `frames()` returns each picture
+with the price history it was drawn from, and every test passes both. Since
+the inhibitory gain the chart alone reaches the mushroom body with two Kenyon
+cells, so a test that passes only the picture measures a fly with no working
+senses -- which is exactly what the first re-run of `reinforce` did, reporting
+a 3-edge memory as though it meant something.
 
 **Read overlap, not identical pairs.** When 38% of the Kenyon population
 fires, no two codes are ever byte-identical and a collision count reads as a

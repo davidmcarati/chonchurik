@@ -28,6 +28,7 @@ Tests:
   pathway     which synapse the market signal stops surviving
   inhibition  whether one excitation/inhibition ratio explains the saturation
   pulse       how much current each dopamine compartment actually needs
+  motion      whether a moving scene recruits the visual system a still one does not
   decoder     whether a wider readout has more market signal than noise
   ablate      how much of the brain changes the decision
   reinforce   whether plasticity carries the reinforcement signal
@@ -54,7 +55,8 @@ from stonkfly.neural.controller import FlyController
 from stonkfly.neural.olfaction import features as olfactory_features
 from stonkfly.neural.sensory import retinal_samples
 
-from scenes import BASELINE, RENDERERS, SCENES, scene_history
+from scenes import (BASELINE, RENDERERS, SCENES, flight_canvas,
+                    render_flight, scene_history)
 
 PRODUCT = "BTC-USDC"
 BACKGROUND = (235, 240, 249)
@@ -62,15 +64,24 @@ HEADER_ROWS = 28
 
 
 def frames(count):
-    """Deterministic offline chart frames, produced exactly as the run loop does."""
+    """Deterministic offline observations, produced exactly as the run loop does.
+
+    Returns pictures and the price history each one was drawn from. They are
+    returned together because they must not be mismatched: the history opens
+    the olfactory channel, and since the inhibitory gain the chart alone
+    reaches the mushroom body with two Kenyon cells. A test that passes the
+    picture and forgets the history measures a fly with no working senses.
+    """
     market = FixtureMarket((PRODUCT,))
-    out = []
+    pictures, histories = [], []
     for _ in range(count):
         quotes = market.snapshot()
         q = quotes[PRODUCT]
-        out.append(market_frame(PRODUCT, market.history[PRODUCT], q.bid, q.ask))
+        history = list(market.history[PRODUCT])
+        pictures.append(market_frame(PRODUCT, history, q.bid, q.ask))
+        histories.append(history)
         market.record(quotes)
-    return out
+    return pictures, histories
 
 
 def observe(controller, frame, reinforcement="none", reset=True, history=None):
@@ -132,8 +143,9 @@ def baseline(controller, count, superclass):
     """Reference numbers every later stage is compared against."""
     print(f"[baseline] {count} frames", flush=True)
     stats, diffs = [], []
-    for i, frame in enumerate(frames(count)):
-        n = observe(controller, frame)
+    pictures, histories = frames(count)
+    for i, (frame, history) in enumerate(zip(pictures, histories)):
+        n = observe(controller, frame, history=history)
         p = participation(controller.brain.counts, superclass)
         p.update(side=n["side"], difference_hz=n["difference_hz"],
                  KC_spikes=n["KC_spikes"])
@@ -179,7 +191,7 @@ def laterality(controller, count, superclass):
     print(f"[laterality] mapped retina L {nL:,} R {nR:,} "
           f"(structural ratio {nR / nL:.3f})", flush=True)
 
-    base = frames(count)
+    base, histories = frames(count)
     arms = {
         "A0_baseline": [f for f in base],
         "A1_mirrored": [f[:, ::-1].copy() for f in base],
@@ -188,7 +200,9 @@ def laterality(controller, count, superclass):
 
     result = {"mapped_retina": {"left": nL, "right": nR, "ratio": nR / nL}}
     for name, series in arms.items():
-        result[name] = run_arm(controller, name, series, left, right, superclass)
+        result[name] = run_arm(
+            controller, name, series, histories, left, right, superclass
+        )
 
     # A4: additive tonic on the left retina so summed drive matches the right.
     d = drive_of(brain, base[0])
@@ -197,7 +211,8 @@ def laterality(controller, count, superclass):
     brain.tonic[brain.retina[left]] += delta
     try:
         result["A4_drive_equalised"] = run_arm(
-            controller, "A4_drive_equalised", base, left, right, superclass
+            controller, "A4_drive_equalised", base, histories, left, right,
+            superclass,
         )
         result["A4_drive_equalised"]["tonic_added_to_left"] = delta
     finally:
@@ -213,13 +228,15 @@ def repaint(frame):
     return out
 
 
-def run_arm(controller, name, series, left, right, superclass):
+def run_arm(controller, name, series, histories, left, right, superclass):
     brain = controller.brain
     sides, diffs, ratios = [], [], []
-    for i, frame in enumerate(series):
+    for i, (frame, history) in enumerate(zip(series, histories)):
         d = drive_of(brain, frame)
         ratios.append(float(d[right].sum() / d[left].sum()))
-        n = observe(controller, frame)
+        # The odour is identical across arms; only the picture is manipulated,
+        # so a difference between arms is still attributable to the picture.
+        n = observe(controller, frame, history=history)
         sides.append(n["side"])
         diffs.append(n["difference_hz"])
         print(f"  {name:20} {i + 1:3}/{len(series)}  drive R/L {ratios[-1]:5.3f}  "
@@ -233,22 +250,48 @@ def run_arm(controller, name, series, left, right, superclass):
 
 
 def verdict_laterality(r):
-    a0 = r["A0_baseline"]["mean_difference_hz"]
-    a1 = r["A1_mirrored"]["mean_difference_hz"]
-    a4 = r["A4_drive_equalised"]["mean_difference_hz"]
-    mix = r["A4_drive_equalised"]["sides"]
-    balanced = 0 < mix["BUY"] < sum(mix.values())
-    if np.sign(a1) != np.sign(a0) and abs(a1) > 0.25 * abs(a0):
-        return ("mirroring flips the bias: chart content dominates after all -> "
-                "symmetrise the drawing, not the receptor drive")
-    if abs(a4) <= 1.0 and balanced:
-        return ("equalising per-side retinal drive removes the bias -> adopt "
-                "per-side normalisation as a declared sensory-transfer parameter "
-                "(stage 1a) and document the 2.04:1 reconstruction asymmetry")
-    if abs(a4) > 0.5 * abs(a0):
-        return ("bias survives drive equalisation: it is intrinsic to network "
-                "dynamics, not input -> stop fixing the input, go to stage 2")
-    return "partial: drive equalisation helps but does not balance the mix"
+    """Judge an arm against the spread inside the arms, not against zero.
+
+    An earlier version of this read the sign of the mean and concluded that
+    mirroring the chart "flips the bias". With the network out of saturation
+    the means sit within a fraction of a hertz of zero while the frame-to-frame
+    spread is several hertz, so a sign is a coin toss and reading one as a
+    finding is exactly the mistake this file keeps catching elsewhere.
+    """
+    arms = ["A0_baseline", "A1_mirrored", "A3_header_repainted",
+            "A4_drive_equalised"]
+    means = {k: r[k]["mean_difference_hz"] for k in arms}
+    spread = {k: float(np.std(r[k]["difference_hz"], ddof=1)) for k in arms}
+    total = sum(sum(r[k]["sides"].values()) for k in arms)
+    sells = sum(r[k]["sides"]["SELL"] for k in arms)
+    noise = float(np.mean(list(spread.values())))
+    table = "; ".join(
+        f"{k.split('_', 1)[1]} {means[k]:+.2f}+-{spread[k]:.2f} "
+        f"({r[k]['sides']['BUY']}/{r[k]['sides']['SELL']}/{r[k]['sides']['HOLD']})"
+        for k in arms
+    )
+    head = (f"mean R-L per arm, with frame-to-frame spread and "
+            f"BUY/SELL/HOLD: {table}. {sells} of {total} observations propose "
+            f"SELL")
+    moved = [
+        k for k in arms[1:]
+        if abs(means[k] - means["A0_baseline"]) > spread[k] + spread["A0_baseline"]
+    ]
+    if abs(means["A0_baseline"]) < noise and sells:
+        tail = (f". The standing one-sided bias is gone: the baseline sits "
+                f"{abs(means['A0_baseline']):.2f} Hz from zero against a "
+                f"frame-to-frame spread of {spread['A0_baseline']:.2f} Hz, so "
+                f"the readout is no longer pinned to one side")
+    else:
+        tail = (f". The baseline still sits {means['A0_baseline']:+.2f} Hz off "
+                f"zero against a spread of {spread['A0_baseline']:.2f} Hz")
+    if not moved:
+        return (head + tail + ". No manipulation of the input moves an arm "
+                "further than the spread within it, so none of them is "
+                "measurably doing anything")
+    return (head + tail + f". Only {', '.join(m.split('_', 1)[1] for m in moved)} "
+            f"moves further than the spread within the arms, and that is the "
+            f"only manipulation worth pursuing")
 
 
 # --- ablation --------------------------------------------------------------
@@ -271,8 +314,9 @@ def ablate(controller, levels, repeats, seed, superclass):
     rng = np.random.default_rng(seed)
     guard = [brain.weight.copy(), brain.ptr.copy(), brain.post.copy()]
 
-    frame = frames(1)[0]
-    control = observe(controller, frame)
+    pictures, histories = frames(1)
+    frame, history = pictures[0], histories[0]
+    control = observe(controller, frame, history=history)
     quiet = np.flatnonzero(controller.brain.counts == 0)
     print(f"[ablate] intact {control['side']} "
           f"(R-L {control['difference_hz']:+.2f} Hz), "
@@ -283,7 +327,7 @@ def ablate(controller, levels, repeats, seed, superclass):
         saved = brain.tonic.copy()
         brain.tonic[victims] = -1000.0
         try:
-            return observe(controller, frame)
+            return observe(controller, frame, history=history)
         finally:
             brain.tonic[:] = saved
 
@@ -504,7 +548,7 @@ def reinforce(controller, count, seed):
     brain = controller.brain
     plastic = brain.circuit["edges"]
     set_learning(controller, True)
-    series = frames(count)
+    series, histories = frames(count)
     rng = np.random.default_rng(seed)
     labels = ["reward" if i % 3 == 0 else "aversive" if i % 3 == 1 else "none"
               for i in range(count)]
@@ -517,8 +561,8 @@ def reinforce(controller, count, seed):
                         ("none", quiet)]:
         brain.reset()
         trace = []
-        for i, (frame, kind) in enumerate(zip(series, order)):
-            n = observe(controller, frame, kind, reset=False)
+        for i, (frame, kind, history) in enumerate(zip(series, order, histories)):
+            n = observe(controller, frame, kind, reset=False, history=history)
             trace.append({
                 "changed_edges": n["memory"]["changed_edges"],
                 "KC_spikes": n["KC_spikes"],
@@ -565,10 +609,10 @@ def reinforce(controller, count, seed):
 def verdict_reinforce(pairs, changed, plastic_edges):
     """Report the size of the effect, not the number of edges touched.
 
-    Edge counts mislead here the same way label flips mislead in `ablate`: the
-    no-reward arm touches almost as many edges as the reinforced arms. What
-    reinforcement changes is how far they move, so the relative L1 is the
-    measurement and the counts are context.
+    Edge counts misled here once already: in the saturated regime the no-reward
+    arm touched 97% as many edges as the reinforced arms, which read as
+    "reinforcement barely matters" while what it changed was how far they
+    moved. The relative L1 is the measurement and the counts are context.
     """
     timing = pairs["ordered_vs_shuffled"]["relative_l1"]
     presence = pairs["ordered_vs_none"]["relative_l1"]
@@ -580,13 +624,27 @@ def verdict_reinforce(pairs, changed, plastic_edges):
         return ("plasticity is order-blind: only the amount of reinforcement "
                 "matters, never its timing -> no credit assignment is possible, "
                 "fix trace/delay before any GA")
-    ratio = presence / timing
-    return (f"reinforcement carries signal: presence moves the memory "
-            f"{presence:.1%} (relative L1) against a {changed['none']:,}-edge "
-            f"endogenous baseline, timing moves it {timing:.1%}. Presence "
-            f"dominates timing {ratio:.1f}x -- the rule responds mostly to HOW "
-            "MUCH dopamine arrived, not WHEN. GA is unblocked, but what it can "
-            "select on is dose, not credit assignment")
+    head = (f"reinforcement carries signal: presence moves the memory "
+            f"{presence:.2%} (relative L1), timing moves it {timing:.2%}, "
+            f"against an endogenous baseline of {changed['none']:,} edges "
+            f"written with no external reinforcement at all")
+    if not changed["none"]:
+        head += (" -- nothing is written without it, so every plastic change "
+                 "measured here is attributable to the reward and aversive "
+                 "pulses")
+    # Which of the two is larger decides what a profit-selected search can
+    # actually act on, so it is stated as a comparison and not asserted.
+    if timing > presence:
+        return (head + f". Timing outweighs presence {timing / presence:.2f}x: "
+                f"the same labels in a scrambled order write a memory that "
+                f"differs from the ordered one by MORE than the ordered one "
+                f"differs from no memory at all, so the rule is responding to "
+                f"WHEN dopamine arrived relative to Kenyon activity. That is "
+                f"the temporal pairing credit assignment requires")
+    return (head + f". Presence outweighs timing {presence / timing:.2f}x -- "
+            "the rule responds mostly to HOW MUCH dopamine arrived, not WHEN. "
+            "A profit-selected search can act on dose, not on credit "
+            "assignment, and that has to be disclosed")
 
 
 # --- sparseness ------------------------------------------------------------
@@ -2105,6 +2163,128 @@ def verdict_pulse(out):
             f"{v['aversive']['per_cell']:.1f} spikes per cell)")
 
 
+# --- motion ----------------------------------------------------------------
+
+# 63% of the retained graph is visual, and most of that is built to detect
+# motion. The experiment feeds it a chart that barely changes between
+# observations. The plan's hypothesis was that a moving scene would wake it.
+# Tested here against a still frame of the SAME picture, so the only
+# difference between the two arms is that one of them moves.
+MOTION_STEPS = 10
+MOTION_PIXELS = 8
+
+
+def motion(controller, superclass):
+    """Does a moving scene recruit the visual system that a still one does not?
+
+    Three arms, ten successive observations each, run without resetting
+    between them because motion is a property of a sequence. `still` and
+    `flight` crop the same landscape, one always at the same offset and one
+    advancing; `shipped` is the package chart with the price history moving
+    on, which is what the run loop actually produces.
+    """
+    brain = controller.brain
+    kinds = annotations(brain.ids)
+    visual = np.flatnonzero(
+        kinds.superclass.fillna("").astype(str).isin(
+            ["ol_intrinsic", "visual_projection", "ol_sensory", "visual_centrifugal"]
+        ).to_numpy()
+    )
+    history = scene_history("chop")
+    canvas = flight_canvas(history)
+    print(f"[motion] {MOTION_STEPS} successive observations x 3 arms; "
+          f"{len(visual):,} visual neurons "
+          f"({len(visual) / brain.n:.1%} of the graph); flight advances "
+          f"{MOTION_PIXELS} px per observation", flush=True)
+
+    arms = {
+        "still": lambda i: render_flight(canvas, 0),
+        "flight": lambda i: render_flight(canvas, i * MOTION_PIXELS),
+        "shipped": lambda i: RENDERERS[SWEEP_RENDERER](history[: 60 + i]),
+    }
+    out = {
+        "steps": MOTION_STEPS,
+        "pixels_per_observation": MOTION_PIXELS,
+        "visual_neurons": int(len(visual)),
+        "arms": {},
+    }
+    for arm, frame_of in arms.items():
+        brain.reset()
+        counts, inputs = [], []
+        for i in range(MOTION_STEPS):
+            frame = frame_of(i)
+            inputs.append(frame)
+            controller.observe(frame, "none", history)
+            counts.append(brain.counts.copy())
+        rows = [participation(c, superclass) for c in counts]
+        # How much the response moves from one observation to the next. A
+        # motion detector answering a translation should change; answering a
+        # still frame it should not.
+        churn = [
+            1.0 - float(((a[visual] > 0) & (b[visual] > 0)).sum())
+            / max(1.0, float(((a[visual] > 0) | (b[visual] > 0)).sum()))
+            for a, b in zip(counts, counts[1:])
+        ]
+        pixels = [
+            float((a != b).any(axis=2).mean()) for a, b in zip(inputs, inputs[1:])
+        ]
+        out["arms"][arm] = {
+            "active_fraction": float(np.mean([r["active_fraction"] for r in rows])),
+            "superclass_entropy_bits": float(
+                np.mean([r["superclass_entropy_bits"] for r in rows])
+            ),
+            "effective_population": float(
+                np.mean([r["effective_population"] for r in rows])
+            ),
+            "total_spikes": float(np.mean([r["total_spikes"] for r in rows])),
+            "visual_active_fraction": float(
+                np.mean([(c[visual] > 0).mean() for c in counts])
+            ),
+            "visual_response_churn": float(np.mean(churn)),
+            "input_pixels_changing": float(np.mean(pixels)),
+        }
+        a = out["arms"][arm]
+        print(f"    {arm:8} input moves {a['input_pixels_changing']:6.2%} of "
+              f"pixels  ->  active {a['active_fraction']:6.2%}  visual "
+              f"{a['visual_active_fraction']:6.2%}  churn "
+              f"{a['visual_response_churn']:.3f}  entropy "
+              f"{a['superclass_entropy_bits']:.2f} bits  spikes "
+              f"{a['total_spikes']:,.0f}", flush=True)
+    out["verdict"] = verdict_motion(out)
+    return out
+
+
+def verdict_motion(out):
+    """Compare motion against a still frame of the same picture.
+
+    Comparing against the shipped chart would confound motion with a different
+    image. The only honest pair is still against flight, and the reading that
+    matters is whether the visual response moves when the scene does.
+    """
+    still, flight = out["arms"]["still"], out["arms"]["flight"]
+    shipped = out["arms"]["shipped"]
+    moved = flight["visual_response_churn"] - still["visual_response_churn"]
+    recruited = flight["visual_active_fraction"] - still["visual_active_fraction"]
+    head = (f"the same landscape, still against advancing "
+            f"{out['pixels_per_observation']} px per observation: input moves "
+            f"{still['input_pixels_changing']:.2%} of pixels against "
+            f"{flight['input_pixels_changing']:.2%}; visual neurons active "
+            f"{still['visual_active_fraction']:.2%} against "
+            f"{flight['visual_active_fraction']:.2%}; response churn "
+            f"{still['visual_response_churn']:.3f} against "
+            f"{flight['visual_response_churn']:.3f}. The shipped chart sits at "
+            f"{shipped['visual_active_fraction']:.2%} active, churn "
+            f"{shipped['visual_response_churn']:.3f}")
+    if recruited > 0.02 or moved > 0.05:
+        return (head + ". Motion recruits the visual system that a still frame "
+                f"does not, so the hypothesis holds and a moving scene is "
+                f"worth building")
+    return (head + ". Motion changes neither how much of the visual system "
+            f"fires nor how much its response moves. The hypothesis that this "
+            f"network needs a moving scene is NOT supported, and by the plan's "
+            f"own rule the moving display is dropped rather than built")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     # argparse validates a list default against `choices` as one value, so the
@@ -2113,7 +2293,7 @@ def main():
                    choices=["baseline", "laterality", "separation",
                             "sparseness", "olfaction", "kc_input",
                             "odor_tuning", "pathway", "inhibition", "pulse",
-                            "decoder", "ablate", "reinforce"])
+                            "motion", "decoder", "ablate", "reinforce"])
     p.add_argument("--frames", type=int, default=8)
     p.add_argument("--repeats", type=int, default=5)
     p.add_argument("--levels", type=float, nargs="+", default=[1, 5, 20, 50])
@@ -2122,7 +2302,7 @@ def main():
     a = p.parse_args()
     tests = a.tests or ["baseline", "laterality", "separation", "sparseness",
                         "olfaction", "kc_input", "odor_tuning", "pathway",
-                        "inhibition", "pulse", "decoder", "ablate",
+                        "inhibition", "pulse", "motion", "decoder", "ablate",
                         "reinforce"]
 
     started = time.time()
@@ -2176,6 +2356,8 @@ def main():
             report[name] = inhibition(controller, superclass)
         elif name == "pulse":
             report[name] = pulse(controller, superclass)
+        elif name == "motion":
+            report[name] = motion(controller, superclass)
         elif name == "decoder":
             report[name] = decoder(controller, superclass)
         elif name == "ablate":
