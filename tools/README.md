@@ -191,3 +191,34 @@ every number in it can be re-derived. Rebuild it after changing `watch.py`, or
 just run the script.
 Read `champion.json` bottom-up: the verdict first, then the population out of
 sample, then the genome.
+
+## Is the kernel worth moving to the GPU?
+
+```sh
+pip install cupy-cuda12x nvidia-cuda-runtime-cu12
+python -m tools.kernel_cost        # where an observation's time goes
+python -m tools.worker_scaling     # whether more CPU workers help
+python -m tools.gpu_bench          # both kernel loops, ported to CUDA
+```
+
+Measured on this machine, and each one overturned an estimate made without
+measuring:
+
+| | |
+| --- | --- |
+| kernel's share of an observation | **95.2%** — so the Amdahl ceiling is 20.9x, not 2.8x |
+| active-list visits vs synaptic deliveries | **113,275,200 against 63,759,546** per observation |
+| 16 CPU workers against 8 | **0.56x** — the 14900K has eight performance cores and they were already busy |
+| active loop on the GPU, 16 genomes | **17.7x** the whole eight-core pool |
+| synaptic scatter on the GPU | **0.045 ns** per delivery |
+| bit-identical arithmetic | `-fmad=false`, **1.6%** |
+| reproducible scatter | integer atomics, **no measurable cost** |
+
+The optimal batch is set by the GPU's L2 rather than its cores: sixteen
+genomes of per-neuron state is 59 MB and fits in 67 MB, twenty-four is 88 MB
+and does not, and the difference is threefold.
+
+Float atomics are **not** reproducible — the same input run twice differs,
+because float addition is not associative and the warps finish in whatever
+order they finish. Integer atomics are, because integer addition is. That is
+the entire determinism question, and it is free.

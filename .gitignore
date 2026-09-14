@@ -31,3 +31,6 @@ cdp_api_key.json
 # not something to ship in a repository whose whole argument is that its
 # numbers can be re-derived. Rebuild it with the command in tools/README.md.
 johnny-watch.exe
+
+# CuPy caches compiled kernels next to the source tree on some setups.
+.cupy/
