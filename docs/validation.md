@@ -366,6 +366,40 @@ so that this shows up as a failed criterion rather than as a champion.
 deterministic sine. A sine is not a market. Profit there would show that the
 evolution machinery works end to end, and nothing about trading.
 
+### First run, 2026-09-14: the criterion fired
+
+A deliberately small machinery check — 8 genomes, 2 generations, 6 workers,
+1,200 fixture observations — run to prove the harness end to end, not to find
+a trading strategy.
+
+| | Train | Validation | Test |
+| --- | --- | --- | --- |
+| champion | −1.2097 | −1.3017 | **−1.1425** |
+| other survivor | | −0.663 | −0.828 |
+| buy-and-hold | | +0.2854 | −0.8144 |
+| all-cash | | 0.0000 | **0.0000** |
+| random fly | | −2.0492 | −1.7505 |
+| wild-type fly | | 0.0000 | 0.0000 |
+
+The champion beat the random fly and lost to everything else, so by the
+criterion declared before the run it is reported as **noise**. The harness
+works: degenerate genomes fell from 5 of 8 to 1 of 8 between the two
+generations, so selection was doing something, and what it selected did not
+survive the segment boundary.
+
+Two details are worth more than the verdict.
+
+**The train-best fly was the out-of-sample worst.** Of the two survivors, the
+one that won on training lost to the other on both validation and test. With
+eight genomes and two generations there was barely any search, and the
+overfitting is already visible. This is what the multi-start median and the
+held-out segments exist to show.
+
+**Trading costs money.** On this sine, buy-and-hold loses 0.81 on the test
+segment and all-cash makes exactly zero, because a 0.6% fee on a 10 unit order
+needs a 1.2% round trip to break even. Beating all four baselines means being
+strictly profitable after fees, which is a hard bar and the right one.
+
 ## Reproduce
 
 ```sh
