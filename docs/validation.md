@@ -897,6 +897,74 @@ None of this demonstrates that the fly can predict anything. It removes three
 reasons it could not have, and it makes the next negative result arrive in
 twenty minutes instead of eight hours.
 
+## Ten generations on the new objective, 2026-09-15
+
+`runs/evolution-binance`: Binance BTCUSDT hourly, 84 genomes, 100 observations
+at five chronological starts, selection on the readout's information
+coefficient six bars ahead, fee 10 basis points a side. Stopped after ten
+generations because the answer did not need the other two.
+
+| gen | champion | ic train | ic holdout | population median | excess | degenerate |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | `bd16660a` | +0.1052 | **-0.0032** | +0.0098 | -0.9682 | 7 |
+| 1 | `83671e34` | +0.1310 | **-0.0132** | +0.0031 | -0.5490 | 7 |
+| 2 | `83671e34` | +0.1310 | -0.0132 | +0.0106 | -0.5490 | 9 |
+| 3 | `83671e34` | +0.1310 | -0.0132 | +0.0231 | -0.5490 | 4 |
+| 4 | `952f8a8a` | +0.1382 | **+0.0527** | +0.0184 | -1.1247 | 8 |
+| 5 | `8b4c34c6` | +0.1435 | **+0.0007** | +0.0203 | -2.1797 | 4 |
+| 6 | `8b4c34c6` | +0.1435 | +0.0007 | +0.0048 | -2.1797 | 1 |
+| 7 | `e0bf6752` | +0.1518 | **-0.0236** | +0.0025 | -0.9770 | 0 |
+| 8 | `e0bf6752` | +0.1518 | -0.0236 | +0.0111 | -0.9770 | 1 |
+| 9 | `e0bf6752` | +0.1518 | -0.0236 | +0.0140 | -0.9770 | 1 |
+
+**Train rose 44% and the held-out score did not move.** Over five distinct
+champions the mean train coefficient is +0.1339 and the mean held-out one is
+**+0.0027**, against a measurement spread of about 0.05. The search fitted the
+training segment, which is what a search does when there is nothing else to
+find, and the instrument said so from the second generation rather than after
+the run.
+
+Three details worth keeping.
+
+**Elitism is visible in the table and is how the numbers can be trusted.**
+Generations 1-3, 5-6 and 7-9 repeat a champion, and both its train and its
+held-out score repeat to the last digit. The kernel is deterministic, so an
+unchanged genome must re-score identically; a table where that failed would
+mean the elite had been lost, which is how the screening defect was found.
+
+**The held-out number was reported wrongly at first.** It returned the two
+elites' scores and the printed line took a maximum, so generations 1-3 read
++0.0728 while the champion that earned the train score read -0.0132. The
+statistic built to contradict the train score was agreeing with it. It now
+reports position zero, the champion's own, and covers eight survivors rather
+than two, because two numbers cannot resolve an effect of 0.03 against a
+spread of 0.05.
+
+**Degenerate flies fell from 57 of 84 to between 0 and 9.** That is the
+resting-difference repair: proposals are no longer pinned to one side by a
+constant, and the population explores instead of collapsing.
+
+Money moved the other way, as it must when it is not what is selected: the
+champion's excess over buying and holding went -0.97, -0.55, -1.12, -2.18,
+-0.98. At this granularity and horizon break-even needs a coefficient of 0.17
+and the best held-out reading in the run was +0.0527, so no configuration here
+pays for itself even when it predicts.
+
+### What this does and does not show
+
+It shows that selection on this input finds nothing that survives the segment
+boundary. It does **not** show that the connectome cannot learn, and the two
+are routinely confused. The inputs were already measured to carry almost
+nothing -- the five close-derived descriptors score 0 of 30 tests on 10,446
+bars, and the whole-bar ones reach -0.03 and are gone by six bars. A search
+over an input with no information returns no information, whatever is doing
+the searching.
+
+Separating those two requires a positive control: give the fly a channel that
+provably predicts and measure whether the readout picks it up. That is
+`tools/control.py`, and until it has run, "the flies are not trainable" is not
+a claim this repository supports.
+
 ## Reproduce
 
 ```sh
