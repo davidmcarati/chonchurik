@@ -395,8 +395,8 @@ def render(out, state, report, procs, previous, plan,
             f"{plan.get('generations', '?')} generations {G['dot']} "
             f"{plan.get('observations', '?')} observations x "
             f"{plan.get('starts', '?')} starts{RESET}")
-    add(f"{DIM}ranked on excess over buy-and-hold, graded on profit against "
-        f"4 baselines{RESET}")
+    add(f"{DIM}ranked on {plan.get('objective', 'excess over buy-and-hold')}, "
+        f"graded on profit against 4 baselines{RESET}")
     add("")
 
     # First, because it is the only part that changes while a generation is
@@ -427,8 +427,8 @@ def render(out, state, report, procs, previous, plan,
             add(f"{DIM}per generation{RESET} {clock(pace)}")
         add("")
         scale = max([abs(h["best_fitness"]) for h in history] + [1e-9])
-        add(f"{BOLD}best excess over buy-and-hold{RESET}{DIM}, per generation"
-            f"{RESET}")
+        add(f"{BOLD}best {plan.get('objective', 'excess over buy-and-hold')}"
+            f"{RESET}{DIM}, per generation{RESET}")
         for h in history:
             v = h["best_fitness"]
             colour = GREEN if v > 0 else (RED if v < 0 else YELLOW)
@@ -504,9 +504,30 @@ def render(out, state, report, procs, previous, plan,
     return lines
 
 
+def newest(root=Path("runs")):
+    """The run that most recently said anything.
+
+    The default used to name one run directory, which was right on the day it
+    was written and wrong every day after: the view sat on a finished run
+    reporting it as stalled while another was going beside it. A heartbeat is
+    what "this one is live" means everywhere else here, so it is what picks.
+    """
+    beats = sorted(root.glob("*/progress.json"),
+                   key=lambda f: -f.stat().st_mtime)
+    if beats:
+        return beats[0].parent
+    states = sorted(root.glob("*/population.json"),
+                    key=lambda f: -f.stat().st_mtime)
+    return states[0].parent if states else root / "evolution"
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--out", type=Path, default=Path("runs/evolution-5min"))
+    p.add_argument("--out", type=Path, default=None,
+                   help="run directory to watch. Defaults to whichever under "
+                        "runs/ last wrote a heartbeat, so a finished run does "
+                        "not keep the view pointed at itself while a new one "
+                        "is going")
     p.add_argument("--log", type=Path,
                    help="the run's stdout, for its population and generation "
                         "count; looked for beside the run directory if omitted")
@@ -530,6 +551,8 @@ def main():
     # A run writes its own plan.json; the log is the fallback for runs that
     # predate it, and --generations the fallback for having neither. This
     # ordering is what lets the view be started with no arguments at all.
+    if a.out is None:
+        a.out = newest()
     plan = read_json(a.out / "plan.json") or plan_from_log(find_log(a.out, a.log))
     if a.generations:
         plan["generations"] = a.generations

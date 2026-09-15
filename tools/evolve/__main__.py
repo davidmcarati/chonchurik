@@ -155,6 +155,13 @@ def main():
         "device": a.device,
         "workers": a.workers if a.device == "cpu" else 1,
         "runner": runner.describe(),
+        # What selection ranks on, so a view does not have to assume. It has
+        # changed twice and a hard-coded label in the watcher was wrong on the
+        # first run after each change.
+        "objective": (f"readout information coefficient at {a.horizon} bars"
+                      if a.horizon else "excess over buy-and-hold"),
+        "fee_per_side": float(settings.paper_fee),
+        "horizon": a.horizon,
         "started_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }, indent=2) + "\n", encoding="utf-8")
     started = time.time()
