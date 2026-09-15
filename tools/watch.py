@@ -426,15 +426,38 @@ def render(out, state, report, procs, previous, plan,
                 f"— pass --generations or --log{RESET}")
             add(f"{DIM}per generation{RESET} {clock(pace)}")
         add("")
-        scale = max([abs(h["best_fitness"]) for h in history] + [1e-9])
+        def held_of(h):
+            """The champion's own out-of-sample score, or None.
+
+            Position zero and never a maximum over the group: the number is
+            there to contradict the train score beside it, and a best-of
+            cannot. Older runs stored only the list.
+            """
+            if h.get("holdout_champion") is not None:
+                return h["holdout_champion"]
+            values = h.get("holdout_fitness")
+            return values[0] if values else None
+
+        scale = max([abs(h["best_fitness"]) for h in history]
+                    + [abs(held_of(h) or 0.0) for h in history] + [1e-9])
         add(f"{BOLD}best {plan.get('objective', 'excess over buy-and-hold')}"
-            f"{RESET}{DIM}, per generation{RESET}")
+            f"{RESET}{DIM}, per generation {G['dot']} train against the "
+            f"champion's own held-out score{RESET}")
         for h in history:
             v = h["best_fitness"]
             colour = GREEN if v > 0 else (RED if v < 0 else YELLOW)
+            out = held_of(h)
+            if out is None:
+                note = f"  {DIM}holdout   --   {RESET}"
+            else:
+                # Apart is the thing to notice, so it is what gets coloured.
+                near = abs(v - out) <= 0.5 * max(abs(v), 1e-9)
+                mark = GREEN if near else RED
+                note = (f"  {DIM}holdout{RESET} {mark}{out:+7.4f}{RESET}"
+                        + ("" if near else f" {RED}apart{RESET}"))
             tail = f"  {YELLOW}tie with the benchmark{RESET}" if v == 0 else ""
             add(f" {DIM}gen{RESET}{h['generation']:3}  {colour}{v:+8.4f}{RESET} "
-                f"{centred_bar(v, scale)}{tail}")
+                f"{centred_bar(v, scale)}{note}{tail}")
         add("")
         last = history[-1]
         mid = last.get("best_median_start")

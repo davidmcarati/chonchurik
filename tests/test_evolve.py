@@ -370,3 +370,50 @@ def test_a_degenerate_elite_is_still_not_dropped():
     survivors, dropped = screen(Runner(), population, [1.0] * 500, 100, 40)
     assert dropped == 1, "it is still counted as dropped by the screen"
     assert population[0] in survivors, "but it is carried anyway"
+
+
+def test_the_holdout_reports_the_champion_and_not_the_best_of_the_group():
+    """A flattering summary of a holdout is worse than no holdout.
+
+    The first version returned the best of the two elites, and the printed
+    line took a max over it. On the Binance run that read +0.0728 for three
+    generations while the champion that had actually earned the train score
+    read -0.0132 -- the number built to contradict the train score was
+    quietly agreeing with it instead. The holdout must come back in survivor
+    order, champion first.
+    """
+    from tools.evolve.loop import HOLDOUT, holdout
+
+    class Runner:
+        def evaluate(self, genomes, prices, offsets, observations, bars=None):
+            # Deliberately worst-first, so anything taking a maximum passes
+            # and only reading position zero fails.
+            return [[{"readout_ic": ic}] for ic in [-0.0132, 0.0728, 0.05]]
+
+    survivors = [{"genome": {}} for _ in range(3)]
+    held = holdout(Runner(), survivors, {"validation": [1.0] * 500}, 40,
+                   None, 100)
+    assert held[0] == -0.0132, "position zero is the champion's own number"
+    assert max(held) != held[0], "and the group does contain a better one"
+    assert HOLDOUT > 2, "two numbers cannot resolve 0.03 against a spread of 0.05"
+
+
+def test_the_holdout_never_touches_selection():
+    """It is a diagnostic. Widening it must not change who breeds.
+
+    Scoring a genome out of sample and letting that score leak back into the
+    individual would make the validation segment a selector, which is the one
+    thing the chronological split exists to prevent -- and it would do it
+    silently, since the leak would look like the search working.
+    """
+    from tools.evolve.loop import holdout
+
+    class Runner:
+        def evaluate(self, genomes, prices, offsets, observations, bars=None):
+            return [[{"readout_ic": 0.9}] for _ in genomes]
+
+    survivors = [{"genome": {"a": 1.0}, "fitness": f} for f in (0.3, 0.2, 0.1)]
+    before = [dict(i) for i in survivors]
+    holdout(Runner(), survivors, {"validation": [1.0] * 500}, 40, None, 100)
+    assert survivors == before, "the holdout must not write to the population"
+    assert [i["fitness"] for i in survivors] == [0.3, 0.2, 0.1]

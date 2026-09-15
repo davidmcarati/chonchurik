@@ -42,6 +42,11 @@ def screen_length(observations):
     return max(20, observations // 4)
 SURVIVOR_FRACTION = 1 / 3
 ELITES = 2
+# How many of the ranked survivors are re-scored out of sample. Not ELITES:
+# that was two, and two numbers cannot resolve an effect of 0.03 against a
+# measurement whose own spread is 0.05. It costs forty flies against the
+# twenty thousand a generation already spends, and it selects nothing.
+HOLDOUT = 8
 # Declared before any evolution: a champion that does not beat every baseline
 # on the held-out test segment is reported as noise, not as a result.
 BASELINES = ["buy_and_hold", "all_cash", "random", "wild_type"]
@@ -210,13 +215,20 @@ def holdout(runner, survivors, segments, observations, bars, window):
     generation: if they move together it is an edge, and if they separate it
     is luck being fitted.
 
-    Only the elites, because it costs a wave and it is a diagnostic rather
-    than a selection -- nothing here changes who breeds.
+    Returned in survivor order, so the first entry is the champion's own
+    number. Reporting the best of them instead was the first version of this,
+    and it hid exactly what it was built to show: over six generations the
+    best-of-two read +0.0728 while the champion that earned the train score
+    read -0.0132. A flattering summary of a holdout is worse than no holdout.
+
+    It selects nothing -- no fitness here decides who breeds -- so widening it
+    costs only time, and forty flies against the twenty thousand a generation
+    already spends is not time worth saving.
     """
     if not survivors or "validation" not in segments:
         return None
     rows = evaluate_population(
-        runner, survivors[:ELITES], segments["validation"], observations,
+        runner, survivors[:HOLDOUT], segments["validation"], observations,
         FULL_STARTS, window, None if bars is None else bars["validation"],
     )
     return [fitness(row) for row in rows]
@@ -268,13 +280,18 @@ def evolve(runner, segments, rng, generations, size, out, resume=None,
             "best_id": G.identity(best["genome"]),
             "best_excess": best["excess"],
             "median_fitness": median([i["fitness"] for i in survivors]),
-            # The same elites on a segment nothing here selects on. Read the
-            # two side by side: together is an edge, apart is luck.
+            # The top survivors on a segment nothing here selects on, in rank
+            # order. Read the champion's own against its train score: together
+            # is an edge, apart is luck.
             "holdout_fitness": held,
+            "holdout_champion": held[0] if held else None,
             "seconds": round(time.time() - started, 1),
         })
         mid = best["median_start"]
-        out_of_sample = (f"{max(held):+.4f}" if held else "  --  ")
+        # The champion's own, not the best of the held-out group: the point
+        # of the number is to contradict the train score beside it, and a
+        # maximum over several genomes cannot.
+        out_of_sample = (f"{held[0]:+.4f}" if held else "  --  ")
         print(f"  generation {generation:3}  {len(population)} evaluated, "
               f"{dropped} degenerate, best ic {best['fitness']:+.4f} train / "
               f"{out_of_sample} holdout, population median "
