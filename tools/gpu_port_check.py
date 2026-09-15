@@ -79,8 +79,15 @@ TABLE_SOURCE = """// The decay tables exactly as kernel.cpp builds them, same co
 // unit in the last place, which is enough to make every voltage downstream
 // disagree and look like a race in the port.
 #include <cmath>
+/* __declspec(dllexport) is MSVC-only; GCC/Clang reject it, which broke the
+   Linux build of this table. Export visibility is default there anyway. */
+#ifdef _MSC_VER
+#define TABLE_EXPORT __declspec(dllexport)
+#else
+#define TABLE_EXPORT
+#endif
 #define ENTRIES (1 << 20)
-extern "C" __declspec(dllexport) void build(float dt, float tau_a,
+extern "C" TABLE_EXPORT void build(float dt, float tau_a,
                                             float tau_elig,
                                             float* av, float* ag, float* aa,
                                             double* am, double* ae) {
